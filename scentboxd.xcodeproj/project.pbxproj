@@ -1,0 +1,665 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BB154E362F1702E9008C1593 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E352F1702E9008C1593 /* Auth */; };
+		BB154E382F1702E9008C1593 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E372F1702E9008C1593 /* Functions */; };
+		BB154E3A2F1702E9008C1593 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E392F1702E9008C1593 /* PostgREST */; };
+		BB154E3C2F1702E9008C1593 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E3B2F1702E9008C1593 /* Realtime */; };
+		BB154E3E2F1702E9008C1593 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E3D2F1702E9008C1593 /* Storage */; };
+		BB154E432F17063B008C1593 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E422F17063B008C1593 /* Supabase */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BB248BD52F1071080092FCDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB248BBF2F1071060092FCDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB248BC62F1071060092FCDD;
+			remoteInfo = scentboxd;
+		};
+		BB248BDF2F1071080092FCDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB248BBF2F1071060092FCDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB248BC62F1071060092FCDD;
+			remoteInfo = scentboxd;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		BB154DF82F16FCE8008C1593 /* scentboxd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = scentboxd.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB154DF92F16FCE8008C1593 /* scentboxdTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = scentboxdTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB154DFA2F16FCE8008C1593 /* scentboxdUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = scentboxdUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BB46E1752F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxd" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				scentboxdTests/scentboxdTests.swift,
+				scentboxdUITests/scentboxdUITests.swift,
+			);
+			target = BB248BC62F1071060092FCDD /* scentboxd */;
+		};
+		BB46E1762F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxdTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				scentboxdTests/scentboxdTests.swift,
+			);
+			target = BB248BD32F1071080092FCDD /* scentboxdTests */;
+		};
+		BB46E17A2F11B4FE005DAACA /* Exceptions for "scentboxd" folder in "scentboxdUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				scentboxdUITests/scentboxdUITests.swift,
+			);
+			target = BB248BDD2F1071080092FCDD /* scentboxdUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		BB248BC92F1071060092FCDD /* scentboxd */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BB46E1752F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxd" target */,
+				BB46E1762F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxdTests" target */,
+				BB46E17A2F11B4FE005DAACA /* Exceptions for "scentboxd" folder in "scentboxdUITests" target */,
+			);
+			path = scentboxd;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BB248BC42F1071060092FCDD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB154E3A2F1702E9008C1593 /* PostgREST in Frameworks */,
+				BB154E382F1702E9008C1593 /* Functions in Frameworks */,
+				BB154E432F17063B008C1593 /* Supabase in Frameworks */,
+				BB154E362F1702E9008C1593 /* Auth in Frameworks */,
+				BB154E3E2F1702E9008C1593 /* Storage in Frameworks */,
+				BB154E3C2F1702E9008C1593 /* Realtime in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB248BD12F1071080092FCDD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB248BDB2F1071080092FCDD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BB154E412F17063B008C1593 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BB248BBE2F1071060092FCDD = {
+			isa = PBXGroup;
+			children = (
+				BB248BC92F1071060092FCDD /* scentboxd */,
+				BB154DF82F16FCE8008C1593 /* scentboxd.app */,
+				BB154DF92F16FCE8008C1593 /* scentboxdTests.xctest */,
+				BB154DFA2F16FCE8008C1593 /* scentboxdUITests.xctest */,
+				BB154E412F17063B008C1593 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BB248BC62F1071060092FCDD /* scentboxd */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB248BE82F1071080092FCDD /* Build configuration list for PBXNativeTarget "scentboxd" */;
+			buildPhases = (
+				BB248BC32F1071060092FCDD /* Sources */,
+				BB248BC42F1071060092FCDD /* Frameworks */,
+				BB248BC52F1071060092FCDD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BB248BC92F1071060092FCDD /* scentboxd */,
+			);
+			name = scentboxd;
+			packageProductDependencies = (
+				BB154E352F1702E9008C1593 /* Auth */,
+				BB154E372F1702E9008C1593 /* Functions */,
+				BB154E392F1702E9008C1593 /* PostgREST */,
+				BB154E3B2F1702E9008C1593 /* Realtime */,
+				BB154E3D2F1702E9008C1593 /* Storage */,
+				BB154E422F17063B008C1593 /* Supabase */,
+			);
+			productName = scentboxd;
+			productReference = BB154DF82F16FCE8008C1593 /* scentboxd.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BB248BD32F1071080092FCDD /* scentboxdTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB248BEB2F1071080092FCDD /* Build configuration list for PBXNativeTarget "scentboxdTests" */;
+			buildPhases = (
+				BB248BD02F1071080092FCDD /* Sources */,
+				BB248BD12F1071080092FCDD /* Frameworks */,
+				BB248BD22F1071080092FCDD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB248BD62F1071080092FCDD /* PBXTargetDependency */,
+			);
+			name = scentboxdTests;
+			packageProductDependencies = (
+			);
+			productName = scentboxdTests;
+			productReference = BB154DF92F16FCE8008C1593 /* scentboxdTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BB248BDD2F1071080092FCDD /* scentboxdUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB248BEE2F1071080092FCDD /* Build configuration list for PBXNativeTarget "scentboxdUITests" */;
+			buildPhases = (
+				BB248BDA2F1071080092FCDD /* Sources */,
+				BB248BDB2F1071080092FCDD /* Frameworks */,
+				BB248BDC2F1071080092FCDD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB248BE02F1071080092FCDD /* PBXTargetDependency */,
+			);
+			name = scentboxdUITests;
+			packageProductDependencies = (
+			);
+			productName = scentboxdUITests;
+			productReference = BB154DFA2F16FCE8008C1593 /* scentboxdUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BB248BBF2F1071060092FCDD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					BB248BC62F1071060092FCDD = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					BB248BD32F1071080092FCDD = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = BB248BC62F1071060092FCDD;
+					};
+					BB248BDD2F1071080092FCDD = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = BB248BC62F1071060092FCDD;
+					};
+				};
+			};
+			buildConfigurationList = BB248BC22F1071060092FCDD /* Build configuration list for PBXProject "scentboxd" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BB248BBE2F1071060092FCDD;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BB248BBE2F1071060092FCDD;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BB248BC62F1071060092FCDD /* scentboxd */,
+				BB248BD32F1071080092FCDD /* scentboxdTests */,
+				BB248BDD2F1071080092FCDD /* scentboxdUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB248BC52F1071060092FCDD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB248BD22F1071080092FCDD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB248BDC2F1071080092FCDD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BB248BC32F1071060092FCDD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB248BD02F1071080092FCDD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB248BDA2F1071080092FCDD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BB248BD62F1071080092FCDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB248BC62F1071060092FCDD /* scentboxd */;
+			targetProxy = BB248BD52F1071080092FCDD /* PBXContainerItemProxy */;
+		};
+		BB248BE02F1071080092FCDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB248BC62F1071060092FCDD /* scentboxd */;
+			targetProxy = BB248BDF2F1071080092FCDD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BB248BE62F1071080092FCDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 7PPXXRWMCT;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BB248BE72F1071080092FCDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 7PPXXRWMCT;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BB248BE92F1071080092FCDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7PPXXRWMCT;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = santinoperfumes.scentboxd;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BB248BEA2F1071080092FCDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7PPXXRWMCT;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = santinoperfumes.scentboxd;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BB248BEC2F1071080092FCDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7PPXXRWMCT;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = santinoperfumes.scentboxdTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/scentboxd.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/scentboxd";
+			};
+			name = Debug;
+		};
+		BB248BED2F1071080092FCDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7PPXXRWMCT;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = santinoperfumes.scentboxdTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/scentboxd.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/scentboxd";
+			};
+			name = Release;
+		};
+		BB248BEF2F1071080092FCDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7PPXXRWMCT;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = santinoperfumes.scentboxdUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = scentboxd;
+			};
+			name = Debug;
+		};
+		BB248BF02F1071080092FCDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7PPXXRWMCT;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = santinoperfumes.scentboxdUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = scentboxd;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BB248BC22F1071060092FCDD /* Build configuration list for PBXProject "scentboxd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB248BE62F1071080092FCDD /* Debug */,
+				BB248BE72F1071080092FCDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB248BE82F1071080092FCDD /* Build configuration list for PBXNativeTarget "scentboxd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB248BE92F1071080092FCDD /* Debug */,
+				BB248BEA2F1071080092FCDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB248BEB2F1071080092FCDD /* Build configuration list for PBXNativeTarget "scentboxdTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB248BEC2F1071080092FCDD /* Debug */,
+				BB248BED2F1071080092FCDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB248BEE2F1071080092FCDD /* Build configuration list for PBXNativeTarget "scentboxdUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB248BEF2F1071080092FCDD /* Debug */,
+				BB248BF02F1071080092FCDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BB154E352F1702E9008C1593 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		BB154E372F1702E9008C1593 /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		BB154E392F1702E9008C1593 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		BB154E3B2F1702E9008C1593 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		BB154E3D2F1702E9008C1593 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		BB154E422F17063B008C1593 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = BB248BBF2F1071060092FCDD /* Project object */;
+}
