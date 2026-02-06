@@ -15,17 +15,29 @@ struct PerfumeListView: View {
                     ProgressView("Lade Parfums...")
                 }
                 
-                ForEach(viewModel.filteredPerfumes) { perfume in
+                ForEach(viewModel.perfumes) { perfume in
                     NavigationLink(destination: PerfumeDetailView(perfume: perfume)) {
                         PerfumeRowView(perfume: perfume)
+                    }
+                    .onAppear {
+                        Task {
+                            await viewModel.loadMoreIfNeeded(currentItem: perfume)
+                        }
+                    }
+                }
+                
+                if viewModel.isLoadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
                     }
                 }
             }
             .searchable(text: $viewModel.searchText, prompt: "Suche Parfum...")
             .navigationTitle("Parfums")
             .refreshable {
-                // Ermöglicht "Pull to Refresh"
-                await viewModel.loadData()
+                await viewModel.refresh()
             }
         }
     }
