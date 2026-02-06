@@ -9,6 +9,8 @@ import Foundation
 
 protocol PerfumeRepository {
     func fetchAllPerfumes() async throws -> [Perfume]
+    func fetchPerfumes(page: Int, pageSize: Int) async throws -> [Perfume]
+    func searchPerfumes(query: String, page: Int, pageSize: Int) async throws -> [Perfume]
     func addPerfume(_ perfume: Perfume) async throws
     func deletePerfume(_ perfume: Perfume) async throws
 }
