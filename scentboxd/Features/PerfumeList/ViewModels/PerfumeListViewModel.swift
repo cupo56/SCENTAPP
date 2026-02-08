@@ -11,9 +11,7 @@ import Combine
 @MainActor
 class PerfumeListViewModel: ObservableObject {
     @Published var perfumes: [Perfume] = []
-    @Published var searchText: String = "" {
-        didSet { onSearchTextChanged() }
-    }
+    @Published var searchText: String = ""
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
     
@@ -22,6 +20,20 @@ class PerfumeListViewModel: ObservableObject {
     private var currentPage = 0
     private var hasMorePages = true
     private var searchTask: Task<Void, Never>?
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        $searchText
+            .dropFirst()
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.searchTask?.cancel()
+                self.searchTask = Task { await self.loadData() }
+            }
+            .store(in: &cancellables)
+    }
     
     // MARK: - Initial Load
     
@@ -81,14 +93,4 @@ class PerfumeListViewModel: ObservableObject {
         await loadData()
     }
     
-    // MARK: - Server-Side Search
-    
-    private func onSearchTextChanged() {
-        searchTask?.cancel()
-        searchTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms debounce
-            guard !Task.isCancelled else { return }
-            await loadData()
-        }
-    }
 }

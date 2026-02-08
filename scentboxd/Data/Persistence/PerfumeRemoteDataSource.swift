@@ -34,7 +34,7 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         let dtos: [PerfumeDTO] = try await client
             .from("perfumes")
             .select(selectQuery)
-            .or("name.ilike.\(pattern),brands.name.ilike.\(pattern)")
+            .ilike("name", pattern: pattern)
             .order("name")
             .range(from: from, to: to)
             .execute()
