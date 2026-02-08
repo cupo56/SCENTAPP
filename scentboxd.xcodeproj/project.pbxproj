@@ -33,6 +33,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BB154E502F170900008C1593 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		BB154DF82F16FCE8008C1593 /* scentboxd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = scentboxd.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB154DF92F16FCE8008C1593 /* scentboxdTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = scentboxdTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB154DFA2F16FCE8008C1593 /* scentboxdUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = scentboxdUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -42,6 +43,7 @@
 		BB46E1752F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxd" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Info.plist,
 				scentboxdTests/scentboxdTests.swift,
 				scentboxdUITests/scentboxdUITests.swift,
 			);
@@ -117,6 +119,7 @@
 		BB248BBE2F1071060092FCDD = {
 			isa = PBXGroup;
 			children = (
+				BB154E502F170900008C1593 /* Config.xcconfig */,
 				BB248BC92F1071060092FCDD /* scentboxd */,
 				BB154DF82F16FCE8008C1593 /* scentboxd.app */,
 				BB154DF92F16FCE8008C1593 /* scentboxdTests.xctest */,
@@ -307,6 +310,7 @@
 /* Begin XCBuildConfiguration section */
 		BB248BE62F1071080092FCDD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB154E502F170900008C1593 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -371,6 +375,7 @@
 		};
 		BB248BE72F1071080092FCDD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB154E502F170900008C1593 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -436,6 +441,7 @@
 				DEVELOPMENT_TEAM = 7PPXXRWMCT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = scentboxd/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -469,6 +475,7 @@
 				DEVELOPMENT_TEAM = 7PPXXRWMCT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = scentboxd/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

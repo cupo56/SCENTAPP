@@ -9,8 +9,19 @@ import Foundation
 import Supabase
 
 enum AppConfig {
-    static let supabaseURL = "https://frvhlflwrqlpjftraawp.supabase.co"
-    static let supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZydmhsZmx3cnFscGpmdHJhYXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzMzMwNTYsImV4cCI6MjA4MzkwOTA1Nn0.njD434Ibnr1mI_gVXojq4kyF6xzKGRf9Yk-XNS2W1D4" // Stelle sicher, dass dies dein Anon-Key ist
+    static let supabaseURL: String = {
+        guard let value = Bundle.main.infoDictionary?["SUPABASE_URL"] as? String, !value.isEmpty else {
+            fatalError("SUPABASE_URL not found in Info.plist – check Config.xcconfig")
+        }
+        return value
+    }()
+
+    static let supabaseKey: String = {
+        guard let value = Bundle.main.infoDictionary?["SUPABASE_KEY"] as? String, !value.isEmpty else {
+            fatalError("SUPABASE_KEY not found in Info.plist – check Config.xcconfig")
+        }
+        return value
+    }()
     
     // Zentraler Client für die gesamte App
     static let client = SupabaseClient(
