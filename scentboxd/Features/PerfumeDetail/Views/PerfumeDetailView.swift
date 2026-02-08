@@ -1,5 +1,7 @@
 import SwiftUI
 import SwiftData
+import Auth
+import Supabase
 
 struct PerfumeDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -12,6 +14,8 @@ struct PerfumeDetailView: View {
     @State private var reviews: [Review] = []
     @State private var isLoadingReviews = false
     @State private var showLoginAlert = false
+    @State private var editingReview: Review? = nil
+    @State private var currentUserId: UUID? = nil
     
     private let reviewDataSource = ReviewRemoteDataSource()
     private let userPerfumeDataSource = UserPerfumeRemoteDataSource()
@@ -143,17 +147,17 @@ struct PerfumeDetailView: View {
                             }
                         }
                         
-                        // Button 3: Bewertung schreiben (eigene Zeile)
+                        // Button 3: Bewertung schreiben / bearbeiten
                         Button {
                             if authManager.isAuthenticated {
-                                showReviewSheet = true
+                                Task { await handleReviewButtonTapped() }
                             } else {
                                 showLoginAlert = true
                             }
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: "pencil.line")
-                                Text("Bewertung schreiben")
+                                Image(systemName: hasExistingReview ? "pencil" : "pencil.line")
+                                Text(hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
                             }
                             .font(.subheadline)
                             .fontWeight(.medium)
@@ -231,7 +235,17 @@ struct PerfumeDetailView: View {
                                     .padding(.vertical, 8)
                             } else {
                                 ForEach(reviews, id: \.id) { review in
-                                    ReviewCard(review: review)
+                                    ReviewCard(
+                                        review: review,
+                                        isOwn: review.userId == currentUserId,
+                                        onEdit: {
+                                            editingReview = review
+                                            showReviewSheet = true
+                                        },
+                                        onDelete: {
+                                            Task { await deleteReview(review) }
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -247,14 +261,21 @@ struct PerfumeDetailView: View {
             .edgesIgnoringSafeArea(.top)
         }
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showReviewSheet) {
-            ReviewFormView(perfume: perfume) { review in
+        .sheet(isPresented: $showReviewSheet, onDismiss: {
+            editingReview = nil
+        }) {
+            ReviewFormView(perfume: perfume, existingReview: editingReview) { review in
                 Task {
-                    await saveReview(review)
+                    if editingReview != nil {
+                        await updateReview(review)
+                    } else {
+                        await saveReview(review)
+                    }
                 }
             }
         }
         .task {
+            await loadCurrentUserId()
             await loadReviews()
         }
         .alert("Anmeldung erforderlich", isPresented: $showLoginAlert) {
@@ -275,13 +296,38 @@ struct PerfumeDetailView: View {
         isLoadingReviews = false
     }
     
+    private var hasExistingReview: Bool {
+        guard let userId = currentUserId else { return false }
+        return reviews.contains { $0.userId == userId }
+    }
+    
+    private func loadCurrentUserId() async {
+        do {
+            let session = try await AppConfig.client.auth.session
+            currentUserId = session.user.id
+        } catch {
+            currentUserId = nil
+        }
+    }
+    
+    private func handleReviewButtonTapped() async {
+        // Duplikat-Prüfung: Hat der Nutzer bereits eine Review?
+        if let existing = reviews.first(where: { $0.userId == currentUserId }) {
+            editingReview = existing
+            showReviewSheet = true
+        } else {
+            editingReview = nil
+            showReviewSheet = true
+        }
+    }
+    
     private func saveReview(_ review: Review) async {
         isSavingReview = true
         do {
             try await reviewDataSource.saveReview(review, for: perfume.id)
             
-            // Zur Liste hinzufügen (oben, da neueste zuerst)
-            reviews.insert(review, at: 0)
+            // Neu laden um userId etc. korrekt zu haben
+            await loadReviews()
             
             // Auch lokal speichern
             if perfume.modelContext == nil {
@@ -294,6 +340,28 @@ struct PerfumeDetailView: View {
             print("Fehler beim Speichern der Bewertung: \(error)")
         }
         isSavingReview = false
+    }
+    
+    private func updateReview(_ review: Review) async {
+        do {
+            try await reviewDataSource.updateReview(review, for: perfume.id)
+            await loadReviews()
+        } catch {
+            print("Fehler beim Aktualisieren der Bewertung: \(error)")
+        }
+    }
+    
+    private func deleteReview(_ review: Review) async {
+        do {
+            try await reviewDataSource.deleteReview(id: review.id)
+            reviews.removeAll { $0.id == review.id }
+            
+            // Auch lokal entfernen
+            perfume.reviews.removeAll { $0.id == review.id }
+            try? modelContext.save()
+        } catch {
+            print("Fehler beim Löschen der Bewertung: \(error)")
+        }
     }
     private func isActive(_ status: UserPerfumeStatus) -> Bool {
         return perfume.userMetadata?.statusRaw == status.rawValue
