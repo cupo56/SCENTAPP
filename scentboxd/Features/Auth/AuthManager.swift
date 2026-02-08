@@ -18,6 +18,7 @@ class AuthManager {
     var isAuthenticated: Bool { currentUser != nil }
     var isLoading = false
     var errorMessage: String?
+    var username: String?
     
     init() {
         Task {
@@ -33,6 +34,7 @@ class AuthManager {
         do {
             let session = try await client.auth.session
             currentUser = session.user
+            await loadUsername()
         } catch {
             currentUser = nil
         }
@@ -47,6 +49,7 @@ class AuthManager {
         do {
             let session = try await client.auth.signIn(email: email, password: password)
             currentUser = session.user
+            await loadUsername()
             return true
         } catch {
             errorMessage = mapAuthError(error)
@@ -86,8 +89,51 @@ class AuthManager {
         do {
             try await client.auth.signOut()
             currentUser = nil
+            username = nil
         } catch {
             errorMessage = "Abmeldung fehlgeschlagen: \(error.localizedDescription)"
+        }
+    }
+    
+    /// Lädt den Username aus der profiles-Tabelle
+    func loadUsername() async {
+        guard let userId = currentUser?.id else { return }
+        
+        let profile: ProfileDTO? = try? await client
+            .from("profiles")
+            .select("*")
+            .eq("id", value: userId)
+            .single()
+            .execute()
+            .value
+        
+        username = profile?.username
+    }
+    
+    /// Speichert den Username in der profiles-Tabelle
+    func saveUsername(_ newUsername: String) async -> Bool {
+        guard let userId = currentUser?.id else { return false }
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            let dto = ProfileDTO(
+                id: userId,
+                username: newUsername,
+                updatedAt: Date()
+            )
+            
+            try await client
+                .from("profiles")
+                .upsert(dto)
+                .execute()
+            
+            username = newUsername
+            return true
+        } catch {
+            errorMessage = "Fehler beim Speichern des Benutzernamens: \(error.localizedDescription)"
+            return false
         }
     }
     

@@ -12,12 +12,14 @@ struct SignUpView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var email = ""
+    @State private var username = ""
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var registrationSuccess = false
     
     private var isFormValid: Bool {
         !email.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !username.trimmingCharacters(in: .whitespaces).isEmpty &&
         password.count >= 6 &&
         password == confirmPassword
     }
@@ -56,6 +58,14 @@ struct SignUpView: View {
                         TextField("E-Mail", text: $email)
                             .textContentType(.emailAddress)
                             .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                            .autocorrectionDisabled()
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                        
+                        TextField("Benutzername", text: $username)
+                            .textContentType(.username)
                             .autocapitalization(.none)
                             .autocorrectionDisabled()
                             .padding()
@@ -124,6 +134,11 @@ struct SignUpView: View {
                         Task {
                             let success = await authManager.signUp(email: email, password: password)
                             if success {
+                                // Username in Profil speichern
+                                let trimmedUsername = username.trimmingCharacters(in: .whitespaces)
+                                if !trimmedUsername.isEmpty {
+                                    _ = await authManager.saveUsername(trimmedUsername)
+                                }
                                 registrationSuccess = true
                                 // Schließe die View nach kurzer Verzögerung, wenn erfolgreich
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {

@@ -11,6 +11,10 @@ import Auth
 struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
     
+    @State private var isEditingUsername = false
+    @State private var usernameInput = ""
+    @State private var showUsernameSaved = false
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -35,14 +39,76 @@ struct ProfileView: View {
                         .foregroundStyle(Color.accentColor)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Angemeldet als")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        if let username = authManager.username, !username.isEmpty {
+                            Text(username)
+                                .font(.headline)
+                        }
                         Text(authManager.currentUser?.email ?? "Unbekannt")
-                            .font(.headline)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .padding(.vertical, 8)
+            }
+            
+            // Benutzername Section
+            Section("Benutzername") {
+                if isEditingUsername {
+                    HStack {
+                        TextField("Benutzername", text: $usernameInput)
+                            .textContentType(.username)
+                            .autocapitalization(.none)
+                            .autocorrectionDisabled()
+                        
+                        Button("Speichern") {
+                            Task {
+                                let trimmed = usernameInput.trimmingCharacters(in: .whitespaces)
+                                guard !trimmed.isEmpty else { return }
+                                let success = await authManager.saveUsername(trimmed)
+                                if success {
+                                    isEditingUsername = false
+                                    showUsernameSaved = true
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        showUsernameSaved = false
+                                    }
+                                }
+                            }
+                        }
+                        .disabled(usernameInput.trimmingCharacters(in: .whitespaces).isEmpty || authManager.isLoading)
+                        
+                        Button("Abbrechen") {
+                            isEditingUsername = false
+                        }
+                        .foregroundStyle(.secondary)
+                    }
+                } else {
+                    HStack {
+                        Label(authManager.username ?? "Nicht festgelegt", systemImage: "at")
+                            .foregroundStyle(authManager.username != nil ? .primary : .secondary)
+                        Spacer()
+                        Button("Bearbeiten") {
+                            usernameInput = authManager.username ?? ""
+                            isEditingUsername = true
+                        }
+                        .font(.subheadline)
+                    }
+                }
+                
+                if showUsernameSaved {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        Text("Benutzername gespeichert")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    }
+                }
+                
+                if let error = authManager.errorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
             
             // Statistics Section
