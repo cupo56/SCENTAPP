@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import os
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -13,6 +14,8 @@ struct ContentView: View {
     @State private var authManager = AuthManager()
     @State private var isLoading = true
     @State private var showSplash = true
+    @State private var syncErrorMessage: String? = nil
+    @State private var showSyncErrorAlert = false
     
     private let syncService = UserPerfumeSyncService()
     
@@ -52,10 +55,17 @@ struct ContentView: View {
             
             // User-Parfums aus Supabase synchronisieren (wenn eingeloggt)
             if authManager.isAuthenticated {
-                await syncService.syncFromSupabase(
-                    modelContext: modelContext,
-                    perfumes: viewModel.perfumes
-                )
+                do {
+                    try await syncService.syncFromSupabase(
+                        modelContext: modelContext,
+                        perfumes: viewModel.perfumes
+                    )
+                } catch {
+                    let networkError = NetworkError.from(error)
+                    AppLogger.sync.error("Sync fehlgeschlagen: \(networkError.localizedDescription)")
+                    syncErrorMessage = networkError.localizedDescription
+                    showSyncErrorAlert = true
+                }
             }
             
             // Smooth Übergang zum Hauptinhalt
@@ -67,12 +77,24 @@ struct ContentView: View {
             // Sync wenn User sich einloggt
             if isAuthenticated {
                 Task {
-                    await syncService.syncFromSupabase(
-                        modelContext: modelContext,
-                        perfumes: viewModel.perfumes
-                    )
+                    do {
+                        try await syncService.syncFromSupabase(
+                            modelContext: modelContext,
+                            perfumes: viewModel.perfumes
+                        )
+                    } catch {
+                        let networkError = NetworkError.from(error)
+                        AppLogger.sync.error("Sync fehlgeschlagen: \(networkError.localizedDescription)")
+                        syncErrorMessage = networkError.localizedDescription
+                        showSyncErrorAlert = true
+                    }
                 }
             }
+        }
+        .alert("Synchronisierungsfehler", isPresented: $showSyncErrorAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(syncErrorMessage ?? "Ein Fehler ist aufgetreten.")
         }
     }
 }

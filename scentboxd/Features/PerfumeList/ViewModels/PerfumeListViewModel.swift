@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import os
 
 @MainActor
 class PerfumeListViewModel: ObservableObject {
@@ -14,6 +15,7 @@ class PerfumeListViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var isLoading: Bool = false
     @Published var isLoadingMore: Bool = false
+    @Published var errorMessage: String? = nil
     
     private let repository: PerfumeRepository = PerfumeRemoteDataSource()
     private let pageSize = 20
@@ -45,16 +47,20 @@ class PerfumeListViewModel: ObservableObject {
         hasMorePages = true
         
         do {
-            let results: [Perfume]
-            if searchText.isEmpty {
-                results = try await repository.fetchPerfumes(page: 0, pageSize: pageSize)
-            } else {
-                results = try await repository.searchPerfumes(query: searchText, page: 0, pageSize: pageSize)
+            let results: [Perfume] = try await withRetry {
+                if self.searchText.isEmpty {
+                    return try await self.repository.fetchPerfumes(page: 0, pageSize: self.pageSize)
+                } else {
+                    return try await self.repository.searchPerfumes(query: self.searchText, page: 0, pageSize: self.pageSize)
+                }
             }
             self.perfumes = results
             self.hasMorePages = results.count >= pageSize
+            self.errorMessage = nil
         } catch {
-            print("Fehler beim Laden von Supabase: \(error)")
+            let networkError = NetworkError.from(error)
+            AppLogger.perfumes.error("Fehler beim Laden der Parfums: \(networkError.localizedDescription)")
+            self.errorMessage = networkError.localizedDescription
         }
     }
     
@@ -73,17 +79,20 @@ class PerfumeListViewModel: ObservableObject {
         let nextPage = currentPage + 1
         
         do {
-            let results: [Perfume]
-            if searchText.isEmpty {
-                results = try await repository.fetchPerfumes(page: nextPage, pageSize: pageSize)
-            } else {
-                results = try await repository.searchPerfumes(query: searchText, page: nextPage, pageSize: pageSize)
+            let results: [Perfume] = try await withRetry {
+                if self.searchText.isEmpty {
+                    return try await self.repository.fetchPerfumes(page: nextPage, pageSize: self.pageSize)
+                } else {
+                    return try await self.repository.searchPerfumes(query: self.searchText, page: nextPage, pageSize: self.pageSize)
+                }
             }
             self.perfumes.append(contentsOf: results)
             self.currentPage = nextPage
             self.hasMorePages = results.count >= pageSize
         } catch {
-            print("Fehler beim Nachladen: \(error)")
+            let networkError = NetworkError.from(error)
+            AppLogger.perfumes.error("Fehler beim Nachladen: \(networkError.localizedDescription)")
+            self.errorMessage = networkError.localizedDescription
         }
     }
     

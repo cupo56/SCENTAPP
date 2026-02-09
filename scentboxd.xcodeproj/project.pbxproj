@@ -33,10 +33,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		BB154E502F170900008C1593 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		BB154DF82F16FCE8008C1593 /* scentboxd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = scentboxd.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB154DF92F16FCE8008C1593 /* scentboxdTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = scentboxdTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB154DFA2F16FCE8008C1593 /* scentboxdUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = scentboxdUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB154E502F170900008C1593 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
