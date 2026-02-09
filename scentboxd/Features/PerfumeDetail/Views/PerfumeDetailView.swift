@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import Auth
 import Supabase
+import os
 
 struct PerfumeDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -16,6 +17,10 @@ struct PerfumeDetailView: View {
     @State private var showLoginAlert = false
     @State private var editingReview: Review? = nil
     @State private var currentUserId: UUID? = nil
+    @State private var reviewErrorMessage: String? = nil
+    @State private var showReviewErrorAlert = false
+    @State private var syncErrorMessage: String? = nil
+    @State private var showSyncErrorAlert = false
     
     private let reviewDataSource = ReviewRemoteDataSource()
     private let userPerfumeDataSource = UserPerfumeRemoteDataSource()
@@ -284,14 +289,32 @@ struct PerfumeDetailView: View {
         } message: {
             Text("Bitte melde dich an oder registriere dich, um diese Funktion zu nutzen.")
         }
+        .alert("Bewertungsfehler", isPresented: $showReviewErrorAlert) {
+            Button("OK", role: .cancel) { }
+            Button("Erneut versuchen") {
+                Task { await loadReviews() }
+            }
+        } message: {
+            Text(reviewErrorMessage ?? "Ein Fehler ist aufgetreten.")
+        }
+        .alert("Synchronisierungsfehler", isPresented: $showSyncErrorAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(syncErrorMessage ?? "Ein Fehler ist aufgetreten.")
+        }
     }
     
     private func loadReviews() async {
         isLoadingReviews = true
         do {
-            reviews = try await reviewDataSource.fetchReviews(for: perfume.id)
+            reviews = try await withRetry {
+                try await self.reviewDataSource.fetchReviews(for: self.perfume.id)
+            }
         } catch {
-            print("Fehler beim Laden der Bewertungen: \(error)")
+            let networkError = NetworkError.from(error)
+            AppLogger.reviews.error("Fehler beim Laden der Bewertungen: \(networkError.localizedDescription)")
+            reviewErrorMessage = networkError.localizedDescription
+            showReviewErrorAlert = true
         }
         isLoadingReviews = false
     }
@@ -324,7 +347,9 @@ struct PerfumeDetailView: View {
     private func saveReview(_ review: Review) async {
         isSavingReview = true
         do {
-            try await reviewDataSource.saveReview(review, for: perfume.id)
+            try await withRetry {
+                try await self.reviewDataSource.saveReview(review, for: self.perfume.id)
+            }
             
             // Neu laden um userId etc. korrekt zu haben
             await loadReviews()
@@ -337,30 +362,43 @@ struct PerfumeDetailView: View {
             perfume.reviews.append(review)
             try? modelContext.save()
         } catch {
-            print("Fehler beim Speichern der Bewertung: \(error)")
+            let networkError = NetworkError.from(error)
+            AppLogger.reviews.error("Fehler beim Speichern der Bewertung: \(networkError.localizedDescription)")
+            reviewErrorMessage = networkError.localizedDescription
+            showReviewErrorAlert = true
         }
         isSavingReview = false
     }
     
     private func updateReview(_ review: Review) async {
         do {
-            try await reviewDataSource.updateReview(review, for: perfume.id)
+            try await withRetry {
+                try await self.reviewDataSource.updateReview(review, for: self.perfume.id)
+            }
             await loadReviews()
         } catch {
-            print("Fehler beim Aktualisieren der Bewertung: \(error)")
+            let networkError = NetworkError.from(error)
+            AppLogger.reviews.error("Fehler beim Aktualisieren der Bewertung: \(networkError.localizedDescription)")
+            reviewErrorMessage = networkError.localizedDescription
+            showReviewErrorAlert = true
         }
     }
     
     private func deleteReview(_ review: Review) async {
         do {
-            try await reviewDataSource.deleteReview(id: review.id)
+            try await withRetry {
+                try await self.reviewDataSource.deleteReview(id: review.id)
+            }
             reviews.removeAll { $0.id == review.id }
             
             // Auch lokal entfernen
             perfume.reviews.removeAll { $0.id == review.id }
             try? modelContext.save()
         } catch {
-            print("Fehler beim Löschen der Bewertung: \(error)")
+            let networkError = NetworkError.from(error)
+            AppLogger.reviews.error("Fehler beim Löschen der Bewertung: \(networkError.localizedDescription)")
+            reviewErrorMessage = networkError.localizedDescription
+            showReviewErrorAlert = true
         }
     }
     private func isActive(_ status: UserPerfumeStatus) -> Bool {
@@ -403,15 +441,18 @@ struct PerfumeDetailView: View {
     
     private func syncStatusToSupabase(perfumeId: UUID, status: UserPerfumeStatus) async {
         do {
-            if status == .none {
-                // Eintrag löschen wenn Status auf "none" gesetzt wird
-                try await userPerfumeDataSource.deleteUserPerfume(perfumeId: perfumeId)
-            } else {
-                // Status speichern/aktualisieren
-                try await userPerfumeDataSource.saveUserPerfume(perfumeId: perfumeId, status: status)
+            try await withRetry {
+                if status == .none {
+                    try await self.userPerfumeDataSource.deleteUserPerfume(perfumeId: perfumeId)
+                } else {
+                    try await self.userPerfumeDataSource.saveUserPerfume(perfumeId: perfumeId, status: status)
+                }
             }
         } catch {
-            print("Fehler beim Sync mit Supabase: \(error)")
+            let networkError = NetworkError.from(error)
+            AppLogger.userPerfumes.error("Fehler beim Sync mit Supabase: \(networkError.localizedDescription)")
+            syncErrorMessage = networkError.localizedDescription
+            showSyncErrorAlert = true
         }
     }
 }

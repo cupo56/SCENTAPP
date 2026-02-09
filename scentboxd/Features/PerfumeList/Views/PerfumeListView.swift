@@ -11,6 +11,29 @@ struct PerfumeListView: View {
     var body: some View {
         NavigationStack {
             List {
+                if let errorMessage = viewModel.errorMessage {
+                    VStack(spacing: 12) {
+                        Image(systemName: "wifi.exclamationmark")
+                            .font(.largeTitle)
+                            .foregroundColor(.red.opacity(0.7))
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                        Button {
+                            Task { await viewModel.loadData() }
+                        } label: {
+                            Label("Erneut versuchen", systemImage: "arrow.clockwise")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+                    .listRowSeparator(.hidden)
+                }
+                
                 if viewModel.isLoading {
                     ProgressView("Lade Parfums...")
                 }
