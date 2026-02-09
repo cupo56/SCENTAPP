@@ -1,29 +1,21 @@
 import SwiftUI
 import SwiftData
-import Auth
-import Supabase
-import os
 
 struct PerfumeDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     
-    let perfume: Perfume
+    @State private var viewModel: PerfumeDetailViewModel
     
-    @State private var showReviewSheet = false
-    @State private var isSavingReview = false
-    @State private var reviews: [Review] = []
-    @State private var isLoadingReviews = false
-    @State private var showLoginAlert = false
-    @State private var editingReview: Review? = nil
-    @State private var currentUserId: UUID? = nil
-    @State private var reviewErrorMessage: String? = nil
-    @State private var showReviewErrorAlert = false
-    @State private var syncErrorMessage: String? = nil
-    @State private var showSyncErrorAlert = false
+    init(perfume: Perfume, reviewDataSource: ReviewRemoteDataSource? = nil, userPerfumeDataSource: UserPerfumeRemoteDataSource? = nil) {
+        _viewModel = State(initialValue: PerfumeDetailViewModel(
+            perfume: perfume,
+            reviewDataSource: reviewDataSource ?? ReviewRemoteDataSource(),
+            userPerfumeDataSource: userPerfumeDataSource ?? UserPerfumeRemoteDataSource()
+        ))
+    }
     
-    private let reviewDataSource = ReviewRemoteDataSource()
-    private let userPerfumeDataSource = UserPerfumeRemoteDataSource()
+    private var perfume: Perfume { viewModel.perfume }
     
     var body: some View {
         // 1. Äußerer GeometryReader, um die Bildschirmgröße sicher zu ermitteln
@@ -125,29 +117,29 @@ struct PerfumeDetailView: View {
                         HStack(spacing: 12) {
                             // Button 1: Wunschliste
                             ActionButton(
-                                icon: isActive(.wishlist) ? "heart.fill" : "heart",
+                                icon: viewModel.isActive(.wishlist) ? "heart.fill" : "heart",
                                 label: "Wunschliste",
                                 color: .red,
-                                isActive: isActive(.wishlist)
+                                isActive: viewModel.isActive(.wishlist)
                             ) {
                                 if authManager.isAuthenticated {
-                                    toggleStatus(.wishlist)
+                                    viewModel.toggleStatus(.wishlist, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
                                 } else {
-                                    showLoginAlert = true
+                                    viewModel.showLoginAlert = true
                                 }
                             }
                             
                             // Button 2: Sammlung
                             ActionButton(
-                                icon: isActive(.owned) ? "star.fill" : "star",
+                                icon: viewModel.isActive(.owned) ? "star.fill" : "star",
                                 label: "In Besitz",
                                 color: .yellow,
-                                isActive: isActive(.owned)
+                                isActive: viewModel.isActive(.owned)
                             ) {
                                 if authManager.isAuthenticated {
-                                    toggleStatus(.owned)
+                                    viewModel.toggleStatus(.owned, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
                                 } else {
-                                    showLoginAlert = true
+                                    viewModel.showLoginAlert = true
                                 }
                             }
                         }
@@ -155,14 +147,14 @@ struct PerfumeDetailView: View {
                         // Button 3: Bewertung schreiben / bearbeiten
                         Button {
                             if authManager.isAuthenticated {
-                                Task { await handleReviewButtonTapped() }
+                                Task { await viewModel.handleReviewButtonTapped() }
                             } else {
-                                showLoginAlert = true
+                                viewModel.showLoginAlert = true
                             }
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: hasExistingReview ? "pencil" : "pencil.line")
-                                Text(hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
+                                Image(systemName: viewModel.hasExistingReview ? "pencil" : "pencil.line")
+                                Text(viewModel.hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
                             }
                             .font(.subheadline)
                             .fontWeight(.medium)
@@ -219,36 +211,36 @@ struct PerfumeDetailView: View {
                                 Text("Bewertungen")
                                     .font(.headline)
                                 Spacer()
-                                if !reviews.isEmpty {
-                                    Text("\(reviews.count)")
+                                if !viewModel.reviews.isEmpty {
+                                    Text("\(viewModel.reviews.count)")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
                             }
                             
-                            if isLoadingReviews {
+                            if viewModel.isLoadingReviews {
                                 HStack {
                                     Spacer()
                                     ProgressView()
                                     Spacer()
                                 }
                                 .padding(.vertical, 20)
-                            } else if reviews.isEmpty {
+                            } else if viewModel.reviews.isEmpty {
                                 Text("Noch keine Bewertungen vorhanden.")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                     .padding(.vertical, 8)
                             } else {
-                                ForEach(reviews, id: \.id) { review in
+                                ForEach(viewModel.reviews, id: \.id) { review in
                                     ReviewCard(
                                         review: review,
-                                        isOwn: review.userId == currentUserId,
+                                        isOwn: review.userId == viewModel.currentUserId,
                                         onEdit: {
-                                            editingReview = review
-                                            showReviewSheet = true
+                                            viewModel.editingReview = review
+                                            viewModel.showReviewSheet = true
                                         },
                                         onDelete: {
-                                            Task { await deleteReview(review) }
+                                            Task { await viewModel.deleteReview(review, modelContext: modelContext) }
                                         }
                                     )
                                 }
@@ -266,294 +258,41 @@ struct PerfumeDetailView: View {
             .edgesIgnoringSafeArea(.top)
         }
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showReviewSheet, onDismiss: {
-            editingReview = nil
+        .sheet(isPresented: Bindable(viewModel).showReviewSheet, onDismiss: {
+            viewModel.editingReview = nil
         }) {
-            ReviewFormView(perfume: perfume, existingReview: editingReview) { review in
+            ReviewFormView(perfume: perfume, existingReview: viewModel.editingReview) { review in
                 Task {
-                    if editingReview != nil {
-                        await updateReview(review)
+                    if viewModel.editingReview != nil {
+                        await viewModel.updateReview(review)
                     } else {
-                        await saveReview(review)
+                        await viewModel.saveReview(review, modelContext: modelContext)
                     }
                 }
             }
         }
         .task {
-            await loadCurrentUserId()
-            await loadReviews()
+            await viewModel.loadCurrentUserId()
+            await viewModel.loadReviews()
         }
-        .alert("Anmeldung erforderlich", isPresented: $showLoginAlert) {
+        .alert("Anmeldung erforderlich", isPresented: Bindable(viewModel).showLoginAlert) {
             Button("Abbrechen", role: .cancel) { }
             Button("OK") { }
         } message: {
             Text("Bitte melde dich an oder registriere dich, um diese Funktion zu nutzen.")
         }
-        .alert("Bewertungsfehler", isPresented: $showReviewErrorAlert) {
+        .alert("Bewertungsfehler", isPresented: Bindable(viewModel).showReviewErrorAlert) {
             Button("OK", role: .cancel) { }
             Button("Erneut versuchen") {
-                Task { await loadReviews() }
+                Task { await viewModel.loadReviews() }
             }
         } message: {
-            Text(reviewErrorMessage ?? "Ein Fehler ist aufgetreten.")
+            Text(viewModel.reviewErrorMessage ?? "Ein Fehler ist aufgetreten.")
         }
-        .alert("Synchronisierungsfehler", isPresented: $showSyncErrorAlert) {
+        .alert("Synchronisierungsfehler", isPresented: Bindable(viewModel).showSyncErrorAlert) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text(syncErrorMessage ?? "Ein Fehler ist aufgetreten.")
-        }
-    }
-    
-    private func loadReviews() async {
-        isLoadingReviews = true
-        do {
-            reviews = try await withRetry {
-                try await self.reviewDataSource.fetchReviews(for: self.perfume.id)
-            }
-        } catch {
-            let networkError = NetworkError.from(error)
-            AppLogger.reviews.error("Fehler beim Laden der Bewertungen: \(networkError.localizedDescription)")
-            reviewErrorMessage = networkError.localizedDescription
-            showReviewErrorAlert = true
-        }
-        isLoadingReviews = false
-    }
-    
-    private var hasExistingReview: Bool {
-        guard let userId = currentUserId else { return false }
-        return reviews.contains { $0.userId == userId }
-    }
-    
-    private func loadCurrentUserId() async {
-        do {
-            let session = try await AppConfig.client.auth.session
-            currentUserId = session.user.id
-        } catch {
-            currentUserId = nil
-        }
-    }
-    
-    private func handleReviewButtonTapped() async {
-        // Duplikat-Prüfung: Hat der Nutzer bereits eine Review?
-        if let existing = reviews.first(where: { $0.userId == currentUserId }) {
-            editingReview = existing
-            showReviewSheet = true
-        } else {
-            editingReview = nil
-            showReviewSheet = true
-        }
-    }
-    
-    private func saveReview(_ review: Review) async {
-        isSavingReview = true
-        do {
-            try await withRetry {
-                try await self.reviewDataSource.saveReview(review, for: self.perfume.id)
-            }
-            
-            // Neu laden um userId etc. korrekt zu haben
-            await loadReviews()
-            
-            // Auch lokal speichern
-            if perfume.modelContext == nil {
-                modelContext.insert(perfume)
-            }
-            review.perfume = perfume
-            perfume.reviews.append(review)
-            try? modelContext.save()
-        } catch {
-            let networkError = NetworkError.from(error)
-            AppLogger.reviews.error("Fehler beim Speichern der Bewertung: \(networkError.localizedDescription)")
-            reviewErrorMessage = networkError.localizedDescription
-            showReviewErrorAlert = true
-        }
-        isSavingReview = false
-    }
-    
-    private func updateReview(_ review: Review) async {
-        do {
-            try await withRetry {
-                try await self.reviewDataSource.updateReview(review, for: self.perfume.id)
-            }
-            await loadReviews()
-        } catch {
-            let networkError = NetworkError.from(error)
-            AppLogger.reviews.error("Fehler beim Aktualisieren der Bewertung: \(networkError.localizedDescription)")
-            reviewErrorMessage = networkError.localizedDescription
-            showReviewErrorAlert = true
-        }
-    }
-    
-    private func deleteReview(_ review: Review) async {
-        do {
-            try await withRetry {
-                try await self.reviewDataSource.deleteReview(id: review.id)
-            }
-            reviews.removeAll { $0.id == review.id }
-            
-            // Auch lokal entfernen
-            perfume.reviews.removeAll { $0.id == review.id }
-            try? modelContext.save()
-        } catch {
-            let networkError = NetworkError.from(error)
-            AppLogger.reviews.error("Fehler beim Löschen der Bewertung: \(networkError.localizedDescription)")
-            reviewErrorMessage = networkError.localizedDescription
-            showReviewErrorAlert = true
-        }
-    }
-    private func isActive(_ status: UserPerfumeStatus) -> Bool {
-        return perfume.userMetadata?.statusRaw == status.rawValue
-    }
-    
-    private func toggleStatus(_ targetStatus: UserPerfumeStatus) {
-        // 1. Aus Cloud lokal übernehmen, falls nötig
-        if perfume.modelContext == nil {
-            modelContext.insert(perfume)
-        }
-        
-        // 2. Bestimme den neuen Status
-        let newStatus: UserPerfumeStatus
-        if let metadata = perfume.userMetadata {
-            // Toggle Logik: Wenn schon aktiv, dann deaktivieren (.none)
-            if metadata.statusRaw == targetStatus.rawValue {
-                newStatus = .none
-            } else {
-                newStatus = targetStatus
-            }
-            metadata.status = newStatus
-        } else {
-            // Neu anlegen
-            newStatus = targetStatus
-            let newMeta = UserPersonalData(status: targetStatus)
-            perfume.userMetadata = newMeta
-        }
-        
-        // 3. Lokal speichern
-        try? modelContext.save()
-        
-        // 4. In Supabase speichern (wenn eingeloggt)
-        if authManager.isAuthenticated {
-            Task {
-                await syncStatusToSupabase(perfumeId: perfume.id, status: newStatus)
-            }
-        }
-    }
-    
-    private func syncStatusToSupabase(perfumeId: UUID, status: UserPerfumeStatus) async {
-        do {
-            try await withRetry {
-                if status == .none {
-                    try await self.userPerfumeDataSource.deleteUserPerfume(perfumeId: perfumeId)
-                } else {
-                    try await self.userPerfumeDataSource.saveUserPerfume(perfumeId: perfumeId, status: status)
-                }
-            }
-        } catch {
-            let networkError = NetworkError.from(error)
-            AppLogger.userPerfumes.error("Fehler beim Sync mit Supabase: \(networkError.localizedDescription)")
-            syncErrorMessage = networkError.localizedDescription
-            showSyncErrorAlert = true
-        }
-    }
-}
-
-// --- Hilfs-Strukturen bleiben gleich ---
-
-struct NoteRow: View {
-    let title: String
-    let icon: String
-    let notes: [Note]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.caption)
-                    .foregroundColor(.blue)
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-            }
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(notes) { note in
-                        Text(note.name)
-                            .font(.system(.subheadline, design: .rounded))
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(Color.blue.opacity(0.08))
-                            .foregroundColor(.blue)
-                            .cornerRadius(12)
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct PerformanceBox: View {
-    let title: String
-    let value: String
-    let icon: String
-    var highlight: Bool = false
-    
-    var body: some View {
-        VStack(spacing: 6) {
-            Label(title, systemImage: icon)
-                .font(.caption)
-                .foregroundColor(.gray)
-            
-            Text(value)
-                .font(.headline)
-                .foregroundColor(highlight ? .blue : .primary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape( RoundedCorner(radius: radius, corners: corners) )
-    }
-}
-
-struct RoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-    
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
-        return Path(path.cgPath)
-    }
-}
-
-struct ActionButton: View {
-    let icon: String
-    let label: String
-    let color: Color
-    let isActive: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.subheadline)
-                Text(label)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            .foregroundColor(isActive ? .white : .primary)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity)
-            .background(
-                isActive ? color : Color(uiColor: .systemGray6)
-            )
-            .clipShape(Capsule())
-            .animation(.spring(response: 0.3), value: isActive)
+            Text(viewModel.syncErrorMessage ?? "Ein Fehler ist aufgetreten.")
         }
     }
 }
