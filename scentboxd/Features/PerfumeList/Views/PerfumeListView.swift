@@ -11,6 +11,30 @@ struct PerfumeListView: View {
     var body: some View {
         NavigationStack {
             List {
+                // Offline-Banner
+                if viewModel.isOffline && !viewModel.perfumes.isEmpty {
+                    HStack(spacing: 8) {
+                        Image(systemName: "wifi.slash")
+                            .foregroundColor(.orange)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Offline-Modus — Daten eventuell nicht aktuell")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                            if let lastSync = viewModel.lastSyncedAt {
+                                Text("Zuletzt synchronisiert: \(lastSync, style: .relative) ago")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .padding(10)
+                    .background(Color.orange.opacity(0.12))
+                    .cornerRadius(8)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                }
+                
                 if let errorMessage = viewModel.errorMessage {
                     VStack(spacing: 12) {
                         Image(systemName: "wifi.exclamationmark")

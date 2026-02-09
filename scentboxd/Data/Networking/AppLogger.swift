@@ -13,4 +13,5 @@ enum AppLogger {
     static let userPerfumes = Logger(subsystem: Bundle.main.bundleIdentifier ?? "scentboxd", category: "UserPerfumes")
     static let sync = Logger(subsystem: Bundle.main.bundleIdentifier ?? "scentboxd", category: "Sync")
     static let auth = Logger(subsystem: Bundle.main.bundleIdentifier ?? "scentboxd", category: "Auth")
+    static let cache = Logger(subsystem: Bundle.main.bundleIdentifier ?? "scentboxd", category: "Cache")
 }
