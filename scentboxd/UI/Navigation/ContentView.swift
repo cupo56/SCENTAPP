@@ -37,9 +37,12 @@ struct ContentView: View {
             }
         }
         .task {
+            // ModelContext an ViewModel übergeben für SwiftData-Zugriff
+            viewModel.modelContext = modelContext
+            
             // Starte beides gleichzeitig: Datenladen und Mindest-Wartezeit
             await withTaskGroup(of: Void.self) { group in
-                // Task 1: Daten laden
+                // Task 1: Daten laden (Cache-First)
                 group.addTask {
                     await viewModel.loadData()
                 }
