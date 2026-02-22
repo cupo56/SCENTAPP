@@ -19,6 +19,7 @@ class PerfumeListViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
     @Published var isOffline: Bool = false
     @Published var lastSyncedAt: Date? = nil
+    @Published var totalCount: Int? = nil
     
     private let repository: PerfumeRepository = PerfumeRemoteDataSource()
     private let cacheService = PerfumeCacheService()
@@ -125,6 +126,13 @@ class PerfumeListViewModel: ObservableObject {
             self.hasMorePages = results.count >= pageSize
             self.errorMessage = nil
             self.isOffline = false
+            
+            // Gesamtanzahl laden
+            Task {
+                if let count = try? await self.repository.fetchTotalCount(searchQuery: self.searchText.isEmpty ? nil : self.searchText) {
+                    self.totalCount = count
+                }
+            }
         } catch {
             let networkError = NetworkError.from(error)
             AppLogger.perfumes.error("Fehler beim Laden der Parfums: \(networkError.localizedDescription)")
@@ -181,10 +189,12 @@ class PerfumeListViewModel: ObservableObject {
             
             // Ergebnisse cachen und managed Objects laden
             if let ctx = modelContext, searchText.isEmpty {
-                try? cacheService.cachePerfumes(results, modelContext: ctx)
-                if let managed = try? cacheService.loadCachedPerfumes(modelContext: ctx, page: nextPage, pageSize: pageSize) {
+                do {
+                    try cacheService.cachePerfumes(results, modelContext: ctx)
+                    let managed = try cacheService.loadCachedPerfumes(modelContext: ctx, page: nextPage, pageSize: pageSize)
                     self.perfumes.append(contentsOf: managed)
-                } else {
+                } catch {
+                    AppLogger.cache.error("Cache-Speichern fehlgeschlagen (loadMore): \(error.localizedDescription)")
                     self.perfumes.append(contentsOf: results)
                 }
             } else {

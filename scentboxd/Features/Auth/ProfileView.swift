@@ -68,7 +68,8 @@ struct ProfileView: View {
                                 if success {
                                     isEditingUsername = false
                                     showUsernameSaved = true
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    Task {
+                                        try? await Task.sleep(for: .seconds(2))
                                         showUsernameSaved = false
                                     }
                                 }
@@ -146,7 +147,7 @@ struct ProfileView: View {
                 HStack {
                     Label("Version", systemImage: "info.circle")
                     Spacer()
-                    Text("1.0.0")
+                    Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "–")
                         .foregroundStyle(.secondary)
                 }
             }

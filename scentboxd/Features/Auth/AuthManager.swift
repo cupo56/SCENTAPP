@@ -7,6 +7,7 @@
 
 import Foundation
 import Supabase
+import Auth
 import Observation
 
 @Observable
@@ -19,10 +20,14 @@ class AuthManager {
     var isLoading = false
     var errorMessage: String?
     var username: String?
+    var pendingEmailConfirmation = false
+
+    private var sessionTask: Task<Void, Never>?
+    private var pendingUsername: String?
     
     init() {
-        Task {
-            await checkSession()
+        sessionTask = Task { [weak self] in
+            await self?.checkSession()
         }
     }
     
@@ -30,11 +35,17 @@ class AuthManager {
     func checkSession() async {
         isLoading = true
         defer { isLoading = false }
-        
+
         do {
             let session = try await client.auth.session
             currentUser = session.user
             await loadUsername()
+            // Ausstehenden Username speichern, falls der User seine E-Mail bestätigt hat
+            if username == nil, let pending = pendingUsername {
+                _ = await saveUsername(pending)
+                pendingUsername = nil
+            }
+            pendingEmailConfirmation = false
         } catch {
             currentUser = nil
         }
@@ -45,11 +56,17 @@ class AuthManager {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
-        
+
         do {
             let session = try await client.auth.signIn(email: email, password: password)
             currentUser = session.user
             await loadUsername()
+            // Ausstehenden Username speichern, falls der User seine E-Mail bestätigt hat
+            if username == nil, let pending = pendingUsername {
+                _ = await saveUsername(pending)
+                pendingUsername = nil
+            }
+            pendingEmailConfirmation = false
             return true
         } catch {
             errorMessage = mapAuthError(error)
@@ -58,22 +75,29 @@ class AuthManager {
     }
     
     /// Registrierung mit E-Mail und Passwort
-    func signUp(email: String, password: String) async -> Bool {
+    /// - Parameter username: Optionaler Username, der nach Bestätigung der E-Mail gespeichert wird
+    /// - Returns: `true` wenn der User sofort eingeloggt ist (E-Mail bereits bestätigt), `false` bei ausstehender Bestätigung oder Fehler
+    func signUp(email: String, password: String, username: String? = nil) async -> Bool {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
-        
+
         do {
             let response = try await client.auth.signUp(email: email, password: password)
-            // Bei manchen Konfigurationen muss der User die E-Mail bestätigen
             let user = response.user
-            // Prüfe ob die E-Mail bereits bestätigt wurde
             if user.emailConfirmedAt != nil {
+                // E-Mail bereits bestätigt (z.B. Supabase ohne Confirmation konfiguriert)
                 currentUser = user
+                pendingEmailConfirmation = false
+                if let username = username {
+                    _ = await saveUsername(username)
+                }
                 return true
             }
-            errorMessage = "Bitte bestätige deine E-Mail-Adresse."
-            return true // Registrierung war erfolgreich, aber E-Mail-Bestätigung steht aus
+            // E-Mail-Bestätigung erforderlich — Username für späteres Speichern merken
+            pendingEmailConfirmation = true
+            pendingUsername = username
+            return false
         } catch {
             errorMessage = mapAuthError(error)
             return false
@@ -139,20 +163,25 @@ class AuthManager {
     
     /// Übersetzt Auth-Fehler in benutzerfreundliche Nachrichten
     private func mapAuthError(_ error: Error) -> String {
-        let errorString = error.localizedDescription.lowercased()
-        
-        if errorString.contains("invalid login credentials") || errorString.contains("invalid_credentials") {
-            return "Ungültige E-Mail oder Passwort."
-        } else if errorString.contains("email not confirmed") {
-            return "Bitte bestätige deine E-Mail-Adresse."
-        } else if errorString.contains("user already registered") {
-            return "Diese E-Mail ist bereits registriert."
-        } else if errorString.contains("password") && errorString.contains("weak") {
-            return "Das Passwort ist zu schwach. Mindestens 6 Zeichen."
-        } else if errorString.contains("invalid email") {
-            return "Bitte gib eine gültige E-Mail-Adresse ein."
+        // Supabase AuthError strukturiert prüfen (robuster als String-Matching)
+        if let authError = error as? AuthError,
+           case .api(_, let errorCode, _, _) = authError {
+            switch errorCode.rawValue {
+            case "invalid_credentials":
+                return "Ungültige E-Mail oder Passwort."
+            case "email_not_confirmed":
+                return "Bitte bestätige deine E-Mail-Adresse."
+            case "user_already_exists", "email_address_in_use":
+                return "Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an."
+            case "weak_password":
+                return "Das Passwort ist zu schwach. Mindestens 6 Zeichen."
+            case "invalid_email", "validation_failed":
+                return "Bitte gib eine gültige E-Mail-Adresse ein."
+            default:
+                return "Authentifizierungsfehler: \(errorCode.rawValue)"
+            }
         }
-        
-        return "Ein Fehler ist aufgetreten: \(error.localizedDescription)"
+
+        return "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
     }
 }

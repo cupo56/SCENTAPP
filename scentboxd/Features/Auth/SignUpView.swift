@@ -17,9 +17,33 @@ struct SignUpView: View {
     @State private var confirmPassword = ""
     @State private var registrationSuccess = false
     
+    /// Username: 3–20 Zeichen, nur Buchstaben, Zahlen und Unterstriche
+    private static let usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
+    
+    private var isUsernameValid: Bool {
+        let trimmed = username.trimmingCharacters(in: .whitespaces)
+        return trimmed.wholeMatch(of: Self.usernameRegex) != nil
+    }
+    
+    private var usernameError: String? {
+        let trimmed = username.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+        if trimmed.count < 3 { return "Mindestens 3 Zeichen" }
+        if trimmed.count > 20 { return "Maximal 20 Zeichen" }
+        if trimmed.wholeMatch(of: Self.usernameRegex) == nil {
+            return "Nur Buchstaben, Zahlen und _ erlaubt"
+        }
+        return nil
+    }
+    
+    private var isEmailValid: Bool {
+        let trimmed = email.trimmingCharacters(in: .whitespaces)
+        return trimmed.contains("@") && trimmed.contains(".")
+    }
+
     private var isFormValid: Bool {
-        !email.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !username.trimmingCharacters(in: .whitespaces).isEmpty &&
+        isEmailValid &&
+        isUsernameValid &&
         password.count >= 6 &&
         password == confirmPassword
     }
@@ -64,13 +88,27 @@ struct SignUpView: View {
                             .background(Color(.systemGray6))
                             .cornerRadius(12)
                         
-                        TextField("Benutzername", text: $username)
-                            .textContentType(.username)
-                            .autocapitalization(.none)
-                            .autocorrectionDisabled()
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
+                        VStack(alignment: .leading, spacing: 4) {
+                            TextField("Benutzername", text: $username)
+                                .textContentType(.username)
+                                .autocapitalization(.none)
+                                .autocorrectionDisabled()
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(12)
+                                .onChange(of: username) { _, newValue in
+                                    // Limit auf 20 Zeichen
+                                    if newValue.count > 20 {
+                                        username = String(newValue.prefix(20))
+                                    }
+                                }
+                            
+                            if let error = usernameError {
+                                Text(error)
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            }
+                        }
                         
                         VStack(alignment: .leading, spacing: 4) {
                             SecureField("Passwort", text: $password)
@@ -119,9 +157,12 @@ struct SignUpView: View {
                                 .foregroundStyle(.green)
                             Text("Registrierung erfolgreich!")
                                 .fontWeight(.medium)
-                            Text("Bitte überprüfe deine E-Mails zur Bestätigung.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
+                            if authManager.pendingEmailConfirmation {
+                                Text("Bitte bestätige deine E-Mail-Adresse. Nach der Bestätigung kannst du dich einloggen.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
                         }
                         .padding()
                         .background(Color.green.opacity(0.1))
@@ -132,18 +173,21 @@ struct SignUpView: View {
                     // Register Button
                     Button {
                         Task {
-                            let success = await authManager.signUp(email: email, password: password)
+                            let trimmedUsername = username.trimmingCharacters(in: .whitespaces)
+                            let success = await authManager.signUp(
+                                email: email,
+                                password: password,
+                                username: trimmedUsername.isEmpty ? nil : trimmedUsername
+                            )
                             if success {
-                                // Username in Profil speichern
-                                let trimmedUsername = username.trimmingCharacters(in: .whitespaces)
-                                if !trimmedUsername.isEmpty {
-                                    _ = await authManager.saveUsername(trimmedUsername)
-                                }
+                                // E-Mail sofort bestätigt — kurz anzeigen und schließen
                                 registrationSuccess = true
-                                // Schließe die View nach kurzer Verzögerung, wenn erfolgreich
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                    dismiss()
-                                }
+                                try? await Task.sleep(for: .seconds(2))
+                                dismiss()
+                            } else if authManager.pendingEmailConfirmation {
+                                // Registrierung erfolgreich, E-Mail-Bestätigung ausstehend
+                                registrationSuccess = true
+                                // Nicht auto-schließen — User muss E-Mail bestätigen
                             }
                         }
                     } label: {

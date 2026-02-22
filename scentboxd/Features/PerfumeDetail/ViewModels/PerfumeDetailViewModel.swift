@@ -28,6 +28,10 @@ class PerfumeDetailViewModel {
     var syncErrorMessage: String? = nil
     var showSyncErrorAlert = false
     
+    // Task-Tracking für Cancellation
+    private var syncTask: Task<Void, Never>?
+    private var lastToggleTime: Date = .distantPast
+    
     // MARK: - Dependencies
     
     let perfume: Perfume
@@ -51,6 +55,16 @@ class PerfumeDetailViewModel {
     var hasExistingReview: Bool {
         guard let userId = currentUserId else { return false }
         return reviews.contains { $0.userId == userId }
+    }
+    
+    var reviewCount: Int {
+        reviews.count
+    }
+    
+    var averageRating: Double? {
+        guard !reviews.isEmpty else { return nil }
+        let sum = reviews.reduce(0) { $0 + $1.rating }
+        return Double(sum) / Double(reviews.count)
     }
     
     // MARK: - Review Loading
@@ -93,31 +107,40 @@ class PerfumeDetailViewModel {
     
     func saveReview(_ review: Review, modelContext: ModelContext) async {
         isSavingReview = true
+        defer { isSavingReview = false }
         do {
             try await withRetry {
                 try await self.reviewDataSource.saveReview(review, for: self.perfume.id)
             }
-            
-            // Neu laden um userId etc. korrekt zu haben
-            await loadReviews()
-            
-            // Auch lokal speichern
+
+            // Lokal speichern (SwiftData)
             if perfume.modelContext == nil {
                 modelContext.insert(perfume)
             }
             review.perfume = perfume
-            perfume.reviews.append(review)
-            try? modelContext.save()
+            // Nur anhängen wenn noch nicht vorhanden (verhindert Duplikate)
+            if !perfume.reviews.contains(where: { $0.id == review.id }) {
+                perfume.reviews.append(review)
+            }
+            do {
+                try modelContext.save()
+            } catch {
+                AppLogger.cache.error("SwiftData-Speichern fehlgeschlagen (saveReview): \(error.localizedDescription)")
+            }
+
+            // Remote-Liste neu laden um userId etc. korrekt zu haben
+            await loadReviews()
         } catch {
             let networkError = NetworkError.from(error)
             AppLogger.reviews.error("Fehler beim Speichern der Bewertung: \(networkError.localizedDescription)")
             reviewErrorMessage = networkError.localizedDescription
             showReviewErrorAlert = true
         }
-        isSavingReview = false
     }
     
     func updateReview(_ review: Review) async {
+        isSavingReview = true
+        defer { isSavingReview = false }
         do {
             try await withRetry {
                 try await self.reviewDataSource.updateReview(review, for: self.perfume.id)
@@ -132,15 +155,21 @@ class PerfumeDetailViewModel {
     }
     
     func deleteReview(_ review: Review, modelContext: ModelContext) async {
+        isSavingReview = true
+        defer { isSavingReview = false }
         do {
+            // Remote-Löschen zuerst — bei Fehler bleibt der lokale State unverändert
             try await withRetry {
                 try await self.reviewDataSource.deleteReview(id: review.id)
             }
+            // Erst nach erfolgreichem Remote-Delete lokal entfernen
             reviews.removeAll { $0.id == review.id }
-            
-            // Auch lokal entfernen
             perfume.reviews.removeAll { $0.id == review.id }
-            try? modelContext.save()
+            do {
+                try modelContext.save()
+            } catch {
+                AppLogger.cache.error("SwiftData-Speichern fehlgeschlagen (deleteReview): \(error.localizedDescription)")
+            }
         } catch {
             let networkError = NetworkError.from(error)
             AppLogger.reviews.error("Fehler beim Löschen der Bewertung: \(networkError.localizedDescription)")
@@ -156,6 +185,11 @@ class PerfumeDetailViewModel {
     }
     
     func toggleStatus(_ targetStatus: UserPerfumeStatus, modelContext: ModelContext, isAuthenticated: Bool) {
+        // Rate Limiting: Maximal 1 Toggle pro 0,5 Sekunden
+        let now = Date()
+        guard now.timeIntervalSince(lastToggleTime) >= 0.5 else { return }
+        lastToggleTime = now
+        
         // 1. Aus Cloud lokal übernehmen, falls nötig
         if perfume.modelContext == nil {
             modelContext.insert(perfume)
@@ -179,11 +213,16 @@ class PerfumeDetailViewModel {
         }
         
         // 3. Lokal speichern
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            AppLogger.cache.error("SwiftData-Speichern fehlgeschlagen (toggleStatus): \(error.localizedDescription)")
+        }
         
         // 4. In Supabase speichern (wenn eingeloggt)
         if isAuthenticated {
-            Task {
+            syncTask?.cancel()
+            syncTask = Task {
                 await syncStatusToSupabase(perfumeId: perfume.id, status: newStatus)
             }
         }

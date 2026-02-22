@@ -4,6 +4,7 @@ import SwiftData
 struct PerfumeDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.selectedTab) private var selectedTab
     
     @State private var viewModel: PerfumeDetailViewModel
     
@@ -186,7 +187,11 @@ struct PerfumeDetailView: View {
                         HStack(spacing: 0) {
                             PerformanceBox(title: "Haltbarkeit", value: perfume.longevity.isEmpty ? "-" : perfume.longevity, icon: "hourglass")
                             Divider().frame(height: 40)
-                            PerformanceBox(title: "Bewertung", value: String(format: "%.1f / 5.0", perfume.performance), icon: "star.fill", highlight: true)
+                            if let avg = viewModel.averageRating {
+                                PerformanceBox(title: "Bewertung (\(viewModel.reviewCount))", value: String(format: "%.1f / 5.0", avg), icon: "star.fill", highlight: true)
+                            } else {
+                                PerformanceBox(title: "Bewertung", value: "– / 5.0", icon: "star.fill", highlight: false)
+                            }
                         }
                         .padding(.vertical, 12)
                         .background(Color(uiColor: .systemGray6).opacity(0.5))
@@ -255,7 +260,7 @@ struct PerfumeDetailView: View {
                     .padding(.bottom, -30)
                 }
             }
-            .edgesIgnoringSafeArea(.top)
+            .ignoresSafeArea(.all, edges: .top)
         }
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: Bindable(viewModel).showReviewSheet, onDismiss: {
@@ -277,7 +282,7 @@ struct PerfumeDetailView: View {
         }
         .alert("Anmeldung erforderlich", isPresented: Bindable(viewModel).showLoginAlert) {
             Button("Abbrechen", role: .cancel) { }
-            Button("OK") { }
+            Button("Zum Profil") { selectedTab.wrappedValue = 3 }
         } message: {
             Text("Bitte melde dich an oder registriere dich, um diese Funktion zu nutzen.")
         }

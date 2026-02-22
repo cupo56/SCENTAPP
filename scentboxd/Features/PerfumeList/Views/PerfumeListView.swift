@@ -21,7 +21,7 @@ struct PerfumeListView: View {
                                 .font(.caption)
                                 .fontWeight(.medium)
                             if let lastSync = viewModel.lastSyncedAt {
-                                Text("Zuletzt synchronisiert: \(lastSync, style: .relative) ago")
+                                Text("Zuletzt synchronisiert: \(lastSync, style: .relative)")
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                             }
@@ -33,6 +33,23 @@ struct PerfumeListView: View {
                     .cornerRadius(8)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                }
+                
+                // Gesamtanzahl anzeigen
+                if let total = viewModel.totalCount, !viewModel.isLoading {
+                    HStack {
+                        Image(systemName: "number")
+                            .foregroundColor(.secondary)
+                        if viewModel.searchText.isEmpty {
+                            Text("\(total) Parfums im Katalog")
+                        } else {
+                            Text("\(total) Ergebnis\(total == 1 ? "" : "se") für \"\(viewModel.searchText)\"")
+                        }
+                        Spacer()
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .listRowSeparator(.hidden)
                 }
                 
                 if let errorMessage = viewModel.errorMessage {

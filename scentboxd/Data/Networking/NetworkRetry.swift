@@ -24,14 +24,17 @@ func withRetry<T>(
     for attempt in 1...maxAttempts {
         do {
             return try await operation()
+        } catch is CancellationError {
+            // Task wurde abgebrochen — sofort weiterwerfen, nicht retrien
+            throw CancellationError()
         } catch {
             lastError = error
             let networkError = NetworkError.from(error)
-            
+
             if attempt < maxAttempts && networkError.isTransient {
                 let delay = initialDelay * pow(2.0, Double(attempt - 1))
                 logger.warning("Versuch \(attempt)/\(maxAttempts) fehlgeschlagen, nächster Versuch in \(delay)s: \(error.localizedDescription)")
-                try? await Task.sleep(for: .seconds(delay))
+                try await Task.sleep(for: .seconds(delay))
             } else {
                 logger.error("Endgültig fehlgeschlagen nach \(attempt) Versuch(en): \(error.localizedDescription)")
                 throw networkError
@@ -39,5 +42,5 @@ func withRetry<T>(
         }
     }
     
-    throw NetworkError.from(lastError!)
+    throw NetworkError.from(lastError ?? NSError(domain: "NetworkRetry", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unbekannter Fehler nach allen Versuchen"]))
 }

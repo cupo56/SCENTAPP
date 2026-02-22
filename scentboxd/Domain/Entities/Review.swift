@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 class Review {
-    var id: UUID
+    @Attribute(.unique) var id: UUID
     var title: String
     var text: String
     var rating: Int // 1 bis 5
