@@ -10,7 +10,7 @@ import SwiftData
 
 struct OwnedPerfumesView: View {
     
-    // FIX: Auch hier Filter auf 'statusRaw'
+    // Hinweis: #Predicate benötigt String-Literal — entspricht UserPerfumeStatus.owned.rawValue
     @Query(filter: #Predicate<Perfume> { perfume in
         perfume.userMetadata?.statusRaw == "Sammlung"
     }, sort: \Perfume.name)

@@ -24,8 +24,10 @@ enum AppConfig {
     }()
     
     // Zentraler Client für die gesamte App
-    static let client = SupabaseClient(
-        supabaseURL: URL(string: supabaseURL)!,
-        supabaseKey: supabaseKey
-    )
+    static let client: SupabaseClient = {
+        guard let url = URL(string: supabaseURL) else {
+            fatalError("SUPABASE_URL ist keine gültige URL: '\(supabaseURL)' – check Config.xcconfig")
+        }
+        return SupabaseClient(supabaseURL: url, supabaseKey: supabaseKey)
+    }()
 }

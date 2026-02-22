@@ -9,6 +9,32 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     
     // MARK: - Paginated Fetch
     
+    /// Gibt die Gesamtanzahl aller Parfums zurück (für Pagination-Metadaten)
+    func fetchTotalCount(searchQuery: String? = nil) async throws -> Int {
+        if let query = searchQuery, !query.isEmpty {
+            let sanitized = query
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "%", with: "\\%")
+                .replacingOccurrences(of: "_", with: "\\_")
+            let pattern = "%\(sanitized)%"
+            
+            let response = try await client
+                .from("perfumes")
+                .select("id", head: true, count: .exact)
+                .ilike("name", pattern: pattern)
+                .execute()
+            
+            return response.count ?? 0
+        } else {
+            let response = try await client
+                .from("perfumes")
+                .select("id", head: true, count: .exact)
+                .execute()
+            
+            return response.count ?? 0
+        }
+    }
+    
     func fetchPerfumes(page: Int, pageSize: Int) async throws -> [Perfume] {
         let from = page * pageSize
         let to = from + pageSize - 1
@@ -29,7 +55,11 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     func searchPerfumes(query: String, page: Int, pageSize: Int) async throws -> [Perfume] {
         let from = page * pageSize
         let to = from + pageSize - 1
-        let pattern = "%\(query)%"
+        let sanitized = query
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "%", with: "\\%")
+            .replacingOccurrences(of: "_", with: "\\_")
+        let pattern = "%\(sanitized)%"
         
         let dtos: [PerfumeDTO] = try await client
             .from("perfumes")
@@ -43,17 +73,6 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         return dtos.map { mapDTO($0) }
     }
     
-    // MARK: - Legacy (loads entire catalogue)
-    
-    func fetchAllPerfumes() async throws -> [Perfume] {
-        let dtos: [PerfumeDTO] = try await client
-            .from("perfumes")
-            .select(selectQuery)
-            .execute()
-            .value
-        
-        return dtos.map { mapDTO($0) }
-    }
     
     // MARK: - Mapping
     
@@ -66,7 +85,7 @@ class PerfumeRemoteDataSource: PerfumeRepository {
             sillage: dto.sillage ?? "",
             performance: dto.performance ?? 0.0,
             desc: dto.description,
-            imageUrl: dto.imageUrl != nil ? URL(string: dto.imageUrl!) : nil
+            imageUrl: dto.imageUrl.flatMap { URL(string: $0) }
         )
         
         // Marke setzen
@@ -93,7 +112,4 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         return perfume
     }
     
-    // ... restliche Funktionen (addPerfume, deletePerfume) bleiben leer ...
-    func addPerfume(_ perfume: Perfume) async throws {}
-    func deletePerfume(_ perfume: Perfume) async throws {}
 }

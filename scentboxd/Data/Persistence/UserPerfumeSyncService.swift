@@ -26,29 +26,26 @@ class UserPerfumeSyncService {
         )
         
         // 3. Lokale Parfums aktualisieren
+        // Nur Parfums anfassen, für die ein Remote-Eintrag existiert.
+        // Parfums ohne Remote-Eintrag werden bewusst nicht auf .none zurückgesetzt,
+        // da der Sync ggf. nur über einen Teil des Katalogs läuft.
         for perfume in perfumes {
-            if let statusString = remoteStatusMap[perfume.id],
-               let status = UserPerfumeStatus(rawValue: statusString) {
-                
-                // Parfum in Context einfügen falls noch nicht vorhanden
-                if perfume.modelContext == nil {
-                    modelContext.insert(perfume)
-                }
-                
-                // Metadata aktualisieren oder erstellen
-                if let metadata = perfume.userMetadata {
-                    if metadata.status != status {
-                        metadata.status = status
-                    }
-                } else {
-                    let newMeta = UserPersonalData(status: status)
-                    perfume.userMetadata = newMeta
+            guard let statusString = remoteStatusMap[perfume.id],
+                  let status = UserPerfumeStatus(rawValue: statusString) else { continue }
+
+            // Parfum in Context einfügen falls noch nicht vorhanden
+            if perfume.modelContext == nil {
+                modelContext.insert(perfume)
+            }
+
+            // Metadata aktualisieren oder erstellen
+            if let metadata = perfume.userMetadata {
+                if metadata.status != status {
+                    metadata.status = status
                 }
             } else {
-                // Kein Remote-Status -> lokalen Status auf .none setzen (falls vorhanden)
-                if let metadata = perfume.userMetadata, metadata.status != .none {
-                    metadata.status = .none
-                }
+                let newMeta = UserPersonalData(status: status)
+                perfume.userMetadata = newMeta
             }
         }
         

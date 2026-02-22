@@ -9,8 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct FavoritesView: View {
-    // FIX: Wir filtern jetzt auf die String-Property 'statusRaw'.
-    // "Wunschliste" ist der String-Wert aus deinem Enum.
+    // Hinweis: #Predicate benötigt String-Literal — entspricht UserPerfumeStatus.wishlist.rawValue
     @Query(filter: #Predicate<Perfume> { perfume in
         perfume.userMetadata?.statusRaw == "Wunschliste"
     }, sort: \Perfume.name)

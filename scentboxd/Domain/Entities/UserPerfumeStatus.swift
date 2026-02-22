@@ -12,4 +12,8 @@ enum UserPerfumeStatus: String, Codable, CaseIterable {
     case wishlist = "Wunschliste"
     case owned = "Sammlung"
     case empty = "Leer / Aufgebraucht"
+
+    /// Statische Konstanten für SwiftData-@Query-Prädikate, die String-Literale benötigen
+    static let wishlistRaw = UserPerfumeStatus.wishlist.rawValue
+    static let ownedRaw = UserPerfumeStatus.owned.rawValue
 }
