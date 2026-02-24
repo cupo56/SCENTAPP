@@ -10,6 +10,11 @@ import SwiftData
 
 @main
 struct ScentBoxApp: App {
+
+    init() {
+        ImagePipelineConfig.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

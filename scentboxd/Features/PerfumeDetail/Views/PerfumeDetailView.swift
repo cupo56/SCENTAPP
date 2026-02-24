@@ -1,5 +1,7 @@
 import SwiftUI
 import SwiftData
+import Nuke
+import NukeUI
 
 struct PerfumeDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -42,26 +44,23 @@ struct PerfumeDetailView: View {
                                     // A. Oberer Platzhalter (Drückt das Bild weg von der Notch)
                                     Spacer()
                                     
-                                    AsyncImage(url: url) { phase in
-                                        switch phase {
-                                        case .success(let image):
+                                    LazyImage(url: url) { state in
+                                        if let image = state.image {
                                             image
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
-                                            // Maximale Größe definieren, damit es nicht riesig wird
                                                 .frame(maxWidth: innerGeo.size.width * 0.9)
-                                                .frame(maxHeight: headerHeight * 0.85) // Max 65% der Box-Höhe nutzen
+                                                .frame(maxHeight: headerHeight * 0.85)
                                                 .shadow(color: Color.black.opacity(0.12), radius: 15, x: 0, y: 15)
-                                        case .failure:
+                                        } else if state.error != nil {
                                             Image(systemName: "photo")
                                                 .font(.system(size: 40))
                                                 .foregroundColor(.gray.opacity(0.3))
-                                        case .empty:
+                                        } else {
                                             ProgressView()
-                                        @unknown default:
-                                            EmptyView()
                                         }
                                     }
+                                    .transition(.opacity)
                                     
                                     // B. Unterer Platzhalter (Drückt das Bild nach oben)
                                     Spacer()
