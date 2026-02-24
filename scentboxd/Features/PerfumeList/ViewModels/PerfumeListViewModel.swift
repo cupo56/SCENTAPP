@@ -21,7 +21,7 @@ class PerfumeListViewModel: ObservableObject {
     @Published var lastSyncedAt: Date? = nil
     @Published var totalCount: Int? = nil
     
-    private let repository: PerfumeRepository = PerfumeRemoteDataSource()
+    private let repository: PerfumeRepository
     private let cacheService = PerfumeCacheService()
     private let networkMonitor = NetworkMonitor.shared
     private let pageSize = 20
@@ -32,7 +32,8 @@ class PerfumeListViewModel: ObservableObject {
     
     var modelContext: ModelContext?
     
-    init() {
+    init(repository: PerfumeRepository? = nil) {
+        self.repository = repository ?? PerfumeRemoteDataSource()
         $searchText
             .dropFirst()
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)

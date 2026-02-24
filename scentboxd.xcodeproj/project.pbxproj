@@ -13,6 +13,10 @@
 		BB154E3C2F1702E9008C1593 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E3B2F1702E9008C1593 /* Realtime */; };
 		BB154E3E2F1702E9008C1593 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E3D2F1702E9008C1593 /* Storage */; };
 		BB154E432F17063B008C1593 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = BB154E422F17063B008C1593 /* Supabase */; };
+		BB74DB9C2F4E1C4F00921B65 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = BB74DB9B2F4E1C4F00921B65 /* Nuke */; };
+		BB74DB9E2F4E1C4F00921B65 /* NukeExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = BB74DB9D2F4E1C4F00921B65 /* NukeExtensions */; };
+		BB74DBA02F4E1C4F00921B65 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = BB74DB9F2F4E1C4F00921B65 /* NukeUI */; };
+		BB74DBA22F4E1C4F00921B65 /* NukeVideo in Frameworks */ = {isa = PBXBuildFile; productRef = BB74DBA12F4E1C4F00921B65 /* NukeVideo */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,9 +88,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB154E3A2F1702E9008C1593 /* PostgREST in Frameworks */,
+				BB74DB9E2F4E1C4F00921B65 /* NukeExtensions in Frameworks */,
 				BB154E382F1702E9008C1593 /* Functions in Frameworks */,
+				BB74DB9C2F4E1C4F00921B65 /* Nuke in Frameworks */,
 				BB154E432F17063B008C1593 /* Supabase in Frameworks */,
 				BB154E362F1702E9008C1593 /* Auth in Frameworks */,
+				BB74DBA02F4E1C4F00921B65 /* NukeUI in Frameworks */,
+				BB74DBA22F4E1C4F00921B65 /* NukeVideo in Frameworks */,
 				BB154E3E2F1702E9008C1593 /* Storage in Frameworks */,
 				BB154E3C2F1702E9008C1593 /* Realtime in Frameworks */,
 			);
@@ -154,6 +162,10 @@
 				BB154E3B2F1702E9008C1593 /* Realtime */,
 				BB154E3D2F1702E9008C1593 /* Storage */,
 				BB154E422F17063B008C1593 /* Supabase */,
+				BB74DB9B2F4E1C4F00921B65 /* Nuke */,
+				BB74DB9D2F4E1C4F00921B65 /* NukeExtensions */,
+				BB74DB9F2F4E1C4F00921B65 /* NukeUI */,
+				BB74DBA12F4E1C4F00921B65 /* NukeVideo */,
 			);
 			productName = scentboxd;
 			productReference = BB154DF82F16FCE8008C1593 /* scentboxd.app */;
@@ -233,6 +245,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				BB74DB9A2F4E1C4F00921B65 /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BB248BBE2F1071060092FCDD;
@@ -633,6 +646,14 @@
 				minimumVersion = 2.5.1;
 			};
 		};
+		BB74DB9A2F4E1C4F00921B65 /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.9.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -665,6 +686,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BB154E342F1702E9008C1593 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		BB74DB9B2F4E1C4F00921B65 /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB74DB9A2F4E1C4F00921B65 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
+		};
+		BB74DB9D2F4E1C4F00921B65 /* NukeExtensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB74DB9A2F4E1C4F00921B65 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeExtensions;
+		};
+		BB74DB9F2F4E1C4F00921B65 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB74DB9A2F4E1C4F00921B65 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
+		};
+		BB74DBA12F4E1C4F00921B65 /* NukeVideo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB74DB9A2F4E1C4F00921B65 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeVideo;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

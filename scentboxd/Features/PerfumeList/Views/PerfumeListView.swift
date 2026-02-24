@@ -1,5 +1,7 @@
 import SwiftUI
 import SwiftData
+import Nuke
+import NukeUI
 
 struct PerfumeListView: View {
     // Environment modelContext brauchen wir hier für das reine Anzeigen aus der Cloud nicht mehr zwingend,
@@ -114,13 +116,22 @@ struct PerfumeRowView: View {
         HStack { // HStack, damit Bild links und Text rechts ist
             // Bild anzeigen
             if let url = perfume.imageUrl {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Color.gray.opacity(0.3) // Platzhalter während es lädt
+                // Downsampling: 120×120px (2× für 60pt Retina-Frame)
+                let request = ImageRequest(
+                    url: url,
+                    processors: [.resize(size: CGSize(width: 120, height: 120), contentMode: .aspectFill)],
+                    priority: .high
+                )
+                LazyImage(request: request) { state in
+                    if let image = state.image {
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } else {
+                        Color.gray.opacity(0.3)
+                    }
                 }
+                .transition(.opacity)
                 .frame(width: 60, height: 60)
                 .cornerRadius(8)
                 .clipped()
