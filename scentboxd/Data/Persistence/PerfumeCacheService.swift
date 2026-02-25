@@ -25,21 +25,122 @@ class PerfumeCacheService {
     
     // MARK: - Read from Cache
     
-    func loadCachedPerfumes(modelContext: ModelContext, page: Int, pageSize: Int) throws -> [Perfume] {
-        var descriptor = FetchDescriptor<Perfume>(sortBy: [SortDescriptor(\.name)])
+    func loadCachedPerfumes(
+        modelContext: ModelContext,
+        page: Int,
+        pageSize: Int,
+        filter: PerfumeFilter = PerfumeFilter(),
+        sort: PerfumeSortOption = .nameAsc
+    ) throws -> [Perfume] {
+        let predicate = buildPredicate(searchQuery: nil, filter: filter)
+        let sortDescriptors = buildSortDescriptors(for: sort)
+        
+        var descriptor = FetchDescriptor<Perfume>(predicate: predicate, sortBy: sortDescriptors)
         descriptor.fetchOffset = page * pageSize
         descriptor.fetchLimit = pageSize
-        return try modelContext.fetch(descriptor)
+        
+        let results = try modelContext.fetch(descriptor)
+        return applyClientFilters(results, filter: filter)
     }
     
-    func searchCachedPerfumes(modelContext: ModelContext, query: String, page: Int, pageSize: Int) throws -> [Perfume] {
-        let predicate = #Predicate<Perfume> { perfume in
-            perfume.name.localizedStandardContains(query)
-        }
-        var descriptor = FetchDescriptor<Perfume>(predicate: predicate, sortBy: [SortDescriptor(\.name)])
+    func searchCachedPerfumes(
+        modelContext: ModelContext,
+        query: String,
+        page: Int,
+        pageSize: Int,
+        filter: PerfumeFilter = PerfumeFilter(),
+        sort: PerfumeSortOption = .nameAsc
+    ) throws -> [Perfume] {
+        let predicate = buildPredicate(searchQuery: query, filter: filter)
+        let sortDescriptors = buildSortDescriptors(for: sort)
+        
+        var descriptor = FetchDescriptor<Perfume>(predicate: predicate, sortBy: sortDescriptors)
         descriptor.fetchOffset = page * pageSize
         descriptor.fetchLimit = pageSize
-        return try modelContext.fetch(descriptor)
+        
+        let results = try modelContext.fetch(descriptor)
+        return applyClientFilters(results, filter: filter)
+    }
+    
+    // MARK: - Predicate Builder
+    
+    private func buildPredicate(searchQuery: String?, filter: PerfumeFilter) -> Predicate<Perfume>? {
+        let hasSearch = searchQuery != nil && !(searchQuery?.isEmpty ?? true)
+        let query = searchQuery ?? ""
+        
+        let hasBrand = filter.brandName != nil && !(filter.brandName?.isEmpty ?? true)
+        let brandName = filter.brandName ?? ""
+        
+        let hasConcentration = filter.concentration != nil && !(filter.concentration?.isEmpty ?? true)
+        let concentration = filter.concentration ?? ""
+        
+        let hasLongevity = filter.longevity != nil && !(filter.longevity?.isEmpty ?? true)
+        let longevity = filter.longevity ?? ""
+        
+        let hasSillage = filter.sillage != nil && !(filter.sillage?.isEmpty ?? true)
+        let sillage = filter.sillage ?? ""
+        
+        // SwiftData #Predicate hat Einschränkungen bei der dynamischen Zusammensetzung.
+        // Wir kombinieren die Bedingungen direkt.
+        return #Predicate<Perfume> { perfume in
+            (!hasSearch || perfume.name.localizedStandardContains(query))
+            && (!hasBrand || perfume.brand?.name == brandName)
+            && (!hasConcentration || perfume.concentration == concentration)
+            && (!hasLongevity || perfume.longevity == longevity)
+            && (!hasSillage || perfume.sillage == sillage)
+        }
+    }
+    
+    // MARK: - Sort Builder
+    
+    private func buildSortDescriptors(for sort: PerfumeSortOption) -> [SortDescriptor<Perfume>] {
+        switch sort {
+        case .nameAsc:
+            return [SortDescriptor(\.name, order: .forward)]
+        case .nameDesc:
+            return [SortDescriptor(\.name, order: .reverse)]
+        case .ratingDesc:
+            return [SortDescriptor(\.performance, order: .reverse)]
+        case .ratingAsc:
+            return [SortDescriptor(\.performance, order: .forward)]
+        case .newest:
+            // Fallback auf Name, da es kein createdAt auf Perfume gibt
+            return [SortDescriptor(\.name, order: .forward)]
+        case .popular:
+            return [SortDescriptor(\.performance, order: .reverse)]
+        }
+    }
+    
+    // MARK: - Client-Side Filters (Notes, Occasions, Rating)
+    
+    private func applyClientFilters(_ perfumes: [Perfume], filter: PerfumeFilter) -> [Perfume] {
+        var results = perfumes
+        
+        if !filter.noteNames.isEmpty {
+            let lowerNotes = Set(filter.noteNames.map { $0.lowercased() })
+            results = results.filter { perfume in
+                let allNotes = (perfume.topNotes + perfume.midNotes + perfume.baseNotes)
+                    .map { $0.name.lowercased() }
+                return !lowerNotes.isDisjoint(with: allNotes)
+            }
+        }
+        
+        if !filter.occasions.isEmpty {
+            let lowerOccasions = Set(filter.occasions.map { $0.lowercased() })
+            results = results.filter { perfume in
+                let perfumeOccasions = Set(perfume.occasions.map { $0.lowercased() })
+                return !lowerOccasions.isDisjoint(with: perfumeOccasions)
+            }
+        }
+        
+        if let minRating = filter.minRating {
+            results = results.filter { $0.performance >= minRating }
+        }
+        if let maxRating = filter.maxRating {
+            results = results.filter { $0.performance <= maxRating }
+        }
+        
+        return results
     }
     
     // MARK: - Write to Cache (Upsert)
@@ -69,6 +170,7 @@ class PerfumeCacheService {
             target.performance = remote.performance
             target.desc = remote.desc
             target.imageUrl = remote.imageUrl
+            target.occasions = remote.occasions
             
             // Brand aktualisieren
             if let remoteBrand = remote.brand {

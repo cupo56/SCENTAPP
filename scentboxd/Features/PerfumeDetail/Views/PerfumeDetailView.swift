@@ -215,7 +215,11 @@ struct PerfumeDetailView: View {
                                 Text("Bewertungen")
                                     .font(.headline)
                                 Spacer()
-                                if !viewModel.reviews.isEmpty {
+                                if let total = viewModel.reviewTotalCount {
+                                    Text("\(total)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                } else if !viewModel.reviews.isEmpty {
                                     Text("\(viewModel.reviews.count)")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
@@ -247,6 +251,21 @@ struct PerfumeDetailView: View {
                                             Task { await viewModel.deleteReview(review, modelContext: modelContext) }
                                         }
                                     )
+                                    .onAppear {
+                                        Task {
+                                            await viewModel.loadMoreReviewsIfNeeded(currentReview: review)
+                                        }
+                                    }
+                                }
+                                
+                                if viewModel.isLoadingMoreReviews {
+                                    HStack {
+                                        Spacer()
+                                        ProgressView("Lade weitere Bewertungen…")
+                                            .font(.caption)
+                                        Spacer()
+                                    }
+                                    .padding(.vertical, 8)
                                 }
                             }
                         }

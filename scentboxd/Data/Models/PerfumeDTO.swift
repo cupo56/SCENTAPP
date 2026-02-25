@@ -42,6 +42,7 @@ struct PerfumeDTO: Codable, Identifiable {
     let performance: Double?
     let description: String?
     let imageUrl: String?
+    let occasions: [String]?
     
     let brand: BrandDTO?
     
@@ -49,7 +50,7 @@ struct PerfumeDTO: Codable, Identifiable {
     let perfumeNotes: [PerfumeNoteJunctionDTO]?
     
     enum CodingKeys: String, CodingKey {
-        case id, name, concentration, longevity, sillage, performance
+        case id, name, concentration, longevity, sillage, performance, occasions
         case description = "desc"
         case brand = "brands"
         case perfumeNotes = "perfume_notes"

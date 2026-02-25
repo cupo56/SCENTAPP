@@ -12,6 +12,47 @@ import Supabase
 class ReviewRemoteDataSource {
     private let client = AppConfig.client
     
+    // MARK: - Rating Aggregation (Server-Side via RPC)
+    
+    struct RatingStats: Codable {
+        let perfumeId: UUID
+        let avgRating: Double
+        let reviewCount: Int
+        
+        enum CodingKeys: String, CodingKey {
+            case perfumeId = "perfume_id"
+            case avgRating = "avg_rating"
+            case reviewCount = "review_count"
+        }
+    }
+    
+    /// Aggregierte Rating-Daten für ein einzelnes Parfum (Supabase RPC)
+    func fetchRatingStats(for perfumeId: UUID) async throws -> RatingStats {
+        let results: [RatingStats] = try await client
+            .rpc("get_rating_stats", params: ["p_perfume_id": perfumeId])
+            .execute()
+            .value
+        
+        // Falls keine Reviews existieren → leere Stats zurückgeben
+        return results.first ?? RatingStats(perfumeId: perfumeId, avgRating: 0, reviewCount: 0)
+    }
+    
+    /// Aggregierte Ratings für mehrere Parfums (Batch via Supabase RPC)
+    func fetchRatingStatsForPerfumes(_ perfumeIds: [UUID]) async throws -> [UUID: RatingStats] {
+        guard !perfumeIds.isEmpty else { return [:] }
+        
+        let results: [RatingStats] = try await client
+            .rpc("get_batch_rating_stats", params: ["p_perfume_ids": perfumeIds])
+            .execute()
+            .value
+        
+        var stats: [UUID: RatingStats] = [:]
+        for stat in results {
+            stats[stat.perfumeId] = stat
+        }
+        return stats
+    }
+    
     // MARK: - Autorname aus Profil oder E-Mail
     
     private func resolveAuthorName() async throws -> String {
@@ -59,14 +100,18 @@ class ReviewRemoteDataSource {
             .execute()
     }
     
-    // MARK: - Read
+    // MARK: - Read (Paginated)
     
-    func fetchReviews(for perfumeId: UUID) async throws -> [Review] {
+    func fetchReviews(for perfumeId: UUID, page: Int, pageSize: Int) async throws -> [Review] {
+        let from = page * pageSize
+        let to = from + pageSize - 1
+        
         let dtos: [ReviewDTO] = try await client
             .from("reviews")
             .select("*")
             .eq("perfume_id", value: perfumeId)
             .order("created_at", ascending: false)
+            .range(from: from, to: to)
             .execute()
             .value
         
@@ -81,6 +126,16 @@ class ReviewRemoteDataSource {
                 userId: dto.userId
             )
         }
+    }
+    
+    /// Gesamtanzahl der Reviews für ein Parfum
+    func fetchReviewCount(for perfumeId: UUID) async throws -> Int {
+        let response = try await client
+            .from("reviews")
+            .select("id", head: true, count: .exact)
+            .eq("perfume_id", value: perfumeId)
+            .execute()
+        return response.count ?? 0
     }
     
     /// Prüft ob der aktuelle Nutzer bereits eine Review für dieses Parfum geschrieben hat
