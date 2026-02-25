@@ -20,6 +20,8 @@ class PerfumeDetailViewModel {
     var isSavingReview = false
     var reviews: [Review] = []
     var isLoadingReviews = false
+    var isLoadingMoreReviews = false
+    var reviewTotalCount: Int? = nil
     var showLoginAlert = false
     var editingReview: Review? = nil
     var currentUserId: UUID? = nil
@@ -28,9 +30,18 @@ class PerfumeDetailViewModel {
     var syncErrorMessage: String? = nil
     var showSyncErrorAlert = false
     
+    // Server-side Rating Aggregation
+    var averageRating: Double? = nil
+    var serverReviewCount: Int? = nil
+    
     // Task-Tracking für Cancellation
     private var syncTask: Task<Void, Never>?
     private var lastToggleTime: Date = .distantPast
+    
+    // Pagination
+    private let reviewPageSize = 10
+    private var currentReviewPage = 0
+    private var hasMoreReviews = true
     
     // MARK: - Dependencies
     
@@ -58,16 +69,10 @@ class PerfumeDetailViewModel {
     }
     
     var reviewCount: Int {
-        reviews.count
+        serverReviewCount ?? reviewTotalCount ?? reviews.count
     }
     
-    var averageRating: Double? {
-        guard !reviews.isEmpty else { return nil }
-        let sum = reviews.reduce(0) { $0 + $1.rating }
-        return Double(sum) / Double(reviews.count)
-    }
-    
-    // MARK: - Review Loading
+    // MARK: - Review Loading (Paginated)
     
     func loadCurrentUserId() async {
         do {
@@ -80,9 +85,18 @@ class PerfumeDetailViewModel {
     
     func loadReviews() async {
         isLoadingReviews = true
+        currentReviewPage = 0
+        hasMoreReviews = true
+        
         do {
             reviews = try await withRetry {
-                try await self.reviewDataSource.fetchReviews(for: self.perfume.id)
+                try await self.reviewDataSource.fetchReviews(for: self.perfume.id, page: 0, pageSize: self.reviewPageSize)
+            }
+            hasMoreReviews = reviews.count >= reviewPageSize
+            
+            // Rating-Statistik und Gesamtanzahl im Hintergrund laden
+            Task {
+                await self.loadRatingStats()
             }
         } catch {
             let networkError = NetworkError.from(error)
@@ -91,6 +105,44 @@ class PerfumeDetailViewModel {
             showReviewErrorAlert = true
         }
         isLoadingReviews = false
+    }
+    
+    func loadMoreReviewsIfNeeded(currentReview: Review) async {
+        guard let lastReview = reviews.last,
+              lastReview.id == currentReview.id,
+              hasMoreReviews,
+              !isLoadingReviews,
+              !isLoadingMoreReviews else { return }
+        
+        isLoadingMoreReviews = true
+        defer { isLoadingMoreReviews = false }
+        
+        let nextPage = currentReviewPage + 1
+        
+        do {
+            let moreReviews = try await withRetry {
+                try await self.reviewDataSource.fetchReviews(for: self.perfume.id, page: nextPage, pageSize: self.reviewPageSize)
+            }
+            self.reviews.append(contentsOf: moreReviews)
+            self.currentReviewPage = nextPage
+            self.hasMoreReviews = moreReviews.count >= reviewPageSize
+        } catch {
+            let networkError = NetworkError.from(error)
+            AppLogger.reviews.error("Fehler beim Nachladen der Bewertungen: \(networkError.localizedDescription)")
+        }
+    }
+    
+    // MARK: - Server-Side Rating Stats
+    
+    func loadRatingStats() async {
+        do {
+            let stats = try await reviewDataSource.fetchRatingStats(for: perfume.id)
+            self.averageRating = stats.reviewCount > 0 ? stats.avgRating : nil
+            self.serverReviewCount = stats.reviewCount
+            self.reviewTotalCount = stats.reviewCount
+        } catch {
+            AppLogger.reviews.error("Rating-Stats laden fehlgeschlagen: \(error.localizedDescription)")
+        }
     }
     
     // MARK: - Review Actions
@@ -165,6 +217,9 @@ class PerfumeDetailViewModel {
             // Erst nach erfolgreichem Remote-Delete lokal entfernen
             reviews.removeAll { $0.id == review.id }
             perfume.reviews.removeAll { $0.id == review.id }
+            if let count = reviewTotalCount {
+                reviewTotalCount = max(0, count - 1)
+            }
             do {
                 try modelContext.save()
             } catch {
