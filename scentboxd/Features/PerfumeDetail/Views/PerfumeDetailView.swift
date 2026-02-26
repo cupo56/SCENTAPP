@@ -35,7 +35,7 @@ struct PerfumeDetailView: View {
                             
                             // 1. Hintergrund (Füllt alles aus)
                             Rectangle()
-                                .foregroundColor(Color(uiColor: .systemGray6).opacity(0.4))
+                                .foregroundColor(DesignSystem.Colors.bgDark)
                                 .frame(height: headerHeight)
                             
                             // 2. Das Bild (Zentriert durch Spacer)
@@ -57,9 +57,14 @@ struct PerfumeDetailView: View {
                                                 .font(.system(size: 40))
                                                 .foregroundColor(.gray.opacity(0.3))
                                         } else {
-                                            ProgressView()
+                                            // Shimmer-Placeholder
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .fill(Color.gray.opacity(0.15))
+                                                .frame(width: innerGeo.size.width * 0.6, height: headerHeight * 0.7)
+                                                .shimmer()
                                         }
                                     }
+                                    .accessibilityLabel("Parfum-Bild von \(perfume.name)")
                                     .transition(.opacity)
                                     
                                     // B. Unterer Platzhalter (Drückt das Bild nach oben)
@@ -99,18 +104,18 @@ struct PerfumeDetailView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(perfume.brand?.name ?? "Unbekannte Marke")
                                 .font(.headline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(DesignSystem.Colors.champagne)
                                 .textCase(.uppercase)
                             
                             Text(perfume.name)
                                 .font(.system(size: 34, weight: .bold, design: .default))
-                                .foregroundColor(.primary)
+                                .foregroundColor(.white)
                             
                             if let concentration = perfume.concentration, !concentration.isEmpty {
                                 Text(concentration.uppercased())
                                     .font(.subheadline)
                                     .fontWeight(.medium)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(Color(hex: "#94A3B8"))
                             }
                         }
                         
@@ -158,12 +163,13 @@ struct PerfumeDetailView: View {
                             }
                             .font(.subheadline)
                             .fontWeight(.medium)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color.blue.opacity(0.1))
+                            .background(DesignSystem.Colors.primary)
                             .clipShape(Capsule())
                         }
+                        .accessibilityLabel(viewModel.hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
                         
                         Divider()
                         
@@ -192,18 +198,20 @@ struct PerfumeDetailView: View {
                                 PerformanceBox(title: "Bewertung", value: "– / 5.0", icon: "star.fill", highlight: false)
                             }
                         }
+                        .accessibilityElement(children: .combine)
                         .padding(.vertical, 12)
-                        .background(Color(uiColor: .systemGray6).opacity(0.5))
+                        .background(DesignSystem.Colors.surfaceDark)
                         .cornerRadius(16)
                         
                         // Beschreibung
                         if let desc = perfume.desc, !desc.isEmpty {
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Über den Duft")
+                                    .foregroundColor(.white)
                                     .font(.headline)
                                 Text(desc)
                                     .font(.body)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(Color(hex: "#94A3B8"))
                                     .lineSpacing(6)
                             }
                             .padding(.top, 8)
@@ -213,6 +221,7 @@ struct PerfumeDetailView: View {
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
                                 Text("Bewertungen")
+                                    .foregroundColor(.white)
                                     .font(.headline)
                                 Spacer()
                                 if let total = viewModel.reviewTotalCount {
@@ -272,7 +281,7 @@ struct PerfumeDetailView: View {
                         .padding(.top, 8)
                     }
                     .padding(24)
-                    .background(Color(uiColor: .systemBackground))
+                    .background(DesignSystem.Colors.bgDark)
                     .cornerRadius(30, corners: [.topLeft, .topRight])
                     .offset(y: -30)
                     .padding(.bottom, -30)

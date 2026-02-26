@@ -99,6 +99,7 @@ struct ContentView: View {
         } message: {
             Text(syncErrorMessage ?? "Ein Fehler ist aufgetreten.")
         }
+        .preferredColorScheme(.dark)
     }
 }
 

@@ -22,6 +22,28 @@ extension EnvironmentValues {
 struct RootTabView: View {
     @State private var selectedTab = 0
 
+    init() {
+        // Dark Tab Bar Appearance
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Color(hex: "#341826"))
+        
+        // Inactive tabs
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color(hex: "#cb90ad"))
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor(Color(hex: "#cb90ad"))
+        ]
+        
+        // Active tabs
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color(hex: "#C20A66"))
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor(Color(hex: "#C20A66"))
+        ]
+        
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
+
     var body: some View {
         TabView(selection: $selectedTab) {
             PerfumeListView()
@@ -48,6 +70,7 @@ struct RootTabView: View {
                     Label("Profil", systemImage: "person.fill")
                 }
         }
+        .tint(Color(hex: "#C20A66"))
         .environment(\.selectedTab, $selectedTab)
     }
 }
@@ -56,4 +79,3 @@ struct RootTabView: View {
         .environmentObject(PerfumeListViewModel())
         .environment(AuthManager())
 }
-

@@ -76,8 +76,7 @@ class PerfumeDetailViewModel {
     
     func loadCurrentUserId() async {
         do {
-            let session = try await AppConfig.client.auth.session
-            currentUserId = session.user.id
+            currentUserId = try await AuthSessionCache.shared.getUserId()
         } catch {
             currentUserId = nil
         }
@@ -89,15 +88,11 @@ class PerfumeDetailViewModel {
         hasMoreReviews = true
         
         do {
-            reviews = try await withRetry {
-                try await self.reviewDataSource.fetchReviews(for: self.perfume.id, page: 0, pageSize: self.reviewPageSize)
-            }
+            reviews = try await reviewDataSource.fetchReviews(for: perfume.id, page: 0, pageSize: reviewPageSize)
             hasMoreReviews = reviews.count >= reviewPageSize
-            
-            // Rating-Statistik und Gesamtanzahl im Hintergrund laden
-            Task {
-                await self.loadRatingStats()
-            }
+
+            // Rating-Statistik und Gesamtanzahl laden
+            await loadRatingStats()
         } catch {
             let networkError = NetworkError.from(error)
             AppLogger.reviews.error("Fehler beim Laden der Bewertungen: \(networkError.localizedDescription)")
@@ -120,9 +115,7 @@ class PerfumeDetailViewModel {
         let nextPage = currentReviewPage + 1
         
         do {
-            let moreReviews = try await withRetry {
-                try await self.reviewDataSource.fetchReviews(for: self.perfume.id, page: nextPage, pageSize: self.reviewPageSize)
-            }
+            let moreReviews = try await reviewDataSource.fetchReviews(for: perfume.id, page: nextPage, pageSize: reviewPageSize)
             self.reviews.append(contentsOf: moreReviews)
             self.currentReviewPage = nextPage
             self.hasMoreReviews = moreReviews.count >= reviewPageSize
@@ -161,9 +154,7 @@ class PerfumeDetailViewModel {
         isSavingReview = true
         defer { isSavingReview = false }
         do {
-            try await withRetry {
-                try await self.reviewDataSource.saveReview(review, for: self.perfume.id)
-            }
+            try await reviewDataSource.saveReview(review, for: perfume.id)
 
             // Lokal speichern (SwiftData)
             if perfume.modelContext == nil {
@@ -194,9 +185,7 @@ class PerfumeDetailViewModel {
         isSavingReview = true
         defer { isSavingReview = false }
         do {
-            try await withRetry {
-                try await self.reviewDataSource.updateReview(review, for: self.perfume.id)
-            }
+            try await reviewDataSource.updateReview(review, for: perfume.id)
             await loadReviews()
         } catch {
             let networkError = NetworkError.from(error)
@@ -211,9 +200,7 @@ class PerfumeDetailViewModel {
         defer { isSavingReview = false }
         do {
             // Remote-Löschen zuerst — bei Fehler bleibt der lokale State unverändert
-            try await withRetry {
-                try await self.reviewDataSource.deleteReview(id: review.id)
-            }
+            try await reviewDataSource.deleteReview(id: review.id)
             // Erst nach erfolgreichem Remote-Delete lokal entfernen
             reviews.removeAll { $0.id == review.id }
             perfume.reviews.removeAll { $0.id == review.id }
@@ -260,10 +247,11 @@ class PerfumeDetailViewModel {
                 newStatus = targetStatus
             }
             metadata.status = newStatus
+            metadata.hasPendingSync = true
         } else {
             // Neu anlegen
             newStatus = targetStatus
-            let newMeta = UserPersonalData(status: targetStatus)
+            let newMeta = UserPersonalData(status: targetStatus, hasPendingSync: true)
             perfume.userMetadata = newMeta
         }
         
@@ -287,13 +275,13 @@ class PerfumeDetailViewModel {
     
     private func syncStatusToSupabase(perfumeId: UUID, status: UserPerfumeStatus) async {
         do {
-            try await withRetry {
-                if status == .none {
-                    try await self.userPerfumeDataSource.deleteUserPerfume(perfumeId: perfumeId)
-                } else {
-                    try await self.userPerfumeDataSource.saveUserPerfume(perfumeId: perfumeId, status: status)
-                }
+            if status == .none {
+                try await userPerfumeDataSource.deleteUserPerfume(perfumeId: perfumeId)
+            } else {
+                try await userPerfumeDataSource.saveUserPerfume(perfumeId: perfumeId, status: status)
             }
+            // Upload erfolgreich → Pending-Flag löschen
+            perfume.userMetadata?.hasPendingSync = false
         } catch {
             let networkError = NetworkError.from(error)
             AppLogger.userPerfumes.error("Fehler beim Sync mit Supabase: \(networkError.localizedDescription)")

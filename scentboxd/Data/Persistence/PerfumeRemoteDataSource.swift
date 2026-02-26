@@ -23,6 +23,15 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         // Server-seitige Filter
         query = applyServerFilters(to: query, filter: filter)
         
+        // Notes-Filter: IDs einschränken falls aktiv
+        if !filter.noteNames.isEmpty {
+            let matchingIds = try await fetchPerfumeIdsByNotes(filter.noteNames)
+            if matchingIds.isEmpty {
+                return 0
+            }
+            query = query.in("id", values: matchingIds)
+        }
+        
         let response = try await query.execute()
         return response.count ?? 0
     }
@@ -37,6 +46,15 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         
         query = applyServerFilters(to: query, filter: filter)
         
+        // Notes-Filter: IDs einschränken falls aktiv
+        if !filter.noteNames.isEmpty {
+            let matchingIds = try await fetchPerfumeIdsByNotes(filter.noteNames)
+            if matchingIds.isEmpty {
+                return []
+            }
+            query = query.in("id", values: matchingIds)
+        }
+        
         let (orderColumn, ascending) = sortParameters(for: sort)
         
         let dtos: [PerfumeDTO] = try await query
@@ -45,8 +63,7 @@ class PerfumeRemoteDataSource: PerfumeRepository {
             .execute()
             .value
         
-        let perfumes = dtos.map { mapDTO($0) }
-        return applyClientFilters(perfumes, filter: filter)
+        return dtos.map { mapDTO($0) }
     }
     
     // MARK: - Server-Side Search
@@ -63,6 +80,15 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         
         dbQuery = applyServerFilters(to: dbQuery, filter: filter)
         
+        // Notes-Filter: IDs einschränken falls aktiv
+        if !filter.noteNames.isEmpty {
+            let matchingIds = try await fetchPerfumeIdsByNotes(filter.noteNames)
+            if matchingIds.isEmpty {
+                return []
+            }
+            dbQuery = dbQuery.in("id", values: matchingIds)
+        }
+        
         let (orderColumn, ascending) = sortParameters(for: sort)
         
         let dtos: [PerfumeDTO] = try await dbQuery
@@ -71,8 +97,7 @@ class PerfumeRemoteDataSource: PerfumeRepository {
             .execute()
             .value
         
-        let perfumes = dtos.map { mapDTO($0) }
-        return applyClientFilters(perfumes, filter: filter)
+        return dtos.map { mapDTO($0) }
     }
     
     // MARK: - Metadata für Filter-Picker
@@ -123,7 +148,49 @@ class PerfumeRemoteDataSource: PerfumeRepository {
             q = q.ilike("sillage", pattern: sillage)
         }
         
+        // Rating-Range-Filter (server-seitig auf performance)
+        if let minRating = filter.minRating {
+            q = q.gte("performance", value: minRating)
+        }
+        if let maxRating = filter.maxRating {
+            q = q.lte("performance", value: maxRating)
+        }
+        
+        // Occasions-Filter (server-seitig via Array-Contains)
+        if !filter.occasions.isEmpty {
+            q = q.contains("occasions", value: filter.occasions)
+        }
+        
         return q
+    }
+    
+    // MARK: - Notes-Filter (Two-Step: IDs ermitteln, dann filtern)
+    
+    /// Ermittelt Parfum-IDs, die mindestens eine der angegebenen Noten enthalten.
+    /// Wird als Vorstufe genutzt, um die Hauptabfrage mit `.in("id")` einzuschränken.
+    private func fetchPerfumeIdsByNotes(_ noteNames: [String]) async throws -> [UUID] {
+        struct PerfumeNoteIdDTO: Codable {
+            let perfumeId: UUID
+            
+            enum CodingKeys: String, CodingKey {
+                case perfumeId = "perfume_id"
+            }
+        }
+        
+        // Case-insensitiv: or-Filter mit ilike pro Note
+        let orConditions = noteNames
+            .map { "name.ilike.\(sanitize($0))" }
+            .joined(separator: ",")
+        
+        let results: [PerfumeNoteIdDTO] = try await client
+            .from("perfume_notes")
+            .select("perfume_id, notes!inner(name)")
+            .or(orConditions, referencedTable: "notes")
+            .execute()
+            .value
+        
+        // Deduplizieren
+        return Array(Set(results.map(\.perfumeId)))
     }
     
     /// Gibt Spalte und Richtung für `.order()` zurück
@@ -136,41 +203,6 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         case .newest:      return ("created_at", false)
         case .popular:     return ("performance", false)
         }
-    }
-    
-    // MARK: - Client-Side Filters (Notes, Occasions, Rating Range)
-    
-    private func applyClientFilters(_ perfumes: [Perfume], filter: PerfumeFilter) -> [Perfume] {
-        var results = perfumes
-        
-        // Noten-Filter
-        if !filter.noteNames.isEmpty {
-            let lowerNotes = Set(filter.noteNames.map { $0.lowercased() })
-            results = results.filter { perfume in
-                let allNotes = (perfume.topNotes + perfume.midNotes + perfume.baseNotes)
-                    .map { $0.name.lowercased() }
-                return !lowerNotes.isDisjoint(with: allNotes)
-            }
-        }
-        
-        // Occasions-Filter
-        if !filter.occasions.isEmpty {
-            let lowerOccasions = Set(filter.occasions.map { $0.lowercased() })
-            results = results.filter { perfume in
-                let perfumeOccasions = Set(perfume.occasions.map { $0.lowercased() })
-                return !lowerOccasions.isDisjoint(with: perfumeOccasions)
-            }
-        }
-        
-        // Rating-Range-Filter (basierend auf performance-Feld)
-        if let minRating = filter.minRating {
-            results = results.filter { $0.performance >= minRating }
-        }
-        if let maxRating = filter.maxRating {
-            results = results.filter { $0.performance <= maxRating }
-        }
-        
-        return results
     }
     
     // MARK: - Helpers

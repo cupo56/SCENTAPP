@@ -23,14 +23,19 @@ struct ActionButton: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
             }
-            .foregroundColor(isActive ? .white : .primary)
+            .foregroundColor(isActive ? .white : Color(hex: "#CBD5E1"))
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
             .background(
-                isActive ? color : Color(uiColor: .systemGray6)
+                isActive ? color : DesignSystem.Colors.surfaceDark
+            )
+            .overlay(
+                Capsule().stroke(Color.white.opacity(isActive ? 0 : 0.08), lineWidth: 1)
             )
             .clipShape(Capsule())
             .animation(.spring(response: 0.3), value: isActive)
         }
+        .accessibilityLabel("\(label), \(isActive ? "aktiv" : "nicht aktiv")")
+        .accessibilityAddTraits(.isButton)
     }
 }

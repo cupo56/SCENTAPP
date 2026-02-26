@@ -28,3 +28,23 @@ struct ReviewDTO: Codable {
         case createdAt = "created_at"
     }
 }
+
+struct ReviewInsertDTO: Codable {
+    let id: UUID
+    let perfumeId: UUID
+    let userId: UUID?
+    let authorName: String?
+    let title: String
+    let text: String
+    let rating: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case perfumeId = "perfume_id"
+        case userId = "user_id"
+        case authorName = "author_name"
+        case title
+        case text
+        case rating
+    }
+}

@@ -18,8 +18,8 @@ struct SplashScreenView: View {
             // Hintergrund mit Gradient
             LinearGradient(
                 colors: [
-                    Color(red: 0.1, green: 0.1, blue: 0.15),
-                    Color(red: 0.05, green: 0.05, blue: 0.1)
+                    Color(hex: "#221019"),
+                    Color(hex: "#1a0c12")
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -39,7 +39,7 @@ struct SplashScreenView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 120, height: 120)
                         .clipShape(RoundedRectangle(cornerRadius: 28))
-                        .shadow(color: .purple.opacity(0.5), radius: 20, x: 0, y: 10)
+                        .shadow(color: Color(hex: "#C20A66").opacity(0.5), radius: 20, x: 0, y: 10)
                 }
                 .scaleEffect(scale)
                 
@@ -48,7 +48,7 @@ struct SplashScreenView: View {
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.white, .purple.opacity(0.8)],
+                            colors: [.white, Color(hex: "#C20A66").opacity(0.8)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -67,7 +67,8 @@ struct SplashScreenView: View {
                 scale = 1.0
                 opacity = 1.0
             }
-            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+            // Finite Animation statt repeatForever — Splash ist nur ~1.5s sichtbar
+            withAnimation(.easeInOut(duration: 1.5)) {
                 isAnimating = true
             }
         }
@@ -86,8 +87,8 @@ struct LiquidBlobView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.purple.opacity(0.4 - Double(index) * 0.1),
-                                Color.blue.opacity(0.2 - Double(index) * 0.05),
+                                Color(hex: "#C20A66").opacity(0.4 - Double(index) * 0.1),
+                                Color(hex: "#F7E7CE").opacity(0.2 - Double(index) * 0.05),
                                 Color.clear
                             ],
                             center: .center,
@@ -98,8 +99,7 @@ struct LiquidBlobView: View {
                     .scaleEffect(isAnimating ? 1.1 + CGFloat(index) * 0.1 : 1.0)
                     .rotationEffect(.degrees(isAnimating ? Double(index) * 30 : 0))
                     .animation(
-                        .easeInOut(duration: 2 + Double(index) * 0.5)
-                        .repeatForever(autoreverses: true),
+                        .easeInOut(duration: 2 + Double(index) * 0.5),
                         value: isAnimating
                     )
             }

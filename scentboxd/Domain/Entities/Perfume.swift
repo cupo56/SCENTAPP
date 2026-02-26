@@ -66,6 +66,10 @@ class UserPersonalData {
     var dateAdded: Date
     var personalNotes: String?
     
+    /// Markiert, ob diese Änderung noch nicht zu Supabase hochgeladen wurde.
+    /// Wird von syncFromSupabase() respektiert, um lokale Änderungen nicht zu überschreiben.
+    var hasPendingSync: Bool
+    
     // Computed Property: Für den Rest des Codes fühlt es sich weiter wie ein Enum an.
     // SwiftData ignoriert computed properties, daher stört das die Datenbank nicht.
     var status: UserPerfumeStatus {
@@ -73,9 +77,10 @@ class UserPersonalData {
         set { statusRaw = newValue.rawValue }
     }
     
-    init(status: UserPerfumeStatus = .none, dateAdded: Date = Date(), personalNotes: String? = nil) {
+    init(status: UserPerfumeStatus = .none, dateAdded: Date = Date(), personalNotes: String? = nil, hasPendingSync: Bool = false) {
         self.statusRaw = status.rawValue // Hier wandeln wir direkt beim Erstellen um
         self.dateAdded = dateAdded
         self.personalNotes = personalNotes
+        self.hasPendingSync = hasPendingSync
     }
 }
