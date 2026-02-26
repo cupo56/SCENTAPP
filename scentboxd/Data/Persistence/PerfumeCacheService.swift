@@ -112,6 +112,8 @@ class PerfumeCacheService {
     }
     
     // MARK: - Client-Side Filters (Notes, Occasions, Rating)
+    // Diese Filter werden nur für den Offline-Cache genutzt.
+    // Im Online-Modus werden alle Filter server-seitig in PerfumeRemoteDataSource angewendet.
     
     private func applyClientFilters(_ perfumes: [Perfume], filter: PerfumeFilter) -> [Perfume] {
         var results = perfumes

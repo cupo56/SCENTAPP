@@ -39,6 +39,8 @@ class AuthManager {
         do {
             let session = try await client.auth.session
             currentUser = session.user
+            // Auth-Cache aktualisieren
+            try? await AuthSessionCache.shared.refreshSession()
             await loadUsername()
             // Ausstehenden Username speichern, falls der User seine E-Mail bestätigt hat
             if username == nil, let pending = pendingUsername {
@@ -48,6 +50,7 @@ class AuthManager {
             pendingEmailConfirmation = false
         } catch {
             currentUser = nil
+            AuthSessionCache.shared.clear()
         }
     }
     
@@ -60,6 +63,8 @@ class AuthManager {
         do {
             let session = try await client.auth.signIn(email: email, password: password)
             currentUser = session.user
+            // Auth-Cache aktualisieren
+            try? await AuthSessionCache.shared.refreshSession()
             await loadUsername()
             // Ausstehenden Username speichern, falls der User seine E-Mail bestätigt hat
             if username == nil, let pending = pendingUsername {
@@ -114,6 +119,7 @@ class AuthManager {
             try await client.auth.signOut()
             currentUser = nil
             username = nil
+            AuthSessionCache.shared.clear()
         } catch {
             errorMessage = "Abmeldung fehlgeschlagen: \(error.localizedDescription)"
         }

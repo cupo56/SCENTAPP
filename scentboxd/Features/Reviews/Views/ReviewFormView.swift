@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ReviewFormView: View {
     @Environment(\.dismiss) private var dismiss
+    @FocusState private var focusedField: Field?
     
     let perfume: Perfume
     let existingReview: Review?
@@ -29,6 +30,10 @@ struct ReviewFormView: View {
         text.trimmingCharacters(in: .whitespacesAndNewlines).count
     }
     
+    private enum Field: Hashable {
+        case title, text
+    }
+    
     init(perfume: Perfume, existingReview: Review? = nil, onSave: @escaping (Review) -> Void) {
         self.perfume = perfume
         self.existingReview = existingReview
@@ -43,72 +48,160 @@ struct ReviewFormView: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    VStack(alignment: .center, spacing: 8) {
-                        Text("Bewertung")
-                            .font(.headline)
-                        
-                        HStack(spacing: 8) {
-                            ForEach(1...5, id: \.self) { star in
-                                Image(systemName: star <= rating ? "star.fill" : "star")
-                                    .font(.title)
-                                    .foregroundColor(star <= rating ? .yellow : .gray.opacity(0.4))
-                                    .onTapGesture {
-                                        withAnimation(.easeInOut(duration: 0.15)) {
-                                            rating = star
+            ZStack {
+                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 28) {
+                        // Rating Section
+                        VStack(spacing: 12) {
+                            Text("Bewertung")
+                                .font(DesignSystem.Fonts.serif(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+                            
+                            HStack(spacing: 12) {
+                                ForEach(1...5, id: \.self) { star in
+                                    Image(systemName: star <= rating ? "star.fill" : "star")
+                                        .font(.system(size: 36))
+                                        .foregroundColor(star <= rating ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
+                                        .onTapGesture {
+                                            withAnimation(.easeInOut(duration: 0.15)) {
+                                                rating = star
+                                            }
                                         }
-                                    }
+                                        .scaleEffect(star <= rating ? 1.1 : 1.0)
+                                        .animation(.spring(response: 0.3), value: rating)
+                                        .accessibilityHidden(true)
+                                }
+                            }
+                            .padding(.vertical, 12)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("\(rating) von 5 Sternen")
+                            .accessibilityValue("\(rating)")
+                            .accessibilityAdjustableAction { direction in
+                                switch direction {
+                                case .increment:
+                                    if rating < 5 { rating += 1 }
+                                case .decrement:
+                                    if rating > 1 { rating -= 1 }
+                                @unknown default:
+                                    break
+                                }
                             }
                         }
-                        .padding(.vertical, 8)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                
-                Section("Titel") {
-                    TextField("Kurze Zusammenfassung", text: $title)
-                }
-                
-                Section {
-                    TextEditor(text: $text)
-                        .frame(minHeight: 150)
-                } header: {
-                    Text("Deine Notizen")
-                } footer: {
-                    HStack {
-                        if textCharCount < 10 {
-                            Text("Mindestens 10 Zeichen erforderlich (\(textCharCount)/10)")
-                                .foregroundColor(.orange)
-                        } else {
-                            Text("\(textCharCount) Zeichen")
-                                .foregroundColor(.secondary)
+                        .padding(.top, 8)
+                        
+                        // Title Field
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("TITEL")
+                                .font(.system(size: 10, weight: .bold))
+                                .tracking(2)
+                                .foregroundColor(DesignSystem.Colors.primary)
+                            
+                            TextField("Kurze Zusammenfassung", text: $title)
+                                .focused($focusedField, equals: .title)
+                                .submitLabel(.next)
+                                .onSubmit { focusedField = .text }
+                                .foregroundColor(.white)
+                                .padding(16)
+                                .glassPanel()
                         }
-                        Spacer()
+                        .padding(.horizontal, 20)
+                        
+                        // Text Editor
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("DEINE NOTIZEN")
+                                .font(.system(size: 10, weight: .bold))
+                                .tracking(2)
+                                .foregroundColor(DesignSystem.Colors.primary)
+                            
+                            TextEditor(text: $text)
+                                .focused($focusedField, equals: .text)
+                                .foregroundColor(.white)
+                                .scrollContentBackground(.hidden)
+                                .frame(minHeight: 180)
+                                .padding(16)
+                                .glassPanel()
+                            
+                            HStack {
+                                if textCharCount < 10 {
+                                    Text("Mindestens 10 Zeichen erforderlich (\(textCharCount)/10)")
+                                        .foregroundColor(.orange)
+                                } else {
+                                    Text("\(textCharCount) Zeichen")
+                                        .foregroundColor(Color(hex: "#94A3B8"))
+                                }
+                                Spacer()
+                            }
+                            .font(.caption)
+                        }
+                        .padding(.horizontal, 20)
+                        
+                        Spacer(minLength: 80)
                     }
-                    .font(.caption)
+                }
+                .scrollDismissesKeyboard(.interactively)
+                
+                // Sticky Save Button
+                VStack {
+                    Spacer()
+                    Button {
+                        saveReview()
+                    } label: {
+                        HStack {
+                            if isSaving {
+                                ProgressView().tint(.white)
+                            } else {
+                                Text("Speichern")
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .disabled(!isFormValid || isSaving)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 16)
+                    .background(
+                        LinearGradient(
+                            colors: [DesignSystem.Colors.bgDark, DesignSystem.Colors.bgDark.opacity(0.9), .clear],
+                            startPoint: .bottom,
+                            endPoint: .top
+                        )
+                        .frame(height: 100)
+                        .allowsHitTesting(false)
+                    )
+                }
+            }
+            .disabled(isSaving)
+            .overlay {
+                if isSaving {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+                        ProgressView("Wird gespeichert…")
+                            .foregroundColor(.white)
+                            .padding(24)
+                            .glassPanel()
+                    }
                 }
             }
             .navigationTitle(isEditing ? "Bewertung bearbeiten" : "Bewertung schreiben")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") {
                         dismiss()
                     }
+                    .foregroundColor(DesignSystem.Colors.champagne)
                 }
                 
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        saveReview()
-                    } label: {
-                        if isSaving {
-                            ProgressView()
-                        } else {
-                            Text("Speichern")
-                        }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Fertig") {
+                        focusedField = nil
                     }
-                    .disabled(!isFormValid || isSaving)
                 }
             }
         }

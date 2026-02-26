@@ -19,21 +19,20 @@ struct ReviewCard: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header: Autor + Datum
             HStack {
-                // Autor
                 HStack(spacing: 6) {
                     Image(systemName: "person.circle.fill")
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(DesignSystem.Colors.primary)
                     Text(review.authorName ?? "Anonym")
                         .fontWeight(.medium)
+                        .foregroundColor(.white)
                 }
                 .font(.subheadline)
                 
                 Spacer()
                 
-                // Datum
-                Text(review.createdAt, style: .date)
+                Text(review.createdAt.formatted(date: .abbreviated, time: .shortened))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color(hex: "#94A3B8"))
             }
             
             // Sterne
@@ -41,26 +40,29 @@ struct ReviewCard: View {
                 ForEach(1...5, id: \.self) { star in
                     Image(systemName: star <= review.rating ? "star.fill" : "star")
                         .font(.caption)
-                        .foregroundColor(star <= review.rating ? .yellow : .gray.opacity(0.3))
+                        .foregroundColor(star <= review.rating ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
                 }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(review.rating) von 5 Sternen")
             
             // Titel
             if !review.title.isEmpty {
                 Text(review.title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
+                    .foregroundColor(.white)
             }
             
             // Text
             if !review.text.isEmpty {
                 Text(review.text)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color(hex: "#CBD5E1"))
                     .lineLimit(4)
             }
             
-            // Bearbeiten / Löschen Buttons (nur für eigene Reviews)
+            // Bearbeiten / Löschen Buttons
             if isOwn {
                 HStack(spacing: 12) {
                     Button {
@@ -71,8 +73,9 @@ struct ReviewCard: View {
                             Text("Bearbeiten")
                         }
                         .font(.caption)
-                        .foregroundColor(.blue)
+                        .foregroundColor(DesignSystem.Colors.champagne)
                     }
+                    .accessibilityLabel("Bewertung bearbeiten")
                     
                     Button {
                         showDeleteConfirmation = true
@@ -82,8 +85,9 @@ struct ReviewCard: View {
                             Text("Löschen")
                         }
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundColor(.red.opacity(0.8))
                     }
+                    .accessibilityLabel("Bewertung löschen")
                     
                     Spacer()
                 }
@@ -91,8 +95,12 @@ struct ReviewCard: View {
             }
         }
         .padding(16)
-        .background(Color(uiColor: .systemGray6).opacity(0.5))
+        .background(Color(hex: "#341826"))
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.white.opacity(0.05), lineWidth: 1)
+        )
         .alert("Bewertung löschen", isPresented: $showDeleteConfirmation) {
             Button("Abbrechen", role: .cancel) { }
             Button("Löschen", role: .destructive) {
@@ -112,4 +120,5 @@ struct ReviewCard: View {
         onDelete: { }
     )
     .padding()
+    .background(Color(hex: "#221019"))
 }

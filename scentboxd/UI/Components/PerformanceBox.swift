@@ -17,11 +17,11 @@ struct PerformanceBox: View {
         VStack(spacing: 6) {
             Label(title, systemImage: icon)
                 .font(.caption)
-                .foregroundColor(.gray)
+                .foregroundColor(Color(hex: "#94A3B8"))
             
             Text(value)
                 .font(.headline)
-                .foregroundColor(highlight ? .blue : .primary)
+                .foregroundColor(highlight ? DesignSystem.Colors.champagne : .white)
         }
         .frame(maxWidth: .infinity)
     }

@@ -49,7 +49,6 @@
 			membershipExceptions = (
 				Info.plist,
 				scentboxdTests/scentboxdTests.swift,
-				scentboxdUITests/scentboxdUITests.swift,
 			);
 			target = BB248BC62F1071060092FCDD /* scentboxd */;
 		};
@@ -60,13 +59,6 @@
 			);
 			target = BB248BD32F1071080092FCDD /* scentboxdTests */;
 		};
-		BB46E17A2F11B4FE005DAACA /* Exceptions for "scentboxd" folder in "scentboxdUITests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				scentboxdUITests/scentboxdUITests.swift,
-			);
-			target = BB248BDD2F1071080092FCDD /* scentboxdUITests */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,7 +67,6 @@
 			exceptions = (
 				BB46E1752F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxd" target */,
 				BB46E1762F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxdTests" target */,
-				BB46E17A2F11B4FE005DAACA /* Exceptions for "scentboxd" folder in "scentboxdUITests" target */,
 			);
 			path = scentboxd;
 			sourceTree = "<group>";

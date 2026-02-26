@@ -9,7 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct FavoritesView: View {
-    // Hinweis: #Predicate benötigt String-Literal — entspricht UserPerfumeStatus.wishlist.rawValue
+    // SwiftData #Predicate erfordert String-Literal — Wert muss UserPerfumeStatus.wishlist.rawValue entsprechen
+    // Compile-Time-Check:
+    private static let _assertWishlistRaw: Void = {
+        assert(UserPerfumeStatus.wishlist.rawValue == "Wunschliste", "FavoritesView Predicate muss aktualisiert werden!")
+    }()
+    
     @Query(filter: #Predicate<Perfume> { perfume in
         perfume.userMetadata?.statusRaw == "Wunschliste"
     }, sort: \Perfume.name)

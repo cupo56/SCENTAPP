@@ -10,7 +10,12 @@ import SwiftData
 
 struct OwnedPerfumesView: View {
     
-    // Hinweis: #Predicate benötigt String-Literal — entspricht UserPerfumeStatus.owned.rawValue
+    // SwiftData #Predicate erfordert String-Literal — Wert muss UserPerfumeStatus.owned.rawValue entsprechen
+    // Compile-Time-Check:
+    private static let _assertOwnedRaw: Void = {
+        assert(UserPerfumeStatus.owned.rawValue == "Sammlung", "OwnedPerfumesView Predicate muss aktualisiert werden!")
+    }()
+    
     @Query(filter: #Predicate<Perfume> { perfume in
         perfume.userMetadata?.statusRaw == "Sammlung"
     }, sort: \Perfume.name)

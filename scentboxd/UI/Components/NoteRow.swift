@@ -17,11 +17,11 @@ struct NoteRow: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.caption)
-                    .foregroundColor(.blue)
+                    .foregroundColor(DesignSystem.Colors.primary)
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color(hex: "#94A3B8"))
             }
             
             ScrollView(.horizontal, showsIndicators: false) {
@@ -32,8 +32,8 @@ struct NoteRow: View {
                             .fontWeight(.medium)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
-                            .background(Color.blue.opacity(0.08))
-                            .foregroundColor(.blue)
+                            .background(DesignSystem.Colors.primary.opacity(0.15))
+                            .foregroundColor(DesignSystem.Colors.primary)
                             .cornerRadius(12)
                     }
                 }
