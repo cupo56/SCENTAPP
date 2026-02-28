@@ -21,231 +21,267 @@ struct PerfumeDetailView: View {
     private var perfume: Perfume { viewModel.perfume }
     
     var body: some View {
-        // 1. Äußerer GeometryReader, um die Bildschirmgröße sicher zu ermitteln
         GeometryReader { screenGeometry in
             ScrollView {
                 VStack(spacing: 0) {
                     
-                    // --- GROSSER HEADER ---
-                    // Hier nutzen wir jetzt screenGeometry statt UIScreen.main
-                    let headerHeight = max(screenGeometry.size.height * 0.55, 450)
+                    // ─── HERO IMAGE ───
+                    let heroHeight = max(screenGeometry.size.height * 0.6, 480)
                     
-                    GeometryReader { innerGeo in
-                        ZStack(alignment: .top) { // Wir richten erst mal alles oben aus
-                            
-                            // 1. Hintergrund (Füllt alles aus)
-                            Rectangle()
-                                .foregroundColor(DesignSystem.Colors.bgDark)
-                                .frame(height: headerHeight)
-                            
-                            // 2. Das Bild (Zentriert durch Spacer)
-                            if let url = perfume.imageUrl {
-                                VStack {
-                                    // A. Oberer Platzhalter (Drückt das Bild weg von der Notch)
-                                    Spacer()
-                                    
+                    ZStack(alignment: .top) {
+                        // Background Image
+                        if let url = perfume.imageUrl {
+                            Color.clear
+                                .frame(height: heroHeight)
+                                .overlay {
                                     LazyImage(url: url) { state in
                                         if let image = state.image {
                                             image
                                                 .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(maxWidth: innerGeo.size.width * 0.9)
-                                                .frame(maxHeight: headerHeight * 0.85)
-                                                .shadow(color: Color.black.opacity(0.12), radius: 15, x: 0, y: 15)
-                                        } else if state.error != nil {
-                                            Image(systemName: "photo")
-                                                .font(.system(size: 40))
-                                                .foregroundColor(.gray.opacity(0.3))
+                                                .scaledToFill()
                                         } else {
-                                            // Shimmer-Placeholder
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .fill(Color.gray.opacity(0.15))
-                                                .frame(width: innerGeo.size.width * 0.6, height: headerHeight * 0.7)
-                                                .shimmer()
+                                            DesignSystem.Colors.bgDark
                                         }
                                     }
-                                    .accessibilityLabel("Parfum-Bild von \(perfume.name)")
                                     .transition(.opacity)
-                                    
-                                    // B. Unterer Platzhalter (Drückt das Bild nach oben)
-                                    Spacer()
-                                    
-                                    // C. Kleiner Ausgleich für den Text-Layer, der unten drüber liegt
-                                    Spacer().frame(height: 30)
                                 }
-                                // WICHTIG: Das sorgt dafür, dass der VStack die volle Höhe nutzt
-                                .frame(width: innerGeo.size.width, height: headerHeight)
-                                // Kleiner Bonus: Schiebt den ganzen Inhalt optisch etwas tiefer,
-                                // damit die Notch nicht genau auf dem Flaschenkopf sitzt.
-                                .padding(.top, 40)
-                                
-                            } else {
-                                // Fallback zentriert
-                                VStack {
-                                    Spacer()
-                                    Image(systemName: "flame")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(height: 80)
-                                        .foregroundColor(.gray.opacity(0.2))
-                                    Spacer()
-                                }
-                                .frame(width: innerGeo.size.width, height: headerHeight)
+                                .clipped()
+                        } else {
+                            ZStack {
+                                DesignSystem.Colors.bgDark
+                                Image(systemName: "flame")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 80)
+                                    .foregroundColor(.gray.opacity(0.2))
                             }
+                            .frame(height: heroHeight)
                         }
-                    }
-                    .frame(height: headerHeight)
-                    
-                    
-                    // --- INHALT ---
-                    VStack(alignment: .leading, spacing: 24) {
                         
-                        // Titel & Marke
-                        VStack(alignment: .leading, spacing: 8) {
+                        // Gradient overlays
+                        VStack {
+                            // Top fade
+                            LinearGradient(
+                                colors: [Color.black.opacity(0.3), .clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .frame(height: 120)
+                            
+                            Spacer()
+                            
+                            // Bottom fade into bgDark
+                            LinearGradient(
+                                colors: [.clear, DesignSystem.Colors.bgDark],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .frame(height: 140)
+                        }
+                        .frame(height: heroHeight)
+                    }
+                    .frame(height: heroHeight)
+                    .accessibilityLabel("Parfum-Bild von \(perfume.name)")
+                    
+                    // ─── CONTENT ───
+                    VStack(alignment: .leading, spacing: 28) {
+                        
+                        // Header Info
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(perfume.brand?.name ?? "Unbekannte Marke")
-                                .font(.headline)
+                                .font(DesignSystem.Fonts.display(size: 13, weight: .bold))
+                                .tracking(2)
                                 .foregroundColor(DesignSystem.Colors.champagne)
                                 .textCase(.uppercase)
                             
                             Text(perfume.name)
-                                .font(.system(size: 34, weight: .bold, design: .default))
+                                .font(DesignSystem.Fonts.serif(size: 34, weight: .bold))
                                 .foregroundColor(.white)
                             
-                            if let concentration = perfume.concentration, !concentration.isEmpty {
-                                Text(concentration.uppercased())
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(Color(hex: "#94A3B8"))
-                            }
-                        }
-                        
-                        HStack(spacing: 12) {
-                            // Button 1: Wunschliste
-                            ActionButton(
-                                icon: viewModel.isActive(.wishlist) ? "heart.fill" : "heart",
-                                label: "Wunschliste",
-                                color: .red,
-                                isActive: viewModel.isActive(.wishlist)
-                            ) {
-                                if authManager.isAuthenticated {
-                                    viewModel.toggleStatus(.wishlist, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
-                                } else {
-                                    viewModel.showLoginAlert = true
+                            HStack(spacing: 10) {
+                                // Concentration
+                                if let concentration = perfume.concentration, !concentration.isEmpty {
+                                    Text(concentration.uppercased())
+                                        .font(.system(size: 10, weight: .bold))
+                                        .tracking(1.5)
+                                        .foregroundColor(DesignSystem.Colors.primary)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(DesignSystem.Colors.primary.opacity(0.15))
+                                        .overlay(
+                                            Capsule().stroke(DesignSystem.Colors.primary.opacity(0.3), lineWidth: 1)
+                                        )
+                                        .clipShape(Capsule())
+                                }
+                                
+                                // Rating
+                                if let avg = viewModel.averageRating {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "star.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(DesignSystem.Colors.champagne)
+                                        Text(String(format: "%.1f", avg))
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundColor(.white)
+                                        if viewModel.reviewCount > 0 {
+                                            Text("(\(viewModel.reviewCount))")
+                                                .font(.system(size: 11))
+                                                .foregroundColor(.white.opacity(0.5))
+                                        }
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 5)
+                                    .background(Color.black.opacity(0.2))
+                                    .cornerRadius(8)
                                 }
                             }
-                            
-                            // Button 2: Sammlung
-                            ActionButton(
-                                icon: viewModel.isActive(.owned) ? "star.fill" : "star",
-                                label: "In Besitz",
-                                color: .yellow,
-                                isActive: viewModel.isActive(.owned)
-                            ) {
+                            .padding(.top, 6)
+                        }
+                        
+                        // ─── ACTION BUTTONS ───
+                        HStack(spacing: 12) {
+                            // Sammlung
+                            Button {
                                 if authManager.isAuthenticated {
                                     viewModel.toggleStatus(.owned, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
                                 } else {
                                     viewModel.showLoginAlert = true
                                 }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: viewModel.isActive(.owned) ? "star.fill" : "star")
+                                        .font(.system(size: 14))
+                                    Text("Sammlung")
+                                        .font(.system(size: 13, weight: .bold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(DesignSystem.Colors.primary)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .shadow(color: DesignSystem.Colors.primary.opacity(0.25), radius: 10, x: 0, y: 4)
+                            }
+                            
+                            // Wunschliste
+                            Button {
+                                if authManager.isAuthenticated {
+                                    viewModel.toggleStatus(.wishlist, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
+                                } else {
+                                    viewModel.showLoginAlert = true
+                                }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: viewModel.isActive(.wishlist) ? "heart.fill" : "heart")
+                                        .font(.system(size: 14))
+                                    Text("Wunschliste")
+                                        .font(.system(size: 13, weight: .bold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .glassPanel()
                             }
                         }
                         
-                        // Button 3: Bewertung schreiben / bearbeiten
-                        Button {
-                            if authManager.isAuthenticated {
-                                Task { await viewModel.handleReviewButtonTapped() }
-                            } else {
-                                viewModel.showLoginAlert = true
-                            }
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: viewModel.hasExistingReview ? "pencil" : "pencil.line")
-                                Text(viewModel.hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
-                            }
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(DesignSystem.Colors.primary)
-                            .clipShape(Capsule())
-                        }
-                        .accessibilityLabel(viewModel.hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
-                        
-                        Divider()
-                        
-                        // Noten
+                        // ─── FRAGRANCE PYRAMID ───
                         if !perfume.topNotes.isEmpty || !perfume.midNotes.isEmpty || !perfume.baseNotes.isEmpty {
-                            VStack(alignment: .leading, spacing: 20) {
-                                if !perfume.topNotes.isEmpty {
-                                    NoteRow(title: "Kopfnoten", icon: "arrow.up.circle", notes: perfume.topNotes)
-                                }
-                                if !perfume.midNotes.isEmpty {
-                                    NoteRow(title: "Herznoten", icon: "heart.circle", notes: perfume.midNotes)
-                                }
-                                if !perfume.baseNotes.isEmpty {
-                                    NoteRow(title: "Basisnoten", icon: "arrow.down.circle", notes: perfume.baseNotes)
-                                }
-                            }
-                        }
-                        
-                        // Performance Box
-                        HStack(spacing: 0) {
-                            PerformanceBox(title: "Haltbarkeit", value: perfume.longevity.isEmpty ? "-" : perfume.longevity, icon: "hourglass")
-                            Divider().frame(height: 40)
-                            if let avg = viewModel.averageRating {
-                                PerformanceBox(title: "Bewertung (\(viewModel.reviewCount))", value: String(format: "%.1f / 5.0", avg), icon: "star.fill", highlight: true)
-                            } else {
-                                PerformanceBox(title: "Bewertung", value: "– / 5.0", icon: "star.fill", highlight: false)
-                            }
-                        }
-                        .accessibilityElement(children: .combine)
-                        .padding(.vertical, 12)
-                        .background(DesignSystem.Colors.surfaceDark)
-                        .cornerRadius(16)
-                        
-                        // Beschreibung
-                        if let desc = perfume.desc, !desc.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Über den Duft")
+                            VStack(alignment: .leading, spacing: 14) {
+                                Text("Duftpyramide")
+                                    .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
                                     .foregroundColor(.white)
-                                    .font(.headline)
+                                
+                                VStack(spacing: 10) {
+                                    if !perfume.topNotes.isEmpty {
+                                        notePyramidRow(
+                                            icon: "wind",
+                                            label: "Kopfnoten",
+                                            notes: perfume.topNotes.map(\.name).joined(separator: ", ")
+                                        )
+                                    }
+                                    if !perfume.midNotes.isEmpty {
+                                        notePyramidRow(
+                                            icon: "leaf",
+                                            label: "Herznoten",
+                                            notes: perfume.midNotes.map(\.name).joined(separator: ", ")
+                                        )
+                                    }
+                                    if !perfume.baseNotes.isEmpty {
+                                        notePyramidRow(
+                                            icon: "drop.fill",
+                                            label: "Basisnoten",
+                                            notes: perfume.baseNotes.map(\.name).joined(separator: ", ")
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // ─── PERFORMANCE ───
+                        VStack(alignment: .leading, spacing: 18) {
+                            Text("Performance")
+                                .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
+                                .foregroundColor(.white)
+                            
+                            VStack(spacing: 16) {
+                                // Longevity
+                                performanceBar(
+                                    label: "Haltbarkeit",
+                                    value: perfume.longevity,
+                                    percentage: longevityPercentage(perfume.longevity)
+                                )
+                                
+                                // Sillage
+                                performanceBar(
+                                    label: "Sillage",
+                                    value: perfume.sillage,
+                                    percentage: sillagePercentage(perfume.sillage)
+                                )
+                            }
+                        }
+                        .padding(20)
+                        .glassPanel()
+                        
+                        // ─── BESCHREIBUNG ───
+                        if let desc = perfume.desc, !desc.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Über den Duft")
+                                    .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
+                                    .foregroundColor(.white)
                                 Text(desc)
-                                    .font(.body)
+                                    .font(.subheadline)
                                     .foregroundColor(Color(hex: "#94A3B8"))
                                     .lineSpacing(6)
                             }
-                            .padding(.top, 8)
                         }
                         
-                        // Bewertungen
+                        // ─── BEWERTUNGEN ───
                         VStack(alignment: .leading, spacing: 16) {
+                            // Header
                             HStack {
-                                Text("Bewertungen")
+                                Text("Community Reviews")
+                                    .font(DesignSystem.Fonts.serif(size: 22, weight: .semibold))
                                     .foregroundColor(.white)
-                                    .font(.headline)
                                 Spacer()
-                                if let total = viewModel.reviewTotalCount {
+                                if let total = viewModel.reviewTotalCount, total > 0 {
                                     Text("\(total)")
                                         .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                } else if !viewModel.reviews.isEmpty {
-                                    Text("\(viewModel.reviews.count)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(Color(hex: "#94A3B8"))
                                 }
                             }
                             
+                            // Loading
                             if viewModel.isLoadingReviews {
                                 HStack {
                                     Spacer()
                                     ProgressView()
+                                        .tint(DesignSystem.Colors.primary)
                                     Spacer()
                                 }
                                 .padding(.vertical, 20)
                             } else if viewModel.reviews.isEmpty {
                                 Text("Noch keine Bewertungen vorhanden.")
                                     .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(Color(hex: "#94A3B8"))
                                     .padding(.vertical, 8)
                             } else {
                                 ForEach(viewModel.reviews, id: \.id) { review in
@@ -270,26 +306,54 @@ struct PerfumeDetailView: View {
                                 if viewModel.isLoadingMoreReviews {
                                     HStack {
                                         Spacer()
-                                        ProgressView("Lade weitere Bewertungen…")
+                                        ProgressView("Lade weitere…")
                                             .font(.caption)
+                                            .tint(DesignSystem.Colors.primary)
                                         Spacer()
                                     }
                                     .padding(.vertical, 8)
                                 }
                             }
+                            
+                            // Write Review Button
+                            Button {
+                                if authManager.isAuthenticated {
+                                    Task { await viewModel.handleReviewButtonTapped() }
+                                } else {
+                                    viewModel.showLoginAlert = true
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: viewModel.hasExistingReview ? "pencil" : "pencil.line")
+                                        .font(.system(size: 14))
+                                    Text(viewModel.hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
+                                        .font(.system(size: 13, weight: .medium))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 46)
+                                .background(Color.white.opacity(0.05))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                )
+                                .cornerRadius(12)
+                            }
                         }
-                        .padding(.top, 8)
+                        .padding(.top, 4)
+                        
+                        Spacer(minLength: 24)
                     }
-                    .padding(24)
+                    .padding(.horizontal, 24)
+                    .padding(.top, -24)
                     .background(DesignSystem.Colors.bgDark)
-                    .cornerRadius(30, corners: [.topLeft, .topRight])
-                    .offset(y: -30)
-                    .padding(.bottom, -30)
                 }
             }
             .ignoresSafeArea(.all, edges: .top)
+            .background(DesignSystem.Colors.bgDark)
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .sheet(isPresented: Bindable(viewModel).showReviewSheet, onDismiss: {
             viewModel.editingReview = nil
         }) {
@@ -306,6 +370,7 @@ struct PerfumeDetailView: View {
         .task {
             await viewModel.loadCurrentUserId()
             await viewModel.loadReviews()
+            await viewModel.loadRatingStats()
         }
         .alert("Anmeldung erforderlich", isPresented: Bindable(viewModel).showLoginAlert) {
             Button("Abbrechen", role: .cancel) { }
@@ -325,6 +390,87 @@ struct PerfumeDetailView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.syncErrorMessage ?? "Ein Fehler ist aufgetreten.")
+        }
+    }
+    
+    // MARK: - Fragrance Pyramid Row
+    
+    private func notePyramidRow(icon: String, label: String, notes: String) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.08))
+                    .frame(width: 40, height: 40)
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            
+            VStack(alignment: .leading, spacing: 3) {
+                Text(label.uppercased())
+                    .font(.system(size: 10, weight: .medium))
+                    .tracking(1.5)
+                    .foregroundColor(.white.opacity(0.4))
+                Text(notes)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.white)
+            }
+            
+            Spacer()
+        }
+        .padding(14)
+        .glassPanel()
+    }
+    
+    // MARK: - Performance Bar
+    
+    private func performanceBar(label: String, value: String, percentage: Double) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(label)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                Spacer()
+                Text(value.isEmpty ? "–" : value)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(DesignSystem.Colors.primary)
+            }
+            
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(height: 6)
+                    Capsule()
+                        .fill(DesignSystem.Colors.primary)
+                        .frame(width: geo.size.width * percentage, height: 6)
+                }
+            }
+            .frame(height: 6)
+        }
+    }
+    
+    // MARK: - Helpers
+    
+    private func longevityPercentage(_ value: String) -> Double {
+        switch value.lowercased() {
+        case "sehr lang", "very long": return 0.95
+        case "lang", "long": return 0.80
+        case "mittel", "moderate": return 0.55
+        case "kurz", "short": return 0.30
+        case "sehr kurz", "very short": return 0.15
+        default: return 0.5
+        }
+    }
+    
+    private func sillagePercentage(_ value: String) -> Double {
+        switch value.lowercased() {
+        case "enorm", "enormous": return 0.95
+        case "stark", "strong": return 0.80
+        case "mittel", "moderate": return 0.55
+        case "leicht", "light": return 0.30
+        case "intim", "intimate": return 0.15
+        default: return 0.5
         }
     }
 }
