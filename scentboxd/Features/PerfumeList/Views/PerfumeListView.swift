@@ -118,31 +118,7 @@ struct PerfumeListView: View {
                     }
                 }
                 
-                // MARK: - Filter Button
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        viewModel.isFilterSheetPresented = true
-                    } label: {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "line.3.horizontal.decrease.circle")
-                                .font(.body)
-                                .foregroundColor(DesignSystem.Colors.primary)
-                            
-                            if viewModel.activeFilter.activeFilterCount > 0 {
-                                Text("\(viewModel.activeFilter.activeFilterCount)")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 16, height: 16)
-                                    .background(DesignSystem.Colors.primary)
-                                    .clipShape(Circle())
-                                    .offset(x: 6, y: -6)
-                            }
-                        }
-                    }
-                    .accessibilityLabel(viewModel.activeFilter.activeFilterCount > 0
-                        ? "Filter, \(viewModel.activeFilter.activeFilterCount) aktiv"
-                        : "Filter")
-                }
+
             }
             .sheet(isPresented: $viewModel.isFilterSheetPresented) {
                 FilterSheetView(filter: viewModel.activeFilter, sort: viewModel.sortOption)
