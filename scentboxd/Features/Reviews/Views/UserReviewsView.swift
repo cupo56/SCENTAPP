@@ -147,11 +147,46 @@ struct UserReviewsView: View {
                     .foregroundColor(.white)
             }
             
+            // Text
             if !reviewDTO.text.isEmpty {
                 Text(reviewDTO.text)
                     .font(.subheadline)
                     .foregroundColor(Color(hex: "#CBD5E1"))
                     .lineLimit(4)
+            }
+            
+            // Longevity & Sillage Badges
+            if reviewDTO.longevity != nil || reviewDTO.sillage != nil {
+                HStack(spacing: 8) {
+                    if let lon = reviewDTO.longevity {
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock")
+                                .foregroundColor(DesignSystem.Colors.champagne)
+                            Text(longevityText(for: lon))
+                                .foregroundColor(.white)
+                        }
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(6)
+                    }
+                    
+                    if let sil = reviewDTO.sillage {
+                        HStack(spacing: 4) {
+                            Image(systemName: "wind")
+                                .foregroundColor(DesignSystem.Colors.champagne)
+                            Text(sillageText(for: sil))
+                                .foregroundColor(.white)
+                        }
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(6)
+                    }
+                }
+                .padding(.top, 2)
             }
         }
         .padding(16)
@@ -169,5 +204,19 @@ struct UserReviewsView: View {
             errorMessage = "Fehler beim Laden der Bewertungen: \(error.localizedDescription)"
         }
         isLoading = false
+    }
+    
+    // MARK: - Helpers
+    
+    private func longevityText(for value: Int) -> String {
+        if value < 33 { return "Flüchtig" }
+        else if value < 66 { return "Moderat" }
+        else { return "Ewig" }
+    }
+    
+    private func sillageText(for value: Int) -> String {
+        if value < 33 { return "Hautnah" }
+        else if value < 66 { return "Moderat" }
+        else { return "Raumfüllend" }
     }
 }

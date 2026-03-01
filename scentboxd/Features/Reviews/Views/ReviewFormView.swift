@@ -16,6 +16,7 @@ struct ReviewFormView: View {
     let onSave: (Review) -> Void
     
     @State private var rating: Int = 1
+    @State private var title: String = ""
     @State private var text: String = ""
     @State private var longevity: Double = 65
     @State private var sillage: Double = 30
@@ -32,7 +33,7 @@ struct ReviewFormView: View {
     }
     
     private enum Field: Hashable {
-        case text
+        case title, text
     }
     
     init(perfume: Perfume, existingReview: Review? = nil, onSave: @escaping (Review) -> Void) {
@@ -42,7 +43,10 @@ struct ReviewFormView: View {
         
         if let review = existingReview {
             _rating = State(initialValue: review.rating)
+            _title = State(initialValue: review.title)
             _text = State(initialValue: review.text)
+            if let l = review.longevity { _longevity = State(initialValue: Double(l)) }
+            if let s = review.sillage { _sillage = State(initialValue: Double(s)) }
         }
     }
     
@@ -50,6 +54,9 @@ struct ReviewFormView: View {
         ZStack {
             DesignSystem.Colors.bgDark
                 .ignoresSafeArea()
+                .onTapGesture {
+                    focusedField = nil
+                }
             
             VStack(spacing: 0) {
                 // Custom Header
@@ -67,7 +74,9 @@ struct ReviewFormView: View {
                     
                     Spacer()
                     
-                    Text("WRITE REVIEW")
+                    Spacer()
+                    
+                    Text("BEWERTUNG SCHREIBEN")
                         .font(.system(size: 12, weight: .bold))
                         .textCase(.uppercase)
                         .tracking(2)
@@ -75,17 +84,8 @@ struct ReviewFormView: View {
                     
                     Spacer()
                     
-                    Button {
-                        saveReview()
-                    } label: {
-                        Text("SAVE")
-                            .font(.system(size: 12, weight: .bold))
-                            .tracking(1)
-                            .foregroundColor(DesignSystem.Colors.primary)
-                            .frame(width: 40, height: 40, alignment: .trailing)
-                    }
-                    .disabled(!isFormValid || isSaving)
-                    .opacity(isFormValid ? 1.0 : 0.5)
+                    Color.clear
+                        .frame(width: 40, height: 40)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
@@ -98,12 +98,12 @@ struct ReviewFormView: View {
                         
                         // Title Section
                         VStack(spacing: 8) {
-                            Text("Journal Your Scent")
+                            Text("Dein Duft-Tagebuch")
                                 .font(DesignSystem.Fonts.serif(size: 32, weight: .bold))
                                 .foregroundColor(.white)
                                 .multilineTextAlignment(.center)
                             
-                            Text("Capture the essence of the moment")
+                            Text("Erfasse die Essenz des Moments")
                                 .font(DesignSystem.Fonts.serif(size: 14))
                                 .italic()
                                 .foregroundColor(Color(hex: "#94A3B8"))
@@ -125,14 +125,55 @@ struct ReviewFormView: View {
                             }
                         }
                         
+                        // Title Field
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("ÜBERSCHRIFT")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .tracking(1)
+                                    .foregroundColor(Color(hex: "#94A3B8"))
+                                    .padding(.leading, 4)
+
+                                Spacer()
+
+                                if focusedField == .title {
+                                    Button("Fertig") {
+                                        focusedField = nil
+                                    }
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(DesignSystem.Colors.champagne)
+                                }
+                            }
+
+                            TextField("Deine Überschrift", text: $title)
+                                .focused($focusedField, equals: .title)
+                                .submitLabel(.next)
+                                .onSubmit { focusedField = .text }
+                                .foregroundColor(.white)
+                                .padding(16)
+                                .glassPanel()
+                        }
+                        
                         // Text Area
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("PERSONAL NOTES")
-                                .font(.system(size: 12, weight: .bold))
-                                .tracking(1)
-                                .foregroundColor(Color(hex: "#94A3B8"))
-                                .padding(.leading, 4)
-                            
+                            HStack {
+                                Text("PERSÖNLICHE NOTIZEN")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .tracking(1)
+                                    .foregroundColor(Color(hex: "#94A3B8"))
+                                    .padding(.leading, 4)
+
+                                Spacer()
+
+                                if focusedField == .text {
+                                    Button("Fertig") {
+                                        focusedField = nil
+                                    }
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(DesignSystem.Colors.champagne)
+                                }
+                            }
+
                             ZStack(alignment: .bottomTrailing) {
                                 TextEditor(text: $text)
                                     .focused($focusedField, equals: .text)
@@ -142,7 +183,7 @@ struct ReviewFormView: View {
                                     .padding(16)
                                     .padding(.bottom, 24)
                                     .glassPanel()
-                                
+
                                 Text("\(textCharCount)/500")
                                     .font(.system(size: 12))
                                     .foregroundColor(Color(hex: "#475569"))
@@ -158,7 +199,7 @@ struct ReviewFormView: View {
                                     HStack(spacing: 8) {
                                         Image(systemName: "clock")
                                             .foregroundColor(DesignSystem.Colors.champagne)
-                                        Text("Longevity")
+                                        Text("Haltbarkeit")
                                             .foregroundColor(.white)
                                             .fontWeight(.medium)
                                     }
@@ -176,9 +217,9 @@ struct ReviewFormView: View {
                                     .tint(DesignSystem.Colors.champagne)
                                 
                                 HStack {
-                                    Text("Fleeting")
+                                    Text("Flüchtig")
                                     Spacer()
-                                    Text("Eternal")
+                                    Text("Ewig")
                                 }
                                 .font(.system(size: 12))
                                 .foregroundColor(Color(hex: "#64748B"))
@@ -210,9 +251,9 @@ struct ReviewFormView: View {
                                     .tint(DesignSystem.Colors.champagne)
                                 
                                 HStack {
-                                    Text("Intimate")
+                                    Text("Hautnah")
                                     Spacer()
-                                    Text("Enormous")
+                                    Text("Raumfüllend")
                                 }
                                 .font(.system(size: 12))
                                 .foregroundColor(Color(hex: "#64748B"))
@@ -220,26 +261,6 @@ struct ReviewFormView: View {
                             .padding(20)
                             .glassPanel()
                         }
-                        
-                        // Add Photo Button
-                        Button {
-                            // Optionally implement photo adding
-                            focusedField = nil
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "camera")
-                                Text("Add a photo to your entry")
-                                    .font(.system(size: 14))
-                            }
-                            .foregroundColor(Color(hex: "#94A3B8"))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.gray.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5]))
-                            )
-                        }
-                        .padding(.top, 8)
                         
                         Spacer(minLength: 120)
                     }
@@ -255,7 +276,7 @@ struct ReviewFormView: View {
                     saveReview()
                 } label: {
                     HStack(spacing: 8) {
-                        Text("PUBLISH ENTRY")
+                        Text("EINTRAG VERÖFFENTLICHEN")
                             .font(.system(size: 14, weight: .bold))
                             .tracking(1)
                             .textCase(.uppercase)
@@ -299,36 +320,37 @@ struct ReviewFormView: View {
     }
     
     private var longevityText: String {
-        if longevity < 33 { return "Fleeting" }
-        else if longevity < 66 { return "Moderate" }
-        else { return "Eternal" }
+        if longevity < 33 { return "Flüchtig" }
+        else if longevity < 66 { return "Moderat" }
+        else { return "Ewig" }
     }
     
     private var sillageText: String {
-        if sillage < 33 { return "Intimate" }
-        else if sillage < 66 { return "Moderate" }
-        else { return "Enormous" }
+        if sillage < 33 { return "Hautnah" }
+        else if sillage < 66 { return "Moderat" }
+        else { return "Raumfüllend" }
     }
     
     private func saveReview() {
-        // Generate a title since the field is removed
-        let generatedTitle = text.split(separator: " ")
-                                 .prefix(5)
-                                 .joined(separator: " ") + (text.split(separator: " ").count > 5 ? "..." : "")
-        
-        let finalTitle = generatedTitle.isEmpty ? "Review for \(perfume.name)" : generatedTitle
+        let finalTitle = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty 
+            ? "Bewertung für \(perfume.name)" 
+            : title
         
         let review: Review
         if let existing = existingReview {
             existing.title = finalTitle
             existing.text = text
             existing.rating = rating
+            existing.longevity = Int(longevity)
+            existing.sillage = Int(sillage)
             review = existing
         } else {
             review = Review(
                 title: finalTitle,
                 text: text,
                 rating: rating,
+                longevity: Int(longevity),
+                sillage: Int(sillage),
                 createdAt: Date()
             )
         }

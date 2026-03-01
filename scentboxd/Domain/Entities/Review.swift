@@ -14,6 +14,8 @@ class Review {
     var title: String
     var text: String
     var rating: Int // 1 bis 5
+    var longevity: Int?
+    var sillage: Int?
     var createdAt: Date
     var authorName: String?
     var userId: UUID?
@@ -21,11 +23,13 @@ class Review {
     // Beziehung: Ein Review gehört zu einem Parfum
     var perfume: Perfume?
     
-    init(id: UUID = UUID(), title: String, text: String, rating: Int, createdAt: Date = Date(), authorName: String? = nil, userId: UUID? = nil) {
+    init(id: UUID = UUID(), title: String, text: String, rating: Int, longevity: Int? = nil, sillage: Int? = nil, createdAt: Date = Date(), authorName: String? = nil, userId: UUID? = nil) {
         self.id = id
         self.title = title
         self.text = text
         self.rating = rating
+        self.longevity = longevity
+        self.sillage = sillage
         self.createdAt = createdAt
         self.authorName = authorName
         self.userId = userId

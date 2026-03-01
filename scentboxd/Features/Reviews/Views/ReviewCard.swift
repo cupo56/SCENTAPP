@@ -62,6 +62,40 @@ struct ReviewCard: View {
                     .lineLimit(4)
             }
             
+            // Longevity & Sillage Badges
+            if review.longevity != nil || review.sillage != nil {
+                HStack(spacing: 8) {
+                    if let lon = review.longevity {
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock")
+                                .foregroundColor(DesignSystem.Colors.champagne)
+                            Text(longevityText(for: lon))
+                                .foregroundColor(.white)
+                        }
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(6)
+                    }
+                    
+                    if let sil = review.sillage {
+                        HStack(spacing: 4) {
+                            Image(systemName: "wind")
+                                .foregroundColor(DesignSystem.Colors.champagne)
+                            Text(sillageText(for: sil))
+                                .foregroundColor(.white)
+                        }
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(6)
+                    }
+                }
+                .padding(.top, 2)
+            }
+            
             // Bearbeiten / Löschen Buttons
             if isOwn {
                 HStack(spacing: 12) {
@@ -110,11 +144,23 @@ struct ReviewCard: View {
             Text("Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden.")
         }
     }
+    
+    private func longevityText(for value: Int) -> String {
+        if value < 33 { return "Flüchtig" }
+        else if value < 66 { return "Moderat" }
+        else { return "Ewig" }
+    }
+    
+    private func sillageText(for value: Int) -> String {
+        if value < 33 { return "Hautnah" }
+        else if value < 66 { return "Moderat" }
+        else { return "Raumfüllend" }
+    }
 }
 
 #Preview {
     ReviewCard(
-        review: Review(title: "Toller Duft!", text: "Einer meiner absoluten Favoriten. Perfekt für den Sommer.", rating: 5),
+        review: Review(title: "Toller Duft!", text: "Einer meiner absoluten Favoriten. Perfekt für den Sommer.", rating: 5, longevity: 80, sillage: 45),
         isOwn: true,
         onEdit: { },
         onDelete: { }

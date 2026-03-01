@@ -83,7 +83,7 @@ class PerfumeCacheService {
         // SwiftData #Predicate hat Einschränkungen bei der dynamischen Zusammensetzung.
         // Wir kombinieren die Bedingungen direkt.
         return #Predicate<Perfume> { perfume in
-            (!hasSearch || perfume.name.localizedStandardContains(query))
+            (!hasSearch || perfume.name.localizedStandardContains(query) || perfume.brand?.name.localizedStandardContains(query) == true)
             && (!hasBrand || perfume.brand?.name == brandName)
             && (!hasConcentration || perfume.concentration == concentration)
             && (!hasLongevity || perfume.longevity == longevity)
