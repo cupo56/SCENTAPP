@@ -355,17 +355,16 @@ struct PerfumeCardView: View {
             
             // Info Section
             VStack(alignment: .leading, spacing: 4) {
-                // Rating
-                if let stats = ratingStats, stats.reviewCount > 0 {
-                    HStack(spacing: 3) {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(DesignSystem.Colors.primary)
-                        Text(String(format: "%.1f", stats.avgRating))
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(DesignSystem.Colors.primary)
-                    }
+                // Rating (always reserve space for consistent card height)
+                HStack(spacing: 3) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                    Text(String(format: "%.1f", ratingStats?.avgRating ?? 0))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(DesignSystem.Colors.primary)
                 }
+                .opacity(ratingStats != nil && ratingStats!.reviewCount > 0 ? 1 : 0)
                 
                 // Name
                 Text(perfume.name)
