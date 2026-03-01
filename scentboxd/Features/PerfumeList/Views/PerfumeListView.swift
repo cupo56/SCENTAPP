@@ -118,31 +118,7 @@ struct PerfumeListView: View {
                     }
                 }
                 
-                // MARK: - Filter Button
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        viewModel.isFilterSheetPresented = true
-                    } label: {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "line.3.horizontal.decrease.circle")
-                                .font(.body)
-                                .foregroundColor(DesignSystem.Colors.primary)
-                            
-                            if viewModel.activeFilter.activeFilterCount > 0 {
-                                Text("\(viewModel.activeFilter.activeFilterCount)")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 16, height: 16)
-                                    .background(DesignSystem.Colors.primary)
-                                    .clipShape(Circle())
-                                    .offset(x: 6, y: -6)
-                            }
-                        }
-                    }
-                    .accessibilityLabel(viewModel.activeFilter.activeFilterCount > 0
-                        ? "Filter, \(viewModel.activeFilter.activeFilterCount) aktiv"
-                        : "Filter")
-                }
+
             }
             .sheet(isPresented: $viewModel.isFilterSheetPresented) {
                 FilterSheetView(filter: viewModel.activeFilter, sort: viewModel.sortOption)
@@ -379,17 +355,16 @@ struct PerfumeCardView: View {
             
             // Info Section
             VStack(alignment: .leading, spacing: 4) {
-                // Rating
-                if let stats = ratingStats, stats.reviewCount > 0 {
-                    HStack(spacing: 3) {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(DesignSystem.Colors.primary)
-                        Text(String(format: "%.1f", stats.avgRating))
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(DesignSystem.Colors.primary)
-                    }
+                // Rating (always reserve space for consistent card height)
+                HStack(spacing: 3) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(DesignSystem.Colors.primary)
+                    Text(String(format: "%.1f", ratingStats?.avgRating ?? 0))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(DesignSystem.Colors.primary)
                 }
+                .opacity(ratingStats != nil && ratingStats!.reviewCount > 0 ? 1 : 0)
                 
                 // Name
                 Text(perfume.name)

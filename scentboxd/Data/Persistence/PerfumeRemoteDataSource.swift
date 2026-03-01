@@ -14,10 +14,15 @@ class PerfumeRemoteDataSource: PerfumeRepository {
             .from("perfumes")
             .select("id", head: true, count: .exact)
         
-        // Textsuche
+        // Textsuche (Name + Marke)
         if let search = searchQuery, !search.isEmpty {
             let sanitized = sanitize(search)
-            query = query.ilike("name", pattern: "%\(sanitized)%")
+            let matchingBrandIds = try await fetchBrandIds(matching: sanitized)
+            if matchingBrandIds.isEmpty {
+                query = query.ilike("name", pattern: "%\(sanitized)%")
+            } else {
+                query = query.or("name.ilike.%\(sanitized)%,brand_id.in.(\(matchingBrandIds.map(\.uuidString).joined(separator: ",")))")
+            }
         }
         
         // Server-seitige Filter
@@ -72,11 +77,23 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         let from = page * pageSize
         let to = from + pageSize - 1
         let sanitized = sanitize(query)
-        
-        var dbQuery = client
-            .from("perfumes")
-            .select(selectQuery)
-            .ilike("name", pattern: "%\(sanitized)%")
+
+        // Brand-IDs suchen, die zum Suchbegriff passen
+        let matchingBrandIds = try await fetchBrandIds(matching: sanitized)
+
+        // Kombinierte Suche: Name ODER Brand-ID
+        var dbQuery: PostgrestFilterBuilder
+        if matchingBrandIds.isEmpty {
+            dbQuery = client
+                .from("perfumes")
+                .select(selectQuery)
+                .ilike("name", pattern: "%\(sanitized)%")
+        } else {
+            dbQuery = client
+                .from("perfumes")
+                .select(selectQuery)
+                .or("name.ilike.%\(sanitized)%,brand_id.in.(\(matchingBrandIds.map(\.uuidString).joined(separator: ",")))")
+        }
         
         dbQuery = applyServerFilters(to: dbQuery, filter: filter)
         
@@ -207,6 +224,20 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     
     // MARK: - Helpers
     
+    /// Brand-IDs suchen, die zum Suchbegriff passen
+    private func fetchBrandIds(matching query: String) async throws -> [UUID] {
+        struct BrandIdDTO: Codable {
+            let id: UUID
+        }
+        let results: [BrandIdDTO] = try await client
+            .from("brands")
+            .select("id")
+            .ilike("name", pattern: "%\(query)%")
+            .execute()
+            .value
+        return results.map(\.id)
+    }
+
     private func sanitize(_ input: String) -> String {
         input
             .replacingOccurrences(of: "\\", with: "\\\\")

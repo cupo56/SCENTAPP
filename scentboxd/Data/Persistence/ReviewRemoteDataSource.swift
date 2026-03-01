@@ -94,7 +94,9 @@ class ReviewRemoteDataSource {
             authorName: authorName,
             title: review.title,
             text: review.text,
-            rating: review.rating
+            rating: review.rating,
+            longevity: review.longevity,
+            sillage: review.sillage
         )
         
         try await withRetry {
@@ -128,6 +130,8 @@ class ReviewRemoteDataSource {
                 title: dto.title,
                 text: dto.text,
                 rating: dto.rating,
+                longevity: dto.longevity,
+                sillage: dto.sillage,
                 createdAt: dto.createdAt,
                 authorName: dto.authorName,
                 userId: dto.userId
@@ -145,6 +149,22 @@ class ReviewRemoteDataSource {
                 .execute()
         }
         return response.count ?? 0
+    }
+    
+    /// Lädt alle Reviews, die der aktuelle User geschrieben hat
+    func fetchUserReviews() async throws -> [ReviewDTO] {
+        let userId = try await AuthSessionCache.shared.getUserId()
+        
+        let dtos: [ReviewDTO] = try await withRetry {
+            try await self.client
+                .from("reviews")
+                .select("*")
+                .eq("user_id", value: userId)
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+        }
+        return dtos
     }
     
     /// Prüft ob der aktuelle Nutzer bereits eine Review für dieses Parfum geschrieben hat
@@ -169,6 +189,8 @@ class ReviewRemoteDataSource {
             title: dto.title,
             text: dto.text,
             rating: dto.rating,
+            longevity: dto.longevity,
+            sillage: dto.sillage,
             createdAt: dto.createdAt,
             authorName: dto.authorName,
             userId: dto.userId
@@ -187,8 +209,10 @@ class ReviewRemoteDataSource {
                     "title": review.title,
                     "text": review.text,
                     "rating": String(review.rating),
+                    "longevity": review.longevity != nil ? String(review.longevity!) : nil,
+                    "sillage": review.sillage != nil ? String(review.sillage!) : nil,
                     "author_name": authorName
-                ])
+                ] as [String : String?])
                 .eq("id", value: review.id)
                 .execute()
         }
