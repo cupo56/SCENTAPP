@@ -220,67 +220,97 @@ class PerfumeDetailViewModel {
         }
     }
     
-    // MARK: - Status Toggle
-    
-    func isActive(_ status: UserPerfumeStatus) -> Bool {
-        return perfume.userMetadata?.statusRaw == status.rawValue
+    // MARK: - Status Check
+
+    func isFavorite() -> Bool {
+        perfume.userMetadata?.isFavorite ?? false
     }
-    
-    func toggleStatus(_ targetStatus: UserPerfumeStatus, modelContext: ModelContext, isAuthenticated: Bool) {
-        // Rate Limiting: Maximal 1 Toggle pro 0,5 Sekunden
+
+    func isOwned() -> Bool {
+        perfume.userMetadata?.isOwned ?? false
+    }
+
+    // MARK: - Toggle
+
+    func toggleFavorite(modelContext: ModelContext, isAuthenticated: Bool) {
+        guard throttleToggle() else { return }
+        ensureInserted(modelContext: modelContext)
+
+        if let metadata = perfume.userMetadata {
+            metadata.isFavorite.toggle()
+            metadata.hasPendingSync = true
+        } else {
+            perfume.userMetadata = UserPersonalData(isFavorite: true, hasPendingSync: true)
+        }
+
+        saveAndSync(modelContext: modelContext, isAuthenticated: isAuthenticated)
+    }
+
+    func toggleOwned(modelContext: ModelContext, isAuthenticated: Bool) {
+        guard throttleToggle() else { return }
+        ensureInserted(modelContext: modelContext)
+
+        if let metadata = perfume.userMetadata {
+            metadata.isOwned.toggle()
+            metadata.hasPendingSync = true
+        } else {
+            perfume.userMetadata = UserPersonalData(isOwned: true, hasPendingSync: true)
+        }
+
+        saveAndSync(modelContext: modelContext, isAuthenticated: isAuthenticated)
+    }
+
+    // MARK: - Private Helpers
+
+    private func throttleToggle() -> Bool {
         let now = Date()
-        guard now.timeIntervalSince(lastToggleTime) >= 0.5 else { return }
+        guard now.timeIntervalSince(lastToggleTime) >= 0.5 else { return false }
         lastToggleTime = now
-        
-        // 1. Aus Cloud lokal übernehmen, falls nötig
+        return true
+    }
+
+    private func ensureInserted(modelContext: ModelContext) {
         if perfume.modelContext == nil {
             modelContext.insert(perfume)
         }
-        
-        // 2. Bestimme den neuen Status
-        let newStatus: UserPerfumeStatus
-        if let metadata = perfume.userMetadata {
-            // Toggle Logik: Wenn schon aktiv, dann deaktivieren (.none)
-            if metadata.statusRaw == targetStatus.rawValue {
-                newStatus = .none
-            } else {
-                newStatus = targetStatus
-            }
-            metadata.status = newStatus
-            metadata.hasPendingSync = true
-        } else {
-            // Neu anlegen
-            newStatus = targetStatus
-            let newMeta = UserPersonalData(status: targetStatus, hasPendingSync: true)
-            perfume.userMetadata = newMeta
-        }
-        
-        // 3. Lokal speichern
+    }
+
+    private func saveAndSync(modelContext: ModelContext, isAuthenticated: Bool) {
         do {
             try modelContext.save()
         } catch {
             AppLogger.cache.error("SwiftData-Speichern fehlgeschlagen (toggleStatus): \(error.localizedDescription)")
         }
-        
-        // 4. In Supabase speichern (wenn eingeloggt)
+
         if isAuthenticated {
             syncTask?.cancel()
+            let meta = perfume.userMetadata
+            let perfumeId = perfume.id
             syncTask = Task {
-                await syncStatusToSupabase(perfumeId: perfume.id, status: newStatus)
+                await syncStatusToSupabase(
+                    perfumeId: perfumeId,
+                    isFavorite: meta?.isFavorite ?? false,
+                    isOwned: meta?.isOwned ?? false,
+                    isEmpty: meta?.isEmpty ?? false
+                )
             }
         }
     }
-    
+
     // MARK: - Supabase Sync
-    
-    private func syncStatusToSupabase(perfumeId: UUID, status: UserPerfumeStatus) async {
+
+    private func syncStatusToSupabase(perfumeId: UUID, isFavorite: Bool, isOwned: Bool, isEmpty: Bool) async {
         do {
-            if status == .none {
+            if !isFavorite && !isOwned && !isEmpty {
                 try await userPerfumeDataSource.deleteUserPerfume(perfumeId: perfumeId)
             } else {
-                try await userPerfumeDataSource.saveUserPerfume(perfumeId: perfumeId, status: status)
+                try await userPerfumeDataSource.saveUserPerfume(
+                    perfumeId: perfumeId,
+                    isFavorite: isFavorite,
+                    isOwned: isOwned,
+                    isEmpty: isEmpty
+                )
             }
-            // Upload erfolgreich → Pending-Flag löschen
             perfume.userMetadata?.hasPendingSync = false
         } catch {
             let networkError = NetworkError.from(error)

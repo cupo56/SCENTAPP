@@ -60,25 +60,25 @@ class Perfume {
 // Hilfsklasse für User-spezifische Daten
 @Model
 class UserPersonalData {
-    // TRICK: Wir speichern den "echten" Wert als String (statusRaw)
-    // Das erlaubt uns, im Predicate einfach nach Strings zu filtern.
-    var statusRaw: String
+    var isFavorite: Bool
+    var isOwned: Bool
+    var isEmpty: Bool
     var dateAdded: Date
     var personalNotes: String?
-    
+
     /// Markiert, ob diese Änderung noch nicht zu Supabase hochgeladen wurde.
     /// Wird von syncFromSupabase() respektiert, um lokale Änderungen nicht zu überschreiben.
     var hasPendingSync: Bool
-    
-    // Computed Property: Für den Rest des Codes fühlt es sich weiter wie ein Enum an.
-    // SwiftData ignoriert computed properties, daher stört das die Datenbank nicht.
-    var status: UserPerfumeStatus {
-        get { UserPerfumeStatus(rawValue: statusRaw) ?? .none }
-        set { statusRaw = newValue.rawValue }
+
+    /// true wenn kein Status gesetzt ist
+    var hasNoStatus: Bool {
+        !isFavorite && !isOwned && !isEmpty
     }
-    
-    init(status: UserPerfumeStatus = .none, dateAdded: Date = Date(), personalNotes: String? = nil, hasPendingSync: Bool = false) {
-        self.statusRaw = status.rawValue // Hier wandeln wir direkt beim Erstellen um
+
+    init(isFavorite: Bool = false, isOwned: Bool = false, isEmpty: Bool = false, dateAdded: Date = Date(), personalNotes: String? = nil, hasPendingSync: Bool = false) {
+        self.isFavorite = isFavorite
+        self.isOwned = isOwned
+        self.isEmpty = isEmpty
         self.dateAdded = dateAdded
         self.personalNotes = personalNotes
         self.hasPendingSync = hasPendingSync

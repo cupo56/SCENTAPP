@@ -18,12 +18,12 @@ struct ProfileView: View {
     
     // MARK: - Data Queries
     @Query(filter: #Predicate<Perfume> { perfume in
-        perfume.userMetadata?.statusRaw == "Sammlung"
+        perfume.userMetadata?.isOwned == true
     }, sort: \Perfume.name)
     var ownedPerfumes: [Perfume]
-    
+
     @Query(filter: #Predicate<Perfume> { perfume in
-        perfume.userMetadata?.statusRaw == "Wunschliste"
+        perfume.userMetadata?.isFavorite == true
     }, sort: \Perfume.name)
     var favoritePerfumes: [Perfume]
     

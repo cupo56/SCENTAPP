@@ -98,7 +98,7 @@ struct ReviewFormView: View {
                         
                         // Title Section
                         VStack(spacing: 8) {
-                            Text("Dein Duft-Tagebuch")
+                            Text("Teile dein Erlebnis")
                                 .font(DesignSystem.Fonts.serif(size: 32, weight: .bold))
                                 .foregroundColor(.white)
                                 .multilineTextAlignment(.center)
