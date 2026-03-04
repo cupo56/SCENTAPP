@@ -143,13 +143,13 @@ struct PerfumeDetailView: View {
                             // Sammlung
                             Button {
                                 if authManager.isAuthenticated {
-                                    viewModel.toggleStatus(.owned, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
+                                    viewModel.toggleOwned(modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
                                 } else {
                                     viewModel.showLoginAlert = true
                                 }
                             } label: {
                                 HStack(spacing: 6) {
-                                    Image(systemName: viewModel.isActive(.owned) ? "star.fill" : "star")
+                                    Image(systemName: viewModel.isOwned() ? "star.fill" : "star")
                                         .font(.system(size: 14))
                                     Text("Sammlung")
                                         .font(.system(size: 13, weight: .bold))
@@ -161,17 +161,17 @@ struct PerfumeDetailView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .shadow(color: DesignSystem.Colors.primary.opacity(0.25), radius: 10, x: 0, y: 4)
                             }
-                            
+
                             // Wunschliste
                             Button {
                                 if authManager.isAuthenticated {
-                                    viewModel.toggleStatus(.wishlist, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
+                                    viewModel.toggleFavorite(modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
                                 } else {
                                     viewModel.showLoginAlert = true
                                 }
                             } label: {
                                 HStack(spacing: 6) {
-                                    Image(systemName: viewModel.isActive(.wishlist) ? "heart.fill" : "heart")
+                                    Image(systemName: viewModel.isFavorite() ? "heart.fill" : "heart")
                                         .font(.system(size: 14))
                                     Text("Wunschliste")
                                         .font(.system(size: 13, weight: .bold))
