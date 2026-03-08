@@ -9,7 +9,7 @@ import Foundation
 import Supabase
 
 @MainActor
-class UserPerfumeRemoteDataSource {
+class UserPerfumeRemoteDataSource: UserPerfumeDataSourceProtocol {
     private let client = AppConfig.client
 
     /// Speichert oder aktualisiert den Status eines Parfums für den aktuellen User

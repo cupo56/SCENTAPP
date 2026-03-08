@@ -11,7 +11,11 @@ import os
 
 @MainActor
 class UserPerfumeSyncService {
-    private let remoteDataSource = UserPerfumeRemoteDataSource()
+    private let remoteDataSource: any UserPerfumeDataSourceProtocol
+
+    init(remoteDataSource: any UserPerfumeDataSourceProtocol) {
+        self.remoteDataSource = remoteDataSource
+    }
 
     /// Vollständiger Sync: Erst lokale Änderungen hochladen, dann Remote-Daten übernehmen.
     func syncFromSupabase(modelContext: ModelContext, perfumes: [Perfume]) async throws {

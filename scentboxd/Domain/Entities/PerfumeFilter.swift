@@ -69,6 +69,17 @@ enum PerfumeSortOption: String, CaseIterable, Identifiable {
     
     var id: String { rawValue }
     
+    var localizedName: String {
+        switch self {
+        case .nameAsc: return String(localized: "Name (A–Z)")
+        case .nameDesc: return String(localized: "Name (Z–A)")
+        case .ratingDesc: return String(localized: "Beste Bewertung")
+        case .ratingAsc: return String(localized: "Niedrigste Bewertung")
+        case .newest: return String(localized: "Neueste")
+        case .popular: return String(localized: "Beliebteste")
+        }
+    }
+    
     var systemImage: String {
         switch self {
         case .nameAsc: return "textformat.abc"

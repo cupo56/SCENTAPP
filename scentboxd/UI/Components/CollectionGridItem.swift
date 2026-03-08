@@ -72,7 +72,7 @@ struct CollectionGridItem: View {
             
             // Text Info
             VStack(alignment: .leading, spacing: 4) {
-                Text(perfume.brand?.name ?? "Unbekannte Marke")
+                Text(perfume.brand?.name ?? String(localized: "Unbekannte Marke"))
                     .font(.system(size: 10, weight: .bold))
                     .tracking(1)
                     .textCase(.uppercase)
