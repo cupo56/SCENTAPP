@@ -20,7 +20,7 @@ class PerfumeCacheService {
     /// Prüft ob ein Refresh nötig ist (älter als 5 Minuten)
     var needsRefresh: Bool {
         guard let lastSync = lastSyncedAt else { return true }
-        return Date().timeIntervalSince(lastSync) > 300
+        return Date().timeIntervalSince(lastSync) > AppConfig.Cache.catalogTTL
     }
     
     // MARK: - Read from Cache

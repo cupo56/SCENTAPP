@@ -43,7 +43,7 @@ struct ReviewInsertDTO: Codable {
     let rating: Int
     let longevity: Int?
     let sillage: Int?
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case perfumeId = "perfume_id"
@@ -54,5 +54,23 @@ struct ReviewInsertDTO: Codable {
         case rating
         case longevity
         case sillage
+    }
+}
+
+struct ReviewUpdateDTO: Codable {
+    let title: String
+    let text: String
+    let rating: Int
+    let longevity: Int?
+    let sillage: Int?
+    let authorName: String?
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case text
+        case rating
+        case longevity
+        case sillage
+        case authorName = "author_name"
     }
 }

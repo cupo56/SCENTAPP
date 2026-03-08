@@ -7,12 +7,18 @@ import Foundation
 import Network
 import Combine
 
+@Observable
 @MainActor
-class NetworkMonitor: ObservableObject {
+class NetworkMonitor {
     static let shared = NetworkMonitor()
-    
-    @Published private(set) var isConnected: Bool = true
-    
+
+    private(set) var isConnected: Bool = true {
+        didSet { connectionSubject.send(isConnected) }
+    }
+
+    /// Combine subject for subscribers that need reactive pipelines.
+    let connectionSubject = PassthroughSubject<Bool, Never>()
+
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "de.scentboxd.NetworkMonitor")
     

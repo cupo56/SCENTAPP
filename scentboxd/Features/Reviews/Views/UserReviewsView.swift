@@ -10,13 +10,12 @@ import SwiftData
 
 struct UserReviewsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var allPerfumes: [Perfume] // Needed to link reviews to Perfume details locally
-    
+    @Environment(\.dependencies) private var container
+    @Query private var allPerfumes: [Perfume]
+
     @State private var userReviews: [ReviewDTO] = []
     @State private var isLoading = true
     @State private var errorMessage: String? = nil
-    
-    private let dataSource = ReviewRemoteDataSource()
     
     var body: some View {
         ZStack {
@@ -110,11 +109,11 @@ struct UserReviewsView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(perfume?.name ?? "Unbekanntes Parfum")
+                    Text(perfume?.name ?? String(localized: "Unbekanntes Parfum"))
                         .font(DesignSystem.Fonts.serif(size: 15, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(1)
-                    Text(perfume?.brand?.name ?? "Marke unbekannt")
+                    Text(perfume?.brand?.name ?? String(localized: "Marke unbekannt"))
                         .font(.caption)
                         .foregroundColor(Color(hex: "#94A3B8"))
                         .lineLimit(1)
@@ -199,9 +198,9 @@ struct UserReviewsView: View {
         isLoading = true
         errorMessage = nil
         do {
-            userReviews = try await dataSource.fetchUserReviews()
+            userReviews = try await container.reviewDataSource.fetchUserReviews()
         } catch {
-            errorMessage = "Fehler beim Laden der Bewertungen: \(error.localizedDescription)"
+            errorMessage = String(localized: "Fehler beim Laden der Bewertungen: \(error.localizedDescription)")
         }
         isLoading = false
     }
@@ -209,14 +208,14 @@ struct UserReviewsView: View {
     // MARK: - Helpers
     
     private func longevityText(for value: Int) -> String {
-        if value < 33 { return "Flüchtig" }
-        else if value < 66 { return "Moderat" }
-        else { return "Ewig" }
+        if value < 33 { return String(localized: "Flüchtig") }
+        else if value < 66 { return String(localized: "Moderat") }
+        else { return String(localized: "Ewig") }
     }
     
     private func sillageText(for value: Int) -> String {
-        if value < 33 { return "Hautnah" }
-        else if value < 66 { return "Moderat" }
-        else { return "Raumfüllend" }
+        if value < 33 { return String(localized: "Hautnah") }
+        else if value < 66 { return String(localized: "Moderat") }
+        else { return String(localized: "Raumfüllend") }
     }
 }

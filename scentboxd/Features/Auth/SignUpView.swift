@@ -24,6 +24,9 @@ struct SignUpView: View {
     
     /// Username: 3–20 Zeichen, nur Buchstaben, Zahlen und Unterstriche
     private static let usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
+
+    /// E-Mail: RFC 5322–inspirierte Validierung
+    private static let emailRegex = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,64}$/
     
     private var isUsernameValid: Bool {
         let trimmed = username.trimmingCharacters(in: .whitespaces)
@@ -33,17 +36,26 @@ struct SignUpView: View {
     private var usernameError: String? {
         let trimmed = username.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return nil }
-        if trimmed.count < 3 { return "Mindestens 3 Zeichen" }
-        if trimmed.count > 20 { return "Maximal 20 Zeichen" }
+        if trimmed.count < 3 { return String(localized: "Mindestens 3 Zeichen") }
+        if trimmed.count > 20 { return String(localized: "Maximal 20 Zeichen") }
         if trimmed.wholeMatch(of: Self.usernameRegex) == nil {
-            return "Nur Buchstaben, Zahlen und _ erlaubt"
+            return String(localized: "Nur Buchstaben, Zahlen und _ erlaubt")
         }
         return nil
     }
     
     private var isEmailValid: Bool {
         let trimmed = email.trimmingCharacters(in: .whitespaces)
-        return trimmed.contains("@") && trimmed.contains(".")
+        return trimmed.wholeMatch(of: Self.emailRegex) != nil
+    }
+
+    private var emailError: String? {
+        let trimmed = email.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+        if trimmed.wholeMatch(of: Self.emailRegex) == nil {
+            return String(localized: "Ungültige E-Mail-Adresse")
+        }
+        return nil
     }
 
     private var isFormValid: Bool {
@@ -96,22 +108,31 @@ struct SignUpView: View {
                         // Form Fields
                         VStack(spacing: 16) {
                             // Email
-                            HStack {
-                                Image(systemName: "envelope")
-                                    .foregroundColor(Color(hex: "#94A3B8"))
-                                    .frame(width: 24)
-                                TextField("E-Mail", text: $email)
-                                    .textContentType(.emailAddress)
-                                    .keyboardType(.emailAddress)
-                                    .autocapitalization(.none)
-                                    .autocorrectionDisabled()
-                                    .focused($focusedField, equals: .email)
-                                    .submitLabel(.next)
-                                    .onSubmit { focusedField = .username }
-                                    .foregroundColor(.white)
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Image(systemName: "envelope")
+                                        .foregroundColor(Color(hex: "#94A3B8"))
+                                        .frame(width: 24)
+                                    TextField("E-Mail", text: $email)
+                                        .textContentType(.emailAddress)
+                                        .keyboardType(.emailAddress)
+                                        .autocapitalization(.none)
+                                        .autocorrectionDisabled()
+                                        .focused($focusedField, equals: .email)
+                                        .submitLabel(.next)
+                                        .onSubmit { focusedField = .username }
+                                        .foregroundColor(.white)
+                                }
+                                .padding(16)
+                                .glassPanel()
+
+                                if let error = emailError {
+                                    Text(error)
+                                        .font(.caption)
+                                        .foregroundStyle(.orange)
+                                        .padding(.leading, 8)
+                                }
                             }
-                            .padding(16)
-                            .glassPanel()
                             
                             // Username
                             VStack(alignment: .leading, spacing: 4) {

@@ -75,7 +75,10 @@ struct RootTabView: View {
     }
 }
 #Preview {
+    let container = DependencyContainer()
+    let filterVM = container.makePerfumeFilterViewModel()
     RootTabView()
-        .environmentObject(PerfumeListViewModel())
+        .environment(container.makePerfumeListViewModel(filterVM: filterVM))
+        .environment(filterVM)
         .environment(AuthManager())
 }

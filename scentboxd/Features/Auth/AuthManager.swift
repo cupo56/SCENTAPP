@@ -10,10 +10,48 @@ import Supabase
 import Auth
 import Observation
 
+// MARK: - Client-Side Auth Rate Limiter
+
+/// Sliding-window rate limiter for authentication attempts.
+/// Prevents brute-force attacks client-side (Supabase also has server-side limits).
+@MainActor
+final class AuthRateLimiter {
+    private let maxAttempts: Int
+    private let windowSeconds: TimeInterval
+    private var timestamps: [Date] = []
+
+    init(maxAttempts: Int = 5, windowSeconds: TimeInterval = 60) {
+        self.maxAttempts = maxAttempts
+        self.windowSeconds = windowSeconds
+    }
+
+    /// Records an attempt and returns `nil` if allowed,
+    /// or the number of seconds until the next attempt is permitted.
+    func recordAttempt() -> Int? {
+        let now = Date()
+        // Remove expired timestamps outside the window
+        timestamps.removeAll { now.timeIntervalSince($0) > windowSeconds }
+
+        if timestamps.count >= maxAttempts {
+            // Cooldown = time until the oldest attempt expires
+            let oldest = timestamps.first!
+            let cooldown = Int(ceil(windowSeconds - now.timeIntervalSince(oldest)))
+            return max(cooldown, 1)
+        }
+
+        timestamps.append(now)
+        return nil
+    }
+}
+
+// MARK: - AuthManager
+
 @Observable
 @MainActor
 class AuthManager {
     private let client = AppConfig.client
+    private let rateLimiter = AuthRateLimiter()
+    private let profileService = ProfileService()
     
     var currentUser: User?
     var isAuthenticated: Bool { currentUser != nil }
@@ -50,12 +88,18 @@ class AuthManager {
             pendingEmailConfirmation = false
         } catch {
             currentUser = nil
-            AuthSessionCache.shared.clear()
+            await AuthSessionCache.shared.clear()
         }
     }
     
     /// Anmeldung mit E-Mail und Passwort
     func signIn(email: String, password: String) async -> Bool {
+        // Rate limit check
+        if let cooldown = rateLimiter.recordAttempt() {
+            errorMessage = String(localized: "Zu viele Anmeldeversuche. Bitte warte \(cooldown) Sekunden.")
+            return false
+        }
+        
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -83,6 +127,12 @@ class AuthManager {
     /// - Parameter username: Optionaler Username, der nach Bestätigung der E-Mail gespeichert wird
     /// - Returns: `true` wenn der User sofort eingeloggt ist (E-Mail bereits bestätigt), `false` bei ausstehender Bestätigung oder Fehler
     func signUp(email: String, password: String, username: String? = nil) async -> Bool {
+        // Rate limit check
+        if let cooldown = rateLimiter.recordAttempt() {
+            errorMessage = String(localized: "Zu viele Versuche. Bitte warte \(cooldown) Sekunden.")
+            return false
+        }
+        
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -119,50 +169,32 @@ class AuthManager {
             try await client.auth.signOut()
             currentUser = nil
             username = nil
-            AuthSessionCache.shared.clear()
+            await AuthSessionCache.shared.clear()
         } catch {
-            errorMessage = "Abmeldung fehlgeschlagen: \(error.localizedDescription)"
+            errorMessage = String(localized: "Abmeldung fehlgeschlagen: \(error.localizedDescription)")
         }
     }
     
     /// Lädt den Username aus der profiles-Tabelle
     func loadUsername() async {
         guard let userId = currentUser?.id else { return }
-        
-        let profile: ProfileDTO? = try? await client
-            .from("profiles")
-            .select("*")
-            .eq("id", value: userId)
-            .single()
-            .execute()
-            .value
-        
+        let profile = try? await profileService.fetchProfile(userId: userId)
         username = profile?.username
     }
-    
+
     /// Speichert den Username in der profiles-Tabelle
     func saveUsername(_ newUsername: String) async -> Bool {
         guard let userId = currentUser?.id else { return false }
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
-        
+
         do {
-            let dto = ProfileDTO(
-                id: userId,
-                username: newUsername,
-                updatedAt: Date()
-            )
-            
-            try await client
-                .from("profiles")
-                .upsert(dto)
-                .execute()
-            
+            try await profileService.saveProfile(userId: userId, username: newUsername)
             username = newUsername
             return true
         } catch {
-            errorMessage = "Fehler beim Speichern des Benutzernamens: \(error.localizedDescription)"
+            errorMessage = String(localized: "Fehler beim Speichern des Benutzernamens: \(error.localizedDescription)")
             return false
         }
     }
@@ -174,20 +206,20 @@ class AuthManager {
            case .api(_, let errorCode, _, _) = authError {
             switch errorCode.rawValue {
             case "invalid_credentials":
-                return "Ungültige E-Mail oder Passwort."
+                return String(localized: "Ungültige E-Mail oder Passwort.")
             case "email_not_confirmed":
-                return "Bitte bestätige deine E-Mail-Adresse."
+                return String(localized: "Bitte bestätige deine E-Mail-Adresse.")
             case "user_already_exists", "email_address_in_use":
-                return "Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an."
+                return String(localized: "Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.")
             case "weak_password":
-                return "Das Passwort ist zu schwach. Mindestens 6 Zeichen."
+                return String(localized: "Das Passwort ist zu schwach. Mindestens 6 Zeichen.")
             case "invalid_email", "validation_failed":
-                return "Bitte gib eine gültige E-Mail-Adresse ein."
+                return String(localized: "Bitte gib eine gültige E-Mail-Adresse ein.")
             default:
-                return "Authentifizierungsfehler: \(errorCode.rawValue)"
+                return String(localized: "Authentifizierungsfehler: \(errorCode.rawValue)")
             }
         }
 
-        return "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+        return String(localized: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.")
     }
 }

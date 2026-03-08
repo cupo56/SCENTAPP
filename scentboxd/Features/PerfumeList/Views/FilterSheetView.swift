@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct FilterSheetView: View {
-    @EnvironmentObject var viewModel: PerfumeListViewModel
+    @Environment(PerfumeFilterViewModel.self) var filterVM
     @Environment(\.dismiss) private var dismiss
     
     // Lokale Kopie für "Anwenden"-Logik
@@ -27,7 +27,7 @@ struct FilterSheetView: View {
                 Section {
                     Picker("Sortierung", selection: $draftSort) {
                         ForEach(PerfumeSortOption.allCases) { option in
-                            Label(option.rawValue, systemImage: option.systemImage)
+                            Label(option.localizedName, systemImage: option.systemImage)
                                 .tag(option)
                         }
                     }
@@ -37,13 +37,13 @@ struct FilterSheetView: View {
                 
                 // MARK: - Marke
                 Section {
-                    if viewModel.availableBrands.isEmpty {
+                    if filterVM.availableBrands.isEmpty {
                         Text("Lade Marken…")
                             .foregroundColor(.secondary)
                     } else {
                         Picker("Marke", selection: brandBinding) {
                             Text("Alle Marken").tag("")
-                            ForEach(viewModel.availableBrands, id: \.self) { brand in
+                            ForEach(filterVM.availableBrands, id: \.self) { brand in
                                 Text(brand).tag(brand)
                             }
                         }
@@ -54,13 +54,13 @@ struct FilterSheetView: View {
                 
                 // MARK: - Konzentration
                 Section {
-                    if viewModel.availableConcentrations.isEmpty {
+                    if filterVM.availableConcentrations.isEmpty {
                         Text("Lade Konzentrationen…")
                             .foregroundColor(.secondary)
                     } else {
                         Picker("Konzentration", selection: concentrationBinding) {
                             Text("Alle").tag("")
-                            ForEach(viewModel.availableConcentrations, id: \.self) { conc in
+                            ForEach(filterVM.availableConcentrations, id: \.self) { conc in
                                 Text(conc.uppercased()).tag(conc)
                             }
                         }
@@ -232,8 +232,8 @@ struct FilterSheetView: View {
     }
     
     private func applyFilters() {
-        viewModel.activeFilter = draftFilter
-        viewModel.sortOption = draftSort
+        filterVM.activeFilter = draftFilter
+        filterVM.sortOption = draftSort
         dismiss()
     }
     
@@ -291,11 +291,11 @@ struct FilterSheetView: View {
     }
     
     private var longevityOptions: [String] {
-        ["Schwach", "Moderat", "Langhaltend", "Sehr langhaltend", "Ewig"]
+        [String(localized: "Schwach"), String(localized: "Moderat"), String(localized: "Langhaltend"), String(localized: "Sehr langhaltend"), String(localized: "Ewig")]
     }
     
     private var sillageOptions: [String] {
-        ["Nah", "Moderat", "Stark", "Enorm"]
+        [String(localized: "Nah"), String(localized: "Moderat"), String(localized: "Stark"), String(localized: "Enorm")]
     }
 }
 
