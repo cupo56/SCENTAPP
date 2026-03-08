@@ -48,14 +48,34 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				scentboxdTests/LoginUITests.swift,
+				scentboxdTests/MockPerfumeRepository.swift,
+				scentboxdTests/MockReviewDataSource.swift,
+				scentboxdTests/MockUserPerfumeDataSource.swift,
+				scentboxdTests/NetworkErrorTests.swift,
+				scentboxdTests/NetworkRetryTests.swift,
+				scentboxdTests/PerfumeDetailViewModelTests.swift,
+				scentboxdTests/PerfumeListViewModelTests.swift,
+				scentboxdTests/ReviewCreationUITests.swift,
 				scentboxdTests/scentboxdTests.swift,
+				scentboxdTests/TestHelpers.swift,
 			);
 			target = BB248BC62F1071060092FCDD /* scentboxd */;
 		};
 		BB46E1762F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxdTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				scentboxdTests/LoginUITests.swift,
+				scentboxdTests/MockPerfumeRepository.swift,
+				scentboxdTests/MockReviewDataSource.swift,
+				scentboxdTests/MockUserPerfumeDataSource.swift,
+				scentboxdTests/NetworkErrorTests.swift,
+				scentboxdTests/NetworkRetryTests.swift,
+				scentboxdTests/PerfumeDetailViewModelTests.swift,
+				scentboxdTests/PerfumeListViewModelTests.swift,
+				scentboxdTests/ReviewCreationUITests.swift,
 				scentboxdTests/scentboxdTests.swift,
+				scentboxdTests/TestHelpers.swift,
 			);
 			target = BB248BD32F1071080092FCDD /* scentboxdTests */;
 		};

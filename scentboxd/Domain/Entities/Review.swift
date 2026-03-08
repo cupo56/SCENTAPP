@@ -19,11 +19,28 @@ class Review {
     var createdAt: Date
     var authorName: String?
     var userId: UUID?
-    
-    // Beziehung: Ein Review gehört zu einem Parfum
+
+    /// Markiert, ob diese Review-Aenderung noch nicht zu Supabase hochgeladen wurde.
+    var hasPendingSync: Bool
+    /// Art der ausstehenden Aenderung (save/update/delete).
+    var pendingSyncAction: ReviewSyncAction?
+
+    // Beziehung: Ein Review gehoert zu einem Parfum
     var perfume: Perfume?
-    
-    init(id: UUID = UUID(), title: String, text: String, rating: Int, longevity: Int? = nil, sillage: Int? = nil, createdAt: Date = Date(), authorName: String? = nil, userId: UUID? = nil) {
+
+    init(
+        id: UUID = UUID(),
+        title: String,
+        text: String,
+        rating: Int,
+        longevity: Int? = nil,
+        sillage: Int? = nil,
+        createdAt: Date = Date(),
+        authorName: String? = nil,
+        userId: UUID? = nil,
+        hasPendingSync: Bool = false,
+        pendingSyncAction: ReviewSyncAction? = nil
+    ) {
         self.id = id
         self.title = title
         self.text = text
@@ -33,5 +50,7 @@ class Review {
         self.createdAt = createdAt
         self.authorName = authorName
         self.userId = userId
+        self.hasPendingSync = hasPendingSync
+        self.pendingSyncAction = pendingSyncAction
     }
 }

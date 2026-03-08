@@ -4,22 +4,31 @@ import Nuke
 import NukeUI
 
 struct PerfumeDetailView: View {
+    @Environment(\.dependencies) private var container
+
+    let perfume: Perfume
+
+    var body: some View {
+        PerfumeDetailContent(
+            viewModel: container.makePerfumeDetailViewModel(perfume: perfume)
+        )
+    }
+}
+
+/// Innere View, die den fertig injizierten ViewModel als @State haelt.
+private struct PerfumeDetailContent: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     @Environment(\.selectedTab) private var selectedTab
-    
+
     @State private var viewModel: PerfumeDetailViewModel
-    
-    init(perfume: Perfume, reviewDataSource: ReviewRemoteDataSource? = nil, userPerfumeDataSource: UserPerfumeRemoteDataSource? = nil) {
-        _viewModel = State(initialValue: PerfumeDetailViewModel(
-            perfume: perfume,
-            reviewDataSource: reviewDataSource ?? ReviewRemoteDataSource(),
-            userPerfumeDataSource: userPerfumeDataSource ?? UserPerfumeRemoteDataSource()
-        ))
+
+    init(viewModel: PerfumeDetailViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
-    
+
     private var perfume: Perfume { viewModel.perfume }
-    
+
     var body: some View {
         GeometryReader { screenGeometry in
             ScrollView {
@@ -81,14 +90,14 @@ struct PerfumeDetailView: View {
                         .frame(height: heroHeight)
                     }
                     .frame(height: heroHeight)
-                    .accessibilityLabel("Parfum-Bild von \(perfume.name)")
+                    .accessibilityLabel(String(localized: "Parfum-Bild von \(perfume.name)"))
                     
                     // ─── CONTENT ───
                     VStack(alignment: .leading, spacing: 28) {
                         
                         // Header Info
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(perfume.brand?.name ?? "Unbekannte Marke")
+                            Text(perfume.brand?.name ?? String(localized: "Unbekannte Marke"))
                                 .font(DesignSystem.Fonts.display(size: 13, weight: .bold))
                                 .tracking(2)
                                 .foregroundColor(DesignSystem.Colors.champagne)
@@ -113,9 +122,9 @@ struct PerfumeDetailView: View {
                                         )
                                         .clipShape(Capsule())
                                 }
-                                
+
                                 // Rating
-                                if let avg = viewModel.averageRating {
+                                if let avg = viewModel.reviewService.averageRating {
                                     HStack(spacing: 4) {
                                         Image(systemName: "star.fill")
                                             .font(.system(size: 12))
@@ -123,8 +132,8 @@ struct PerfumeDetailView: View {
                                         Text(String(format: "%.1f", avg))
                                             .font(.system(size: 13, weight: .bold))
                                             .foregroundColor(.white)
-                                        if viewModel.reviewCount > 0 {
-                                            Text("(\(viewModel.reviewCount))")
+                                        if viewModel.reviewService.reviewCount > 0 {
+                                            Text("(\(viewModel.reviewService.reviewCount))")
                                                 .font(.system(size: 11))
                                                 .foregroundColor(.white.opacity(0.5))
                                         }
@@ -143,13 +152,13 @@ struct PerfumeDetailView: View {
                             // Sammlung
                             Button {
                                 if authManager.isAuthenticated {
-                                    viewModel.toggleStatus(.owned, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
+                                    viewModel.toggleOwned(modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
                                 } else {
                                     viewModel.showLoginAlert = true
                                 }
                             } label: {
                                 HStack(spacing: 6) {
-                                    Image(systemName: viewModel.isActive(.owned) ? "star.fill" : "star")
+                                    Image(systemName: viewModel.statusService.isOwned(perfume) ? "star.fill" : "star")
                                         .font(.system(size: 14))
                                     Text("Sammlung")
                                         .font(.system(size: 13, weight: .bold))
@@ -161,17 +170,17 @@ struct PerfumeDetailView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                                 .shadow(color: DesignSystem.Colors.primary.opacity(0.25), radius: 10, x: 0, y: 4)
                             }
-                            
+
                             // Wunschliste
                             Button {
                                 if authManager.isAuthenticated {
-                                    viewModel.toggleStatus(.wishlist, modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
+                                    viewModel.toggleFavorite(modelContext: modelContext, isAuthenticated: authManager.isAuthenticated)
                                 } else {
                                     viewModel.showLoginAlert = true
                                 }
                             } label: {
                                 HStack(spacing: 6) {
-                                    Image(systemName: viewModel.isActive(.wishlist) ? "heart.fill" : "heart")
+                                    Image(systemName: viewModel.statusService.isFavorite(perfume) ? "heart.fill" : "heart")
                                         .font(.system(size: 14))
                                     Text("Wunschliste")
                                         .font(.system(size: 13, weight: .bold))
@@ -262,7 +271,7 @@ struct PerfumeDetailView: View {
                                     .font(DesignSystem.Fonts.serif(size: 22, weight: .semibold))
                                     .foregroundColor(.white)
                                 Spacer()
-                                if let total = viewModel.reviewTotalCount, total > 0 {
+                                if let total = viewModel.reviewService.reviewTotalCount, total > 0 {
                                     Text("\(total)")
                                         .font(.subheadline)
                                         .foregroundColor(Color(hex: "#94A3B8"))
@@ -270,7 +279,7 @@ struct PerfumeDetailView: View {
                             }
                             
                             // Loading
-                            if viewModel.isLoadingReviews {
+                            if viewModel.reviewService.isLoadingReviews {
                                 HStack {
                                     Spacer()
                                     ProgressView()
@@ -278,13 +287,13 @@ struct PerfumeDetailView: View {
                                     Spacer()
                                 }
                                 .padding(.vertical, 20)
-                            } else if viewModel.reviews.isEmpty {
+                            } else if viewModel.reviewService.reviews.isEmpty {
                                 Text("Noch keine Bewertungen vorhanden.")
                                     .font(.subheadline)
                                     .foregroundColor(Color(hex: "#94A3B8"))
                                     .padding(.vertical, 8)
                             } else {
-                                ForEach(viewModel.reviews, id: \.id) { review in
+                                ForEach(viewModel.reviewService.reviews, id: \.id) { review in
                                     ReviewCard(
                                         review: review,
                                         isOwn: review.userId == viewModel.currentUserId,
@@ -298,12 +307,12 @@ struct PerfumeDetailView: View {
                                     )
                                     .onAppear {
                                         Task {
-                                            await viewModel.loadMoreReviewsIfNeeded(currentReview: review)
+                                            await viewModel.reviewService.loadMoreIfNeeded(currentReview: review)
                                         }
                                     }
                                 }
                                 
-                                if viewModel.isLoadingMoreReviews {
+                                if viewModel.reviewService.isLoadingMoreReviews {
                                     HStack {
                                         Spacer()
                                         ProgressView("Lade weitere…")
@@ -326,7 +335,7 @@ struct PerfumeDetailView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: viewModel.hasExistingReview ? "pencil" : "pencil.line")
                                         .font(.system(size: 14))
-                                    Text(viewModel.hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
+                                    Text(viewModel.hasExistingReview ? String(localized: "Bewertung bearbeiten") : String(localized: "Bewertung schreiben"))
                                         .font(.system(size: 13, weight: .medium))
                                 }
                                 .foregroundColor(.white)
@@ -360,7 +369,7 @@ struct PerfumeDetailView: View {
             ReviewFormView(perfume: perfume, existingReview: viewModel.editingReview) { review in
                 Task {
                     if viewModel.editingReview != nil {
-                        await viewModel.updateReview(review)
+                        await viewModel.updateReview(review, modelContext: modelContext)
                     } else {
                         await viewModel.saveReview(review, modelContext: modelContext)
                     }
@@ -369,8 +378,8 @@ struct PerfumeDetailView: View {
         }
         .task {
             await viewModel.loadCurrentUserId()
-            await viewModel.loadReviews()
-            await viewModel.loadRatingStats()
+            await viewModel.reviewService.loadReviews()
+            await viewModel.reviewService.loadRatingStats()
         }
         .alert("Anmeldung erforderlich", isPresented: Bindable(viewModel).showLoginAlert) {
             Button("Abbrechen", role: .cancel) { }
@@ -378,19 +387,10 @@ struct PerfumeDetailView: View {
         } message: {
             Text("Bitte melde dich an oder registriere dich, um diese Funktion zu nutzen.")
         }
-        .alert("Bewertungsfehler", isPresented: Bindable(viewModel).showReviewErrorAlert) {
-            Button("OK", role: .cancel) { }
-            Button("Erneut versuchen") {
-                Task { await viewModel.loadReviews() }
-            }
-        } message: {
-            Text(viewModel.reviewErrorMessage ?? "Ein Fehler ist aufgetreten.")
+        .errorAlert("Bewertungsfehler", isPresented: Bindable(viewModel.reviewService).showErrorAlert, message: viewModel.reviewService.errorMessage) {
+            await viewModel.reviewService.loadReviews()
         }
-        .alert("Synchronisierungsfehler", isPresented: Bindable(viewModel).showSyncErrorAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(viewModel.syncErrorMessage ?? "Ein Fehler ist aufgetreten.")
-        }
+        .errorAlert("Synchronisierungsfehler", isPresented: Bindable(viewModel.statusService).showSyncErrorAlert, message: viewModel.statusService.syncErrorMessage)
     }
     
     // MARK: - Fragrance Pyramid Row

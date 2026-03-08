@@ -22,7 +22,7 @@ struct ReviewCard: View {
                 HStack(spacing: 6) {
                     Image(systemName: "person.circle.fill")
                         .foregroundColor(DesignSystem.Colors.primary)
-                    Text(review.authorName ?? "Anonym")
+                    Text(review.authorName ?? String(localized: "Anonym"))
                         .fontWeight(.medium)
                         .foregroundColor(.white)
                 }
@@ -44,7 +44,7 @@ struct ReviewCard: View {
                 }
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(review.rating) von 5 Sternen")
+            .accessibilityLabel(String(localized: "\(review.rating) von 5 Sternen"))
             
             // Titel
             if !review.title.isEmpty {
@@ -109,7 +109,7 @@ struct ReviewCard: View {
                         .font(.caption)
                         .foregroundColor(DesignSystem.Colors.champagne)
                     }
-                    .accessibilityLabel("Bewertung bearbeiten")
+                    .accessibilityLabel(String(localized: "Bewertung bearbeiten"))
                     
                     Button {
                         showDeleteConfirmation = true
@@ -121,7 +121,7 @@ struct ReviewCard: View {
                         .font(.caption)
                         .foregroundColor(.red.opacity(0.8))
                     }
-                    .accessibilityLabel("Bewertung löschen")
+                    .accessibilityLabel(String(localized: "Bewertung löschen"))
                     
                     Spacer()
                 }
@@ -146,15 +146,15 @@ struct ReviewCard: View {
     }
     
     private func longevityText(for value: Int) -> String {
-        if value < 33 { return "Flüchtig" }
-        else if value < 66 { return "Moderat" }
-        else { return "Ewig" }
+        if value < 33 { return String(localized: "Flüchtig") }
+        else if value < 66 { return String(localized: "Moderat") }
+        else { return String(localized: "Ewig") }
     }
     
     private func sillageText(for value: Int) -> String {
-        if value < 33 { return "Hautnah" }
-        else if value < 66 { return "Moderat" }
-        else { return "Raumfüllend" }
+        if value < 33 { return String(localized: "Hautnah") }
+        else if value < 66 { return String(localized: "Moderat") }
+        else { return String(localized: "Raumfüllend") }
     }
 }
 

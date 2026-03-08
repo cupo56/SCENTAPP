@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import Auth
+import os
 import Supabase
 #if canImport(PostgREST)
 import PostgREST
@@ -18,12 +19,12 @@ struct ProfileView: View {
     
     // MARK: - Data Queries
     @Query(filter: #Predicate<Perfume> { perfume in
-        perfume.userMetadata?.statusRaw == "Sammlung"
+        perfume.userMetadata?.isOwned == true
     }, sort: \Perfume.name)
     var ownedPerfumes: [Perfume]
-    
+
     @Query(filter: #Predicate<Perfume> { perfume in
-        perfume.userMetadata?.statusRaw == "Wunschliste"
+        perfume.userMetadata?.isFavorite == true
     }, sort: \Perfume.name)
     var favoritePerfumes: [Perfume]
     
@@ -64,9 +65,7 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        // Settings action placeholder
-                    } label: {
+                    NavigationLink(destination: SettingsView()) {
                         Image(systemName: "gearshape")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.white.opacity(0.7))
@@ -152,7 +151,7 @@ struct ProfileView: View {
                 
                 // Name & subtitle
                 VStack(spacing: 6) {
-                    Text(authManager.username ?? "Scentboxd Benutzer")
+                    Text(authManager.username ?? String(localized: "Scentboxd Benutzer"))
                         .font(DesignSystem.Fonts.serif(size: 28, weight: .bold))
                         .foregroundColor(.white)
                         .tracking(-0.3)
@@ -323,7 +322,7 @@ struct ProfileView: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                 
-                Text(perfume.brand?.name ?? "Unbekannte Marke")
+                Text(perfume.brand?.name ?? String(localized: "Unbekannte Marke"))
                     .font(.system(size: 11))
                     .foregroundColor(Color(hex: "#64748B"))
                     .lineLimit(1)
@@ -470,7 +469,7 @@ struct ProfileView: View {
                 reviewCount = count
             }
         } catch {
-            print("Failed to load review count: \(error.localizedDescription)")
+            AppLogger.reviews.error("Failed to load review count: \(error.localizedDescription)")
         }
     }
     

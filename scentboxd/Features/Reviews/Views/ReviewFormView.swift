@@ -98,7 +98,7 @@ struct ReviewFormView: View {
                         
                         // Title Section
                         VStack(spacing: 8) {
-                            Text("Dein Duft-Tagebuch")
+                            Text("Teile dein Erlebnis")
                                 .font(DesignSystem.Fonts.serif(size: 32, weight: .bold))
                                 .foregroundColor(.white)
                                 .multilineTextAlignment(.center)
@@ -320,20 +320,20 @@ struct ReviewFormView: View {
     }
     
     private var longevityText: String {
-        if longevity < 33 { return "Flüchtig" }
-        else if longevity < 66 { return "Moderat" }
-        else { return "Ewig" }
+        if longevity < 33 { return String(localized: "Flüchtig") }
+        else if longevity < 66 { return String(localized: "Moderat") }
+        else { return String(localized: "Ewig") }
     }
     
     private var sillageText: String {
-        if sillage < 33 { return "Hautnah" }
-        else if sillage < 66 { return "Moderat" }
-        else { return "Raumfüllend" }
+        if sillage < 33 { return String(localized: "Hautnah") }
+        else if sillage < 66 { return String(localized: "Moderat") }
+        else { return String(localized: "Raumfüllend") }
     }
     
     private func saveReview() {
         let finalTitle = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty 
-            ? "Bewertung für \(perfume.name)" 
+            ? String(localized: "Bewertung für \(perfume.name)") 
             : title
         
         let review: Review
