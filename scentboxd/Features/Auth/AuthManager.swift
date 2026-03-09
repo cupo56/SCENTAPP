@@ -175,6 +175,26 @@ class AuthManager {
         }
     }
     
+    /// Sendet eine E-Mail zum Zurücksetzen des Passworts
+    func resetPassword(email: String) async -> Bool {
+        if let cooldown = rateLimiter.recordAttempt() {
+            errorMessage = String(localized: "Zu viele Versuche. Bitte warte \(cooldown) Sekunden.")
+            return false
+        }
+
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            try await client.auth.resetPasswordForEmail(email)
+            return true
+        } catch {
+            errorMessage = mapAuthError(error)
+            return false
+        }
+    }
+
     /// Lädt den Username aus der profiles-Tabelle
     func loadUsername() async {
         guard let userId = currentUser?.id else { return }
