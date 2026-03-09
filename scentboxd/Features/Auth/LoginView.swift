@@ -12,6 +12,7 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var showSignUp = false
+    @State private var showForgotPassword = false
     @FocusState private var focusedField: Field?
     
     private enum Field: Hashable {
@@ -134,7 +135,16 @@ struct LoginView: View {
                         .buttonStyle(PrimaryButtonStyle())
                         .disabled(!isFormValid || authManager.isLoading)
                         .padding(.horizontal)
-                        
+
+                        // Forgot Password
+                        Button {
+                            showForgotPassword = true
+                        } label: {
+                            Text("Passwort vergessen?")
+                                .font(.footnote)
+                                .foregroundColor(DesignSystem.Colors.champagne)
+                        }
+
                         // Divider
                         HStack {
                             Rectangle()
@@ -165,6 +175,9 @@ struct LoginView: View {
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showSignUp) {
                 SignUpView()
+            }
+            .sheet(isPresented: $showForgotPassword) {
+                ForgotPasswordView()
             }
         }
     }
