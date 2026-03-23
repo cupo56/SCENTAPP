@@ -80,8 +80,14 @@ struct ProfileView: View {
                     )
                     statsGrid
 
+                    PendingSyncBanner()
+                        .padding(.horizontal, 16)
+
                     // Duftprofil Link
-                    NavigationLink(destination: FragranceProfileView(service: dependencies.makeFragranceProfileService())) {
+                    NavigationLink(destination: FragranceProfileView(
+                        service: dependencies.makeFragranceProfileService(),
+                        scentWheelService: dependencies.makeScentWheelService()
+                    )) {
                         HStack(spacing: 12) {
                             Image(systemName: "chart.bar.xaxis")
                                 .font(.system(size: 18))

@@ -40,12 +40,21 @@ struct ReviewsSection: View {
                     ReviewCard(
                         review: review,
                         isOwn: review.userId == viewModel.currentUserId,
+                        likeCount: viewModel.reviewService.likeCount(for: review.id),
+                        isLiked: viewModel.reviewService.isLiked(review.id),
                         onEdit: {
                             viewModel.editingReview = review
                             viewModel.showReviewSheet = true
                         },
                         onDelete: {
                             Task { await viewModel.deleteReview(review, modelContext: modelContext) }
+                        },
+                        onToggleLike: {
+                            if authManager.isAuthenticated {
+                                Task { await viewModel.reviewService.toggleLike(reviewId: review.id) }
+                            } else {
+                                viewModel.showLoginAlert = true
+                            }
                         }
                     )
                     .onAppear {

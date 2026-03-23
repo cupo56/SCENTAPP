@@ -16,6 +16,7 @@ class Review {
     var rating: Int // 1 bis 5
     var longevity: Int?
     var sillage: Int?
+    var occasions: [String]
     var createdAt: Date
     var authorName: String?
     var userId: UUID?
@@ -35,6 +36,7 @@ class Review {
         rating: Int,
         longevity: Int? = nil,
         sillage: Int? = nil,
+        occasions: [String] = [],
         createdAt: Date = Date(),
         authorName: String? = nil,
         userId: UUID? = nil,
@@ -47,6 +49,7 @@ class Review {
         self.rating = rating
         self.longevity = longevity
         self.sillage = sillage
+        self.occasions = occasions
         self.createdAt = createdAt
         self.authorName = authorName
         self.userId = userId

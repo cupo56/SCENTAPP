@@ -111,7 +111,7 @@ final class PerfumeStatusService {
                     modelContext: modelContext,
                     isFavorite: meta?.isFavorite ?? false,
                     isOwned: meta?.isOwned ?? false,
-                    isEmpty: meta?.isEmpty ?? false
+                    isWantToTry: meta?.isWantToTry ?? false
                 )
                 isToggling = false
             }
@@ -120,16 +120,16 @@ final class PerfumeStatusService {
         }
     }
 
-    private func syncStatusToSupabase(perfumeId: UUID, modelContext: ModelContext, isFavorite: Bool, isOwned: Bool, isEmpty: Bool) async {
+    private func syncStatusToSupabase(perfumeId: UUID, modelContext: ModelContext, isFavorite: Bool, isOwned: Bool, isWantToTry: Bool) async {
         do {
-            if !isFavorite && !isOwned && !isEmpty {
+            if !isFavorite && !isOwned && !isWantToTry {
                 try await userPerfumeDataSource.deleteUserPerfume(perfumeId: perfumeId)
             } else {
                 try await userPerfumeDataSource.saveUserPerfume(
                     perfumeId: perfumeId,
                     isFavorite: isFavorite,
                     isOwned: isOwned,
-                    isEmpty: isEmpty
+                    isWantToTry: isWantToTry
                 )
             }
             let predicate = #Predicate<Perfume> { $0.id == perfumeId }

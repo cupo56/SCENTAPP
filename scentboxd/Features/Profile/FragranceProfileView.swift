@@ -9,10 +9,12 @@ import Charts
 struct FragranceProfileView: View {
     @Environment(\.dependencies) private var dependencies
     @State private var service: FragranceProfileService
+    @State private var scentWheelService: ScentWheelService
     @State private var profileTask: Task<Void, Never>?
-    
-    init(service: FragranceProfileService) {
+
+    init(service: FragranceProfileService, scentWheelService: ScentWheelService) {
         _service = State(initialValue: service)
+        _scentWheelService = State(initialValue: scentWheelService)
     }
 
     var body: some View {
@@ -34,7 +36,9 @@ struct FragranceProfileView: View {
         .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
             profileTask = Task {
-                await service.loadProfile()
+                async let profileLoad: Void = service.loadProfile()
+                async let wheelLoad: Void = scentWheelService.loadScentWheel()
+                _ = await (profileLoad, wheelLoad)
             }
         }
         .onDisappear {
@@ -51,6 +55,9 @@ struct FragranceProfileView: View {
         ScrollView {
             VStack(spacing: 24) {
                 headerSection(profile)
+                if !scentWheelService.segments.isEmpty {
+                    ScentWheelView(segments: scentWheelService.segments)
+                }
                 topNotesSection(profile.topNotes)
                 concentrationsSection(profile.concentrations)
                 ratingsSection(profile)
@@ -322,7 +329,10 @@ struct FragranceProfileView: View {
 
 #Preview {
     NavigationStack {
-        FragranceProfileView(service: FragranceProfileService())
-            .environment(\.dependencies, DependencyContainer())
+        FragranceProfileView(
+            service: FragranceProfileService(),
+            scentWheelService: ScentWheelService()
+        )
+        .environment(\.dependencies, DependencyContainer())
     }
 }

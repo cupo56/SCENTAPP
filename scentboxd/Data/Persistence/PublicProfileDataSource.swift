@@ -8,7 +8,7 @@ import Supabase
 
 /// Zugriff auf öffentliche Benutzerprofile und deren Sammlungen.
 @MainActor
-final class PublicProfileDataSource {
+final class PublicProfileDataSource: PublicProfileDataSourceProtocol {
     private let client = AppConfig.client
 
     /// Lädt das öffentliche Profil eines Users via RPC.

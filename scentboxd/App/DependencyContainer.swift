@@ -19,7 +19,7 @@ final class DependencyContainer {
     let networkMonitor: NetworkMonitor
     let cacheService: PerfumeCacheService
     let profileService: ProfileService
-    let publicProfileDataSource: PublicProfileDataSource
+    let publicProfileDataSource: any PublicProfileDataSourceProtocol
 
     // MARK: - Production Init
 
@@ -44,7 +44,7 @@ final class DependencyContainer {
         networkMonitor: NetworkMonitor,
         cacheService: PerfumeCacheService,
         profileService: ProfileService,
-        publicProfileDataSource: PublicProfileDataSource
+        publicProfileDataSource: any PublicProfileDataSourceProtocol
     ) {
         self.perfumeRepository = perfumeRepository
         self.reviewDataSource = reviewDataSource
@@ -113,6 +113,10 @@ final class DependencyContainer {
 
     func makeFragranceProfileService() -> FragranceProfileService {
         FragranceProfileService()
+    }
+
+    func makeScentWheelService() -> ScentWheelService {
+        ScentWheelService()
     }
     
     func makePublicProfileViewModel() -> PublicProfileViewModel {

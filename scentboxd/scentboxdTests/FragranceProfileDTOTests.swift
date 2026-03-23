@@ -98,7 +98,7 @@ final class FragranceProfileDTOTests: XCTestCase {
         let dto = try JSONDecoder().decode(UserPerfumeDTO.self, from: json)
         XCTAssertTrue(dto.isFavorite)
         XCTAssertFalse(dto.isOwned)
-        XCTAssertFalse(dto.isEmpty)
+        XCTAssertFalse(dto.isWantToTry)
         XCTAssertEqual(dto.perfumeId, UUID(uuidString: "22222222-2222-2222-2222-222222222222"))
     }
 
