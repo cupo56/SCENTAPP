@@ -18,14 +18,17 @@ struct ReviewFormView: View {
     @State private var rating: Int = 1
     @State private var title: String = ""
     @State private var text: String = ""
-    @State private var longevity: Double = 65
-    @State private var sillage: Double = 30
+    @State private var longevity: Double = AppConfig.ReviewDefaults.longevity
+    @State private var sillage: Double = AppConfig.ReviewDefaults.sillage
     @State private var isSaving: Bool = false
     
     private var isEditing: Bool { existingReview != nil }
     
     private var isFormValid: Bool {
-        rating >= 1 && text.trimmingCharacters(in: .whitespacesAndNewlines).count >= 10
+        rating >= 1
+            && textCharCount >= AppConfig.ReviewDefaults.minTextLength
+            && textCharCount <= AppConfig.ReviewDefaults.maxTextLength
+            && title.count <= AppConfig.ReviewDefaults.maxTitleLength
     }
     
     private var textCharCount: Int {
@@ -71,6 +74,7 @@ struct ReviewFormView: View {
                             .background(Color.white.opacity(0.05))
                             .clipShape(Circle())
                     }
+                    .accessibilityLabel("Schließen")
                     
                     Spacer()
                     
@@ -111,19 +115,7 @@ struct ReviewFormView: View {
                         .padding(.top, 16)
                         
                         // Rating
-                        HStack(spacing: 12) {
-                            ForEach(1...5, id: \.self) { star in
-                                Image(systemName: star <= rating ? "star.fill" : "star")
-                                    .font(.system(size: 36))
-                                    .foregroundColor(star <= rating ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
-                                    .onTapGesture {
-                                        withAnimation(.easeInOut(duration: 0.2)) {
-                                            rating = star
-                                        }
-                                    }
-                                    .scaleEffect(star <= rating ? 1.1 : 1.0)
-                            }
-                        }
+                        ReviewRatingSection(rating: $rating)
                         
                         // Title Field
                         VStack(alignment: .leading, spacing: 8) {
@@ -149,6 +141,12 @@ struct ReviewFormView: View {
                                 .focused($focusedField, equals: .title)
                                 .submitLabel(.next)
                                 .onSubmit { focusedField = .text }
+                                .accessibilityLabel("Überschrift der Bewertung")
+                                .onChange(of: title) { _, newValue in
+                                    if newValue.count > AppConfig.ReviewDefaults.maxTitleLength {
+                                        title = String(newValue.prefix(AppConfig.ReviewDefaults.maxTitleLength))
+                                    }
+                                }
                                 .foregroundColor(.white)
                                 .padding(16)
                                 .glassPanel()
@@ -183,84 +181,23 @@ struct ReviewFormView: View {
                                     .padding(16)
                                     .padding(.bottom, 24)
                                     .glassPanel()
+                                    .accessibilityLabel("Persönliche Notizen")
+                                    .accessibilityHint("Mindestens \(AppConfig.ReviewDefaults.minTextLength) Zeichen")
+                                    .onChange(of: text) { _, newValue in
+                                        if newValue.count > AppConfig.ReviewDefaults.maxTextLength {
+                                            text = String(newValue.prefix(AppConfig.ReviewDefaults.maxTextLength))
+                                        }
+                                    }
 
-                                Text("\(textCharCount)/500")
+                                Text("\(textCharCount)/\(AppConfig.ReviewDefaults.maxTextLength)")
                                     .font(.system(size: 12))
-                                    .foregroundColor(Color(hex: "#475569"))
+                                    .foregroundColor(textCharCount > AppConfig.ReviewDefaults.maxTextLength ? .red : Color(hex: "#475569"))
                                     .padding(16)
                             }
                         }
                         
                         // Sliders Section
-                        VStack(spacing: 24) {
-                            // Longevity
-                            VStack(spacing: 16) {
-                                HStack {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "clock")
-                                            .foregroundColor(DesignSystem.Colors.champagne)
-                                        Text("Haltbarkeit")
-                                            .foregroundColor(.white)
-                                            .fontWeight(.medium)
-                                    }
-                                    Spacer()
-                                    Text(longevityText)
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundColor(DesignSystem.Colors.primary)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(DesignSystem.Colors.primary.opacity(0.1))
-                                        .cornerRadius(4)
-                                }
-                                
-                                Slider(value: $longevity, in: 0...100)
-                                    .tint(DesignSystem.Colors.champagne)
-                                
-                                HStack {
-                                    Text("Flüchtig")
-                                    Spacer()
-                                    Text("Ewig")
-                                }
-                                .font(.system(size: 12))
-                                .foregroundColor(Color(hex: "#64748B"))
-                            }
-                            .padding(20)
-                            .glassPanel()
-                            
-                            // Sillage
-                            VStack(spacing: 16) {
-                                HStack {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "wind")
-                                            .foregroundColor(DesignSystem.Colors.champagne)
-                                        Text("Sillage")
-                                            .foregroundColor(.white)
-                                            .fontWeight(.medium)
-                                    }
-                                    Spacer()
-                                    Text(sillageText)
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundColor(DesignSystem.Colors.primary)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(DesignSystem.Colors.primary.opacity(0.1))
-                                        .cornerRadius(4)
-                                }
-                                
-                                Slider(value: $sillage, in: 0...100)
-                                    .tint(DesignSystem.Colors.champagne)
-                                
-                                HStack {
-                                    Text("Hautnah")
-                                    Spacer()
-                                    Text("Raumfüllend")
-                                }
-                                .font(.system(size: 12))
-                                .foregroundColor(Color(hex: "#64748B"))
-                            }
-                            .padding(20)
-                            .glassPanel()
-                        }
+                        ReviewPerformanceSliders(longevity: $longevity, sillage: $sillage)
                         
                         Spacer(minLength: 120)
                     }
@@ -293,6 +230,8 @@ struct ReviewFormView: View {
                 .disabled(!isFormValid || isSaving)
                 .opacity(isFormValid ? 1.0 : 0.5)
                 .padding(.horizontal, 24)
+                .accessibilityLabel("Eintrag veröffentlichen")
+                .accessibilityHint("Doppeltippen, um die Bewertung zu speichern")
                 .padding(.bottom, 24)
                 .background(
                     LinearGradient(
@@ -315,22 +254,24 @@ struct ReviewFormView: View {
                         .padding(24)
                         .glassPanel()
                 }
+            } else if !isFormValid && (rating < 1 || textCharCount > 0 && textCharCount < AppConfig.ReviewDefaults.minTextLength) {
+                // To help users, show an indicator why they can't save
+                VStack {
+                    Spacer()
+                    Text("Bitte vergib eine Bewertung (1-5 Sterne) und schreibe mindestens \(AppConfig.ReviewDefaults.minTextLength) Zeichen.")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding(12)
+                        .background(Color.red.opacity(0.8))
+                        .cornerRadius(8)
+                        .padding(.bottom, 130)
+                        .accessibilityLabel("Fehler: Bitte vergib eine Bewertung von 1 bis 5 Sternen und schreibe mindestens \(AppConfig.ReviewDefaults.minTextLength) Zeichen.")
+                }
+                .allowsHitTesting(false)
             }
         }
     }
-    
-    private var longevityText: String {
-        if longevity < 33 { return String(localized: "Flüchtig") }
-        else if longevity < 66 { return String(localized: "Moderat") }
-        else { return String(localized: "Ewig") }
-    }
-    
-    private var sillageText: String {
-        if sillage < 33 { return String(localized: "Hautnah") }
-        else if sillage < 66 { return String(localized: "Moderat") }
-        else { return String(localized: "Raumfüllend") }
-    }
-    
+
     private func saveReview() {
         let finalTitle = title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty 
             ? String(localized: "Bewertung für \(perfume.name)") 

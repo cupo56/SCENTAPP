@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import NukeUI
 
 struct UserReviewsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -15,7 +16,7 @@ struct UserReviewsView: View {
 
     @State private var userReviews: [ReviewDTO] = []
     @State private var isLoading = true
-    @State private var errorMessage: String? = nil
+    @State private var errorMessage: String?
     
     var body: some View {
         ZStack {
@@ -39,6 +40,7 @@ struct UserReviewsView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(DesignSystem.Colors.primary)
+                    .accessibilityHint("Doppeltippen, um die Bewertungen erneut zu laden")
                 }
                 .padding()
             } else if userReviews.isEmpty {
@@ -57,11 +59,15 @@ struct UserReviewsView: View {
                 ScrollView {
                     LazyVStack(spacing: 16) {
                         ForEach(userReviews, id: \.id) { reviewDTO in
-                            if let linkedPerfume = allPerfumes.first(where: { $0.id == reviewDTO.perfumeId }) {
+                            if let perfumeId = reviewDTO.perfumeId,
+                               let rating = reviewDTO.rating,
+                               let linkedPerfume = allPerfumes.first(where: { $0.id == perfumeId }) {
                                 NavigationLink(destination: PerfumeDetailView(perfume: linkedPerfume)) {
                                     userReviewCard(reviewDTO: reviewDTO, perfume: linkedPerfume)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Bewertung für \(linkedPerfume.name), \(rating) Sterne")
+                                .accessibilityHint("Öffnet die Detailseite")
                             } else {
                                 // If the perfume is not downloaded locally yet, still show the review but perhaps a simpler layout
                                 userReviewCard(reviewDTO: reviewDTO, perfume: nil)
@@ -76,6 +82,7 @@ struct UserReviewsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .task {
+            guard userReviews.isEmpty && errorMessage == nil else { return }
             await loadReviews()
         }
     }
@@ -88,10 +95,12 @@ struct UserReviewsView: View {
             HStack(spacing: 12) {
                 // Image
                 if let url = perfume?.imageUrl {
-                    AsyncImage(url: url) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        DesignSystem.Colors.surfaceDark
+                    LazyImage(url: url) { state in
+                        if let image = state.image {
+                            image.resizable().scaledToFill()
+                        } else {
+                            DesignSystem.Colors.surfaceDark
+                        }
                     }
                     .frame(width: 48, height: 48)
                     .cornerRadius(8)
@@ -123,7 +132,7 @@ struct UserReviewsView: View {
                 
                 Text(reviewDTO.createdAt.formatted(date: .abbreviated, time: .omitted))
                     .font(.caption2)
-                    .foregroundColor(Color(hex: "#64748B"))
+                    .foregroundColor(Color(hex: "#94A3B8"))
             }
             
             Divider()
@@ -132,9 +141,9 @@ struct UserReviewsView: View {
             // Rating
             HStack(spacing: 2) {
                 ForEach(1...5, id: \.self) { star in
-                    Image(systemName: star <= reviewDTO.rating ? "star.fill" : "star")
+                    Image(systemName: star <= (reviewDTO.rating ?? 0) ? "star.fill" : "star")
                         .font(.caption)
-                        .foregroundColor(star <= reviewDTO.rating ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
+                        .foregroundColor(star <= (reviewDTO.rating ?? 0) ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
                 }
             }
             
@@ -208,14 +217,22 @@ struct UserReviewsView: View {
     // MARK: - Helpers
     
     private func longevityText(for value: Int) -> String {
-        if value < 33 { return String(localized: "Flüchtig") }
-        else if value < 66 { return String(localized: "Moderat") }
-        else { return String(localized: "Ewig") }
+        if value < 33 {
+            return String(localized: "Flüchtig")
+        } else if value < 66 {
+            return String(localized: "Moderat")
+        } else {
+            return String(localized: "Ewig")
+        }
     }
-    
+
     private func sillageText(for value: Int) -> String {
-        if value < 33 { return String(localized: "Hautnah") }
-        else if value < 66 { return String(localized: "Moderat") }
-        else { return String(localized: "Raumfüllend") }
+        if value < 33 {
+            return String(localized: "Hautnah")
+        } else if value < 66 {
+            return String(localized: "Moderat")
+        } else {
+            return String(localized: "Raumfüllend")
+        }
     }
 }

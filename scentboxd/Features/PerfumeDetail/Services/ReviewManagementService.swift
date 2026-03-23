@@ -15,12 +15,15 @@ final class ReviewManagementService {
     var reviews: [Review] = []
     var isLoadingReviews = false
     var isLoadingMoreReviews = false
-    var reviewTotalCount: Int? = nil
+    var reviewTotalCount: Int?
     var isSavingReview = false
-    var averageRating: Double? = nil
-    var serverReviewCount: Int? = nil
-    var errorMessage: String? = nil
+    var averageRating: Double?
+    var serverReviewCount: Int?
+    var errorMessage: String?
     var showErrorAlert = false
+    var syncErrorMessage: String?
+    var showSyncErrorAlert = false
+    var deleteErrorMessage: String?
 
     var reviewCount: Int {
         serverReviewCount ?? reviewTotalCount ?? reviews.count
@@ -61,8 +64,9 @@ final class ReviewManagementService {
     }
 
     func loadMoreIfNeeded(currentReview: Review) async {
-        guard let lastReview = reviews.last,
-              lastReview.id == currentReview.id,
+        let thresholdIndex = max(reviews.count - 3, 0)
+        guard let currentIndex = reviews.firstIndex(where: { $0.id == currentReview.id }),
+              currentIndex >= thresholdIndex,
               hasMoreReviews,
               !isLoadingReviews,
               !isLoadingMoreReviews else { return }
@@ -107,28 +111,8 @@ final class ReviewManagementService {
             perfume.reviews.append(review)
         }
 
-        var remoteSuccess = false
-        do {
-            try await reviewDataSource.saveReview(review, for: perfumeId)
-            remoteSuccess = true
-        } catch {
-            review.hasPendingSync = true
-            review.pendingSyncAction = .save
-            NetworkError.handle(error, logger: AppLogger.reviews, context: "Review-Save (wird spaeter synchronisiert)")
-        }
-
-        do {
-            if remoteSuccess {
-                review.hasPendingSync = false
-                review.pendingSyncAction = nil
-            }
-            try modelContext.save()
-        } catch {
-            if remoteSuccess {
-                review.hasPendingSync = true
-                review.pendingSyncAction = .save
-            }
-            AppLogger.cache.error("SwiftData-Speichern fehlgeschlagen: \(error.localizedDescription)")
+        await syncAndPersist(review: review, syncAction: .save, modelContext: modelContext) {
+            try await self.reviewDataSource.saveReview(review, for: self.perfumeId)
         }
 
         if !reviews.contains(where: { $0.id == review.id }) {
@@ -141,14 +125,31 @@ final class ReviewManagementService {
         isSavingReview = true
         defer { isSavingReview = false }
 
+        await syncAndPersist(review: review, syncAction: .update, modelContext: modelContext) {
+            try await self.reviewDataSource.updateReview(review, for: self.perfumeId)
+        }
+
+        if let index = reviews.firstIndex(where: { $0.id == review.id }) {
+            reviews[index] = review
+        }
+        await loadRatingStats()
+    }
+
+    /// Shared sync logic: attempt remote operation, mark pending if failed, persist to SwiftData.
+    private func syncAndPersist(
+        review: Review,
+        syncAction: ReviewSyncAction,
+        modelContext: ModelContext,
+        remoteOperation: () async throws -> Void
+    ) async {
         var remoteSuccess = false
         do {
-            try await reviewDataSource.updateReview(review, for: perfumeId)
+            try await remoteOperation()
             remoteSuccess = true
         } catch {
             review.hasPendingSync = true
-            review.pendingSyncAction = .update
-            NetworkError.handle(error, logger: AppLogger.reviews, context: "Review-Update (wird spaeter synchronisiert)")
+            review.pendingSyncAction = syncAction
+            NetworkError.handle(error, logger: AppLogger.reviews, context: "Review-\(syncAction) (wird spaeter synchronisiert)")
         }
 
         do {
@@ -160,39 +161,44 @@ final class ReviewManagementService {
         } catch {
             if remoteSuccess {
                 review.hasPendingSync = true
-                review.pendingSyncAction = .update
+                review.pendingSyncAction = syncAction
             }
             AppLogger.cache.error("SwiftData-Speichern fehlgeschlagen: \(error.localizedDescription)")
         }
-
-        await loadReviews()
     }
 
     func deleteReview(_ review: Review, perfume: Perfume, modelContext: ModelContext) async {
         isSavingReview = true
         defer { isSavingReview = false }
+        deleteErrorMessage = nil
 
+        // Attempt remote delete FIRST, before mutating local state
+        var remoteSuccess = false
         do {
             try await reviewDataSource.deleteReview(id: review.id)
-            reviews.removeAll { $0.id == review.id }
-            perfume.reviews.removeAll { $0.id == review.id }
-            if let count = reviewTotalCount {
-                reviewTotalCount = max(0, count - 1)
-            }
+            remoteSuccess = true
         } catch {
             review.hasPendingSync = true
             review.pendingSyncAction = .delete
-            reviews.removeAll { $0.id == review.id }
-            if let count = reviewTotalCount {
-                reviewTotalCount = max(0, count - 1)
-            }
-            NetworkError.handle(error, logger: AppLogger.reviews, context: "Review-Delete (wird spaeter synchronisiert)")
+            let msg = NetworkError.handle(error, logger: AppLogger.reviews, context: "Review-Delete")
+            deleteErrorMessage = msg
+        }
+
+        // Remove from local state only after remote attempt
+        reviews.removeAll { $0.id == review.id }
+        perfume.reviews.removeAll { $0.id == review.id }
+        if let count = reviewTotalCount {
+            reviewTotalCount = max(0, count - 1)
         }
 
         do {
             try modelContext.save()
         } catch {
             AppLogger.cache.error("SwiftData-Speichern fehlgeschlagen: \(error.localizedDescription)")
+        }
+
+        if remoteSuccess {
+            await loadRatingStats()
         }
     }
 
@@ -203,4 +209,5 @@ final class ReviewManagementService {
             modelContext.insert(perfume)
         }
     }
+
 }

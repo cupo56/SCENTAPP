@@ -12,6 +12,7 @@ enum NetworkError: LocalizedError {
     case serverError(statusCode: Int)
     case clientError(statusCode: Int)
     case notSupported(reason: String)
+    case validationFailed(String)
     case unknown(underlying: Error)
 
     var errorDescription: String? {
@@ -26,6 +27,8 @@ enum NetworkError: LocalizedError {
             return String(localized: "Anfragefehler (\(statusCode)). Bitte prüfe deine Anmeldung.")
         case .notSupported(let reason):
             return reason
+        case .validationFailed(let reason):
+            return reason
         case .unknown:
             return String(localized: "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.")
         }
@@ -39,7 +42,7 @@ enum NetworkError: LocalizedError {
         case .serverError(let statusCode):
             // Nur echte Server-Fehler (5xx) sind transient, nicht 501 Not Implemented
             return statusCode != 501
-        case .noConnection, .clientError, .unknown, .notSupported:
+        case .noConnection, .clientError, .unknown, .notSupported, .validationFailed:
             return false
         }
     }

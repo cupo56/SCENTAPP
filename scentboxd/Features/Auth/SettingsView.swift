@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var showLogoutConfirmation = false
     @State private var showCacheCleared = false
     @State private var isClearingCache = false
+    @State private var clearCacheTask: Task<Void, Never>?
 
     var body: some View {
         ZStack {
@@ -46,6 +47,9 @@ struct SettingsView: View {
                 }
             }
             Button("Abbrechen", role: .cancel) {}
+        }
+        .onDisappear {
+            clearCacheTask?.cancel()
         }
     }
 
@@ -82,6 +86,8 @@ struct SettingsView: View {
                 }
             }
             .disabled(isClearingCache)
+            .accessibilityLabel("Cache leeren")
+            .accessibilityHint("Löscht lokale Daten und zwischengespeicherte Bilder")
         }
     }
 
@@ -147,6 +153,8 @@ struct SettingsView: View {
                 }
             }
             .disabled(authManager.isLoading)
+            .accessibilityLabel("Abmelden")
+            .accessibilityHint("Doppeltippen, um dich abzumelden")
         }
     }
 
@@ -195,7 +203,7 @@ struct SettingsView: View {
             Spacer()
             Text(value)
                 .font(.system(size: 14))
-                .foregroundColor(Color(hex: "#64748B"))
+                .foregroundColor(Color(hex: "#94A3B8"))
         }
     }
 
@@ -210,32 +218,34 @@ struct SettingsView: View {
     // MARK: - Actions
 
     private func clearCache() {
+        clearCacheTask?.cancel()
         isClearingCache = true
 
-        // Clear SwiftData local cache
-        do {
-            try modelContext.delete(model: Perfume.self)
-            try modelContext.delete(model: Review.self)
-            try modelContext.save()
-        } catch {
-            AppLogger.cache.error("Failed to clear SwiftData cache: \(error.localizedDescription)")
-        }
+        clearCacheTask = Task {
+            // Yield so SwiftUI renders the spinner before blocking work
+            try? await Task.sleep(for: .milliseconds(300))
 
-        // Clear Nuke image cache
-        ImagePipeline.shared.cache.removeAll()
+            do {
+                try modelContext.delete(model: Perfume.self)
+                try modelContext.delete(model: Review.self)
+                try modelContext.save()
+            } catch {
+                AppLogger.cache.error("Failed to clear SwiftData cache: \(error.localizedDescription)")
+            }
 
-        // Reset catalog sync timestamp
-        UserDefaults.standard.removeObject(forKey: "PerfumeCatalog_lastSyncedAt")
+            ImagePipeline.shared.cache.removeAll()
+            UserDefaults.standard.removeObject(forKey: "PerfumeCatalog_lastSyncedAt")
 
-        isClearingCache = false
-
-        withAnimation {
-            showCacheCleared = true
-        }
-        Task {
-            try? await Task.sleep(for: .seconds(2))
             withAnimation {
-                showCacheCleared = false
+                isClearingCache = false
+                showCacheCleared = true
+            }
+
+            try? await Task.sleep(for: .seconds(2))
+            if !Task.isCancelled {
+                withAnimation {
+                    showCacheCleared = false
+                }
             }
         }
     }
@@ -244,6 +254,6 @@ struct SettingsView: View {
 #Preview {
     NavigationStack {
         SettingsView()
-            .environment(AuthManager())
+            .environment(AuthManager(profileService: ProfileService()))
     }
 }

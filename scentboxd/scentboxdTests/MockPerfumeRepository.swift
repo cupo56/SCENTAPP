@@ -13,6 +13,7 @@ final class MockPerfumeRepository: PerfumeRepository {
     
     var perfumesToReturn: [Perfume] = []
     var searchResultsToReturn: [Perfume] = []
+    var searchSuggestionsToReturn: [SearchSuggestionDTO] = []
     var totalCountToReturn: Int = 0
     var brandsToReturn: [String] = []
     var concentrationsToReturn: [String] = []
@@ -22,6 +23,7 @@ final class MockPerfumeRepository: PerfumeRepository {
     
     private(set) var fetchPerfumesCalled = 0
     private(set) var searchPerfumesCalled = 0
+    private(set) var fetchSearchSuggestionsCalled = 0
     private(set) var fetchTotalCountCalled = 0
     private(set) var fetchBrandsCalled = 0
     private(set) var fetchConcentrationsCalled = 0
@@ -31,6 +33,7 @@ final class MockPerfumeRepository: PerfumeRepository {
     private(set) var lastFilter: PerfumeFilter?
     private(set) var lastSort: PerfumeSortOption?
     private(set) var lastSearchQuery: String?
+    private(set) var lastSuggestionQuery: String?
     
     // MARK: - PerfumeRepository
     
@@ -54,6 +57,13 @@ final class MockPerfumeRepository: PerfumeRepository {
         if let error = errorToThrow { throw error }
         return searchResultsToReturn
     }
+
+    func fetchSearchSuggestions(query: String) async throws -> [SearchSuggestionDTO] {
+        fetchSearchSuggestionsCalled += 1
+        lastSuggestionQuery = query
+        if let error = errorToThrow { throw error }
+        return searchSuggestionsToReturn
+    }
     
     func fetchTotalCount(searchQuery: String?, filter: PerfumeFilter) async throws -> Int {
         fetchTotalCountCalled += 1
@@ -71,5 +81,15 @@ final class MockPerfumeRepository: PerfumeRepository {
         fetchConcentrationsCalled += 1
         if let error = errorToThrow { throw error }
         return concentrationsToReturn
+    }
+
+    func fetchPerfumesByIds(_ ids: [UUID]) async throws -> [Perfume] {
+        if let error = errorToThrow { throw error }
+        return perfumesToReturn.filter { ids.contains($0.id) }
+    }
+
+    func fetchSimilarPerfumes(for perfumeId: UUID, limit: Int) async throws -> [Perfume] {
+        if let error = errorToThrow { throw error }
+        return perfumesToReturn.prefix(limit).map { $0 }
     }
 }

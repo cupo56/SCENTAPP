@@ -47,6 +47,14 @@ enum AppConfig {
         static let reviewPageSize = 10
     }
 
+    enum ReviewDefaults {
+        static let longevity: Double = 65
+        static let sillage: Double = 30
+        static let minTextLength = 10
+        static let maxTextLength = 500
+        static let maxTitleLength = 100
+    }
+
     enum Cache {
         /// Supabase-Katalog-Cache: Refresh nach 5 Minuten
         static let catalogTTL: TimeInterval = 300
@@ -59,6 +67,8 @@ enum AppConfig {
     enum Timing {
         /// Debounce fuer Textsuche
         static let searchDebounceMs = 300
+        /// Debounce fuer Suchvorschlaege
+        static let searchSuggestionsDebounceMs = 200
         /// Debounce fuer Filter-Aenderungen
         static let filterDebounceMs = 200
         /// Rate-Limit zwischen Toggle-Aktionen (Sekunden)

@@ -12,7 +12,7 @@ import Combine
 class NetworkMonitor {
     static let shared = NetworkMonitor()
 
-    private(set) var isConnected: Bool = true {
+    var isConnected: Bool = true {
         didSet { connectionSubject.send(isConnected) }
     }
 
@@ -22,7 +22,7 @@ class NetworkMonitor {
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "de.scentboxd.NetworkMonitor")
     
-    private init() {
+    init() {
         let monitor = self.monitor
         monitor.pathUpdateHandler = { [weak self] path in
             let connected = path.status == .satisfied

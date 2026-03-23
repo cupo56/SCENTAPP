@@ -12,7 +12,7 @@ import os
 final class PerfumeStatusService {
     // MARK: - State
 
-    var syncErrorMessage: String? = nil
+    var syncErrorMessage: String?
     var showSyncErrorAlert = false
 
     // MARK: - Private
@@ -39,30 +39,41 @@ final class PerfumeStatusService {
     // MARK: - Toggles
 
     func toggleFavorite(perfume: Perfume, modelContext: ModelContext, isAuthenticated: Bool) {
-        guard !isToggling, throttleToggle() else { return }
-        isToggling = true
-        ensureInserted(perfume: perfume, modelContext: modelContext)
-
-        if let metadata = perfume.userMetadata {
-            metadata.isFavorite.toggle()
-            metadata.hasPendingSync = true
-        } else {
-            perfume.userMetadata = UserPersonalData(isFavorite: true, hasPendingSync: true)
-        }
-
-        saveAndSync(perfume: perfume, modelContext: modelContext, isAuthenticated: isAuthenticated)
+        toggleStatus(
+            perfume: perfume,
+            modelContext: modelContext,
+            isAuthenticated: isAuthenticated,
+            keyPath: \.isFavorite,
+            defaultMetadata: UserPersonalData(isFavorite: true, hasPendingSync: true)
+        )
     }
 
     func toggleOwned(perfume: Perfume, modelContext: ModelContext, isAuthenticated: Bool) {
+        toggleStatus(
+            perfume: perfume,
+            modelContext: modelContext,
+            isAuthenticated: isAuthenticated,
+            keyPath: \.isOwned,
+            defaultMetadata: UserPersonalData(isOwned: true, hasPendingSync: true)
+        )
+    }
+
+    private func toggleStatus(
+        perfume: Perfume,
+        modelContext: ModelContext,
+        isAuthenticated: Bool,
+        keyPath: ReferenceWritableKeyPath<UserPersonalData, Bool>,
+        defaultMetadata: UserPersonalData
+    ) {
         guard !isToggling, throttleToggle() else { return }
         isToggling = true
         ensureInserted(perfume: perfume, modelContext: modelContext)
 
         if let metadata = perfume.userMetadata {
-            metadata.isOwned.toggle()
+            metadata[keyPath: keyPath].toggle()
             metadata.hasPendingSync = true
         } else {
-            perfume.userMetadata = UserPersonalData(isOwned: true, hasPendingSync: true)
+            perfume.userMetadata = defaultMetadata
         }
 
         saveAndSync(perfume: perfume, modelContext: modelContext, isAuthenticated: isAuthenticated)
@@ -96,8 +107,8 @@ final class PerfumeStatusService {
             let perfumeId = perfume.id
             syncTask = Task {
                 await syncStatusToSupabase(
-                    perfume: perfume,
                     perfumeId: perfumeId,
+                    modelContext: modelContext,
                     isFavorite: meta?.isFavorite ?? false,
                     isOwned: meta?.isOwned ?? false,
                     isEmpty: meta?.isEmpty ?? false
@@ -109,7 +120,7 @@ final class PerfumeStatusService {
         }
     }
 
-    private func syncStatusToSupabase(perfume: Perfume, perfumeId: UUID, isFavorite: Bool, isOwned: Bool, isEmpty: Bool) async {
+    private func syncStatusToSupabase(perfumeId: UUID, modelContext: ModelContext, isFavorite: Bool, isOwned: Bool, isEmpty: Bool) async {
         do {
             if !isFavorite && !isOwned && !isEmpty {
                 try await userPerfumeDataSource.deleteUserPerfume(perfumeId: perfumeId)
@@ -121,7 +132,12 @@ final class PerfumeStatusService {
                     isEmpty: isEmpty
                 )
             }
-            perfume.userMetadata?.hasPendingSync = false
+            let predicate = #Predicate<Perfume> { $0.id == perfumeId }
+            var descriptor = FetchDescriptor<Perfume>(predicate: predicate)
+            descriptor.fetchLimit = 1
+            if let perfume = try? modelContext.fetch(descriptor).first {
+                perfume.userMetadata?.hasPendingSync = false
+            }
         } catch {
             syncErrorMessage = NetworkError.handle(error, logger: AppLogger.userPerfumes, context: "Supabase-Sync")
             showSyncErrorAlert = true

@@ -34,7 +34,7 @@ final class AuthRateLimiter {
 
         if timestamps.count >= maxAttempts {
             // Cooldown = time until the oldest attempt expires
-            let oldest = timestamps.first!
+            guard let oldest = timestamps.first else { return 1 }
             let cooldown = Int(ceil(windowSeconds - now.timeIntervalSince(oldest)))
             return max(cooldown, 1)
         }
@@ -51,7 +51,7 @@ final class AuthRateLimiter {
 class AuthManager {
     private let client = AppConfig.client
     private let rateLimiter = AuthRateLimiter()
-    private let profileService = ProfileService()
+    private let profileService: ProfileService
     
     var currentUser: User?
     var isAuthenticated: Bool { currentUser != nil }
@@ -63,7 +63,8 @@ class AuthManager {
     private var sessionTask: Task<Void, Never>?
     private var pendingUsername: String?
     
-    init() {
+    init(profileService: ProfileService) {
+        self.profileService = profileService
         sessionTask = Task { [weak self] in
             await self?.checkSession()
         }
@@ -80,10 +81,10 @@ class AuthManager {
             // Auth-Cache aktualisieren
             try? await AuthSessionCache.shared.refreshSession()
             await loadUsername()
-            // Ausstehenden Username speichern, falls der User seine E-Mail bestätigt hat
             if username == nil, let pending = pendingUsername {
-                _ = await saveUsername(pending)
-                pendingUsername = nil
+                if await saveUsername(pending) {
+                    pendingUsername = nil
+                }
             }
             pendingEmailConfirmation = false
         } catch {
@@ -110,10 +111,10 @@ class AuthManager {
             // Auth-Cache aktualisieren
             try? await AuthSessionCache.shared.refreshSession()
             await loadUsername()
-            // Ausstehenden Username speichern, falls der User seine E-Mail bestätigt hat
             if username == nil, let pending = pendingUsername {
-                _ = await saveUsername(pending)
-                pendingUsername = nil
+                if await saveUsername(pending) {
+                    pendingUsername = nil
+                }
             }
             pendingEmailConfirmation = false
             return true
@@ -198,8 +199,8 @@ class AuthManager {
     /// Lädt den Username aus der profiles-Tabelle
     func loadUsername() async {
         guard let userId = currentUser?.id else { return }
-        let profile = try? await profileService.fetchProfile(userId: userId)
-        username = profile?.username
+        guard let profile = try? await profileService.fetchProfile(userId: userId) else { return }
+        username = profile.username
     }
 
     /// Speichert den Username in der profiles-Tabelle
