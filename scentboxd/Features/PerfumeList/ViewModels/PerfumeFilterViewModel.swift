@@ -33,18 +33,37 @@ class PerfumeFilterViewModel {
     let sortSubject = PassthroughSubject<PerfumeSortOption, Never>()
 
     private let repository: PerfumeRepository
+    private var filterOptionsCachedAt: Date?
+    private var isLoadingFilterOptions = false
 
     init(repository: PerfumeRepository) {
         self.repository = repository
     }
 
     func loadAvailableFilterOptions() async {
+        // Skip if already loading (prevent duplicate calls)
+        guard !isLoadingFilterOptions else { return }
+
+        // Use cached data if still fresh
+        if let cachedAt = filterOptionsCachedAt,
+           Date().timeIntervalSince(cachedAt) < AppConfig.Cache.catalogTTL,
+           !availableBrands.isEmpty {
+            return
+        }
+
+        isLoadingFilterOptions = true
+        defer { isLoadingFilterOptions = false }
+
         do {
             async let brands = repository.fetchAvailableBrands()
             async let concentrations = repository.fetchAvailableConcentrations()
 
-            self.availableBrands = try await brands
-            self.availableConcentrations = try await concentrations
+            let fetchedBrands = try await brands
+            let fetchedConcentrations = try await concentrations
+
+            self.availableBrands = fetchedBrands
+            self.availableConcentrations = fetchedConcentrations
+            self.filterOptionsCachedAt = Date()
         } catch {
             AppLogger.perfumes.error("Filter-Optionen laden fehlgeschlagen: \(error.localizedDescription)")
         }

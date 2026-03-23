@@ -14,11 +14,15 @@ import os
 @MainActor
 class PerfumeListViewModel {
     var searchText: String = "" {
-        didSet { searchTextSubject.send(searchText) }
+        didSet {
+            searchSuggestionService.fetchSuggestions(for: searchText)
+            searchTextSubject.send(searchText)
+        }
     }
 
     let dataLoader: PerfumeDataLoader
     let filterVM: PerfumeFilterViewModel
+    let searchSuggestionService: SearchSuggestionService
 
     var modelContext: ModelContext?
 
@@ -30,11 +34,13 @@ class PerfumeListViewModel {
     init(
         dataLoader: PerfumeDataLoader,
         networkMonitor: NetworkMonitor,
-        filterVM: PerfumeFilterViewModel
+        filterVM: PerfumeFilterViewModel,
+        searchSuggestionService: SearchSuggestionService
     ) {
         self.dataLoader = dataLoader
         self.networkMonitor = networkMonitor
         self.filterVM = filterVM
+        self.searchSuggestionService = searchSuggestionService
 
         setupBindings()
     }
@@ -42,21 +48,24 @@ class PerfumeListViewModel {
     // MARK: - Reactive Bindings
 
     private func setupBindings() {
-        searchTextSubject
+        // Merge all reload triggers into a single stream, debounce ONCE,
+        // then trigger a single reload. Prevents task-cancellation-thrashing
+        // when multiple inputs change near-simultaneously.
+        let searchTrigger = searchTextSubject
+            .removeDuplicates()
+            .map { _ in () }
+
+        let filterTrigger = filterVM.filterSubject
+            .removeDuplicates()
+            .map { _ in () }
+
+        let sortTrigger = filterVM.sortSubject
+            .removeDuplicates()
+            .map { _ in () }
+
+        Publishers.Merge3(searchTrigger, filterTrigger, sortTrigger)
             .debounce(for: .milliseconds(AppConfig.Timing.searchDebounceMs), scheduler: RunLoop.main)
-            .removeDuplicates()
-            .sink { [weak self] _ in self?.triggerReload() }
-            .store(in: &cancellables)
-
-        filterVM.filterSubject
-            .debounce(for: .milliseconds(AppConfig.Timing.filterDebounceMs), scheduler: RunLoop.main)
-            .removeDuplicates()
-            .sink { [weak self] _ in self?.triggerReload() }
-            .store(in: &cancellables)
-
-        filterVM.sortSubject
-            .removeDuplicates()
-            .sink { [weak self] _ in self?.triggerReload() }
+            .sink { [weak self] in self?.triggerReload() }
             .store(in: &cancellables)
 
         networkMonitor.connectionSubject
@@ -108,5 +117,9 @@ class PerfumeListViewModel {
         }
         dataLoader.clearSearchCache()
         await loadData(forceRefresh: true)
+    }
+
+    func clearSuggestions() {
+        searchSuggestionService.clear()
     }
 }

@@ -5,9 +5,14 @@ import NukeUI
 
 struct PerfumeListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismissSearch) private var dismissSearch
     
     @Environment(PerfumeListViewModel.self) var viewModel
     @Environment(PerfumeFilterViewModel.self) var filterVM
+    
+    @State private var filterTask: Task<Void, Never>?
+    @State private var retryTask: Task<Void, Never>?
+    @State private var selectedSuggestionPerfumeId: UUID?
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -64,7 +69,8 @@ struct PerfumeListView: View {
                                 NavigationLink(destination: PerfumeDetailView(perfume: perfume)) {
                                     PerfumeCardView(
                                         perfume: perfume,
-                                        ratingStats: viewModel.dataLoader.ratingStatsMap[perfume.id]
+                                        ratingStats: viewModel.dataLoader.ratingStatsMap[perfume.id],
+                                        showTopNotes: true
                                     )
                                 }
                                 .buttonStyle(.plain)
@@ -96,6 +102,17 @@ struct PerfumeListView: View {
                 }
             }
             .searchable(text: $viewModel.searchText, prompt: "Suche Parfum...")
+            .searchSuggestions {
+                if viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 {
+                    SearchSuggestionsOverlay(
+                        suggestions: viewModel.searchSuggestionService.suggestions,
+                        isLoading: viewModel.searchSuggestionService.isLoading,
+                        onBrandTap: applyBrandSuggestion,
+                        onNoteTap: applyNoteSuggestion,
+                        onPerfumeTap: openPerfumeSuggestion
+                    )
+                }
+            }
             .navigationTitle("ScentBox")
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
@@ -119,14 +136,28 @@ struct PerfumeListView: View {
                         Label("Sortieren", systemImage: "arrow.up.arrow.down")
                             .foregroundColor(DesignSystem.Colors.primary)
                     }
+                    .accessibilityLabel(String(localized: "Sortierung: \(filterVM.sortOption.localizedName)"))
                 }
             }
             .sheet(isPresented: $filterVM.isFilterSheetPresented) {
                 FilterSheetView(filter: filterVM.activeFilter, sort: filterVM.sortOption)
                     .environment(filterVM)
             }
-            .task {
-                await filterVM.loadAvailableFilterOptions()
+            .navigationDestination(isPresented: suggestedPerfumeNavigationBinding) {
+                if let selectedSuggestionPerfumeId {
+                    PerfumeDetailView(perfumeId: selectedSuggestionPerfumeId)
+                }
+            }
+            .onAppear {
+                filterTask?.cancel()
+                filterTask = Task {
+                    await filterVM.loadAvailableFilterOptions()
+                }
+            }
+            .onDisappear {
+                filterTask?.cancel()
+                retryTask?.cancel()
+                viewModel.clearSuggestions()
             }
         }
     }
@@ -153,6 +184,8 @@ struct PerfumeListView: View {
                     .clipShape(Capsule())
                     .shadow(color: DesignSystem.Colors.primary.opacity(0.3), radius: 6, x: 0, y: 3)
                 }
+                .accessibilityLabel("Filter")
+                .accessibilityHint("Öffnet die Filteroptionen")
 
                 // Active filter chips
                 if let brand = filterVM.activeFilter.brandName {
@@ -205,6 +238,7 @@ struct PerfumeListView: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                     }
+                    .accessibilityLabel("Alle Filter löschen")
                 }
             }
             .padding(.horizontal, 16)
@@ -226,6 +260,8 @@ struct PerfumeListView: View {
             .overlay(Capsule().stroke(DesignSystem.Colors.primary.opacity(0.2), lineWidth: 1))
             .clipShape(Capsule())
         }
+        .accessibilityLabel("Filter entfernen: \(text)")
+        .accessibilityHint("Doppeltippen, um diesen Filter zu entfernen")
     }
     
     // MARK: - Subviews
@@ -277,13 +313,16 @@ struct PerfumeListView: View {
                 .foregroundColor(Color(hex: "#94A3B8"))
                 .multilineTextAlignment(.center)
             Button {
-                Task { await viewModel.loadData() }
+                retryTask?.cancel()
+                retryTask = Task { await viewModel.loadData() }
             } label: {
                 Label("Erneut versuchen", systemImage: "arrow.clockwise")
                     .font(.subheadline)
                     .fontWeight(.medium)
             }
             .buttonStyle(PrimaryButtonStyle())
+            .accessibilityLabel("Erneut versuchen")
+            .accessibilityHint("Doppeltippen, um die Daten erneut zu laden")
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
@@ -312,103 +351,38 @@ struct PerfumeListView: View {
         }
         .glassPanel()
     }
-}
 
-// MARK: - Perfume Card View (Grid Item)
-
-struct PerfumeCardView: View {
-    let perfume: Perfume
-    var ratingStats: RatingStats? = nil
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Image Section
-            Color.clear
-                .aspectRatio(3/4, contentMode: .fit)
-                .overlay {
-                    if let url = perfume.imageUrl {
-                        let request = ImageRequest(
-                            url: url,
-                            processors: [.resize(size: CGSize(width: 300, height: 400), contentMode: .aspectFill)],
-                            priority: .high
-                        )
-                        LazyImage(request: request) { state in
-                            if let image = state.image {
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                            } else {
-                                DesignSystem.Colors.surfaceDark
-                            }
-                        }
-                        .transition(.opacity)
-                    } else {
-                        ZStack {
-                            DesignSystem.Colors.surfaceDark
-                            Image(systemName: "flame.circle.fill")
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .foregroundColor(DesignSystem.Colors.primary.opacity(0.3))
-                        }
-                    }
-                }
-                .clipped()
-            
-            // Info Section
-            VStack(alignment: .leading, spacing: 4) {
-                // Rating (always reserve space for consistent card height)
-                HStack(spacing: 3) {
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(DesignSystem.Colors.primary)
-                    Text(String(format: "%.1f", ratingStats?.avgRating ?? 0))
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(DesignSystem.Colors.primary)
-                }
-                .opacity(ratingStats != nil && ratingStats!.reviewCount > 0 ? 1 : 0)
-                
-                // Name
-                Text(perfume.name)
-                    .font(DesignSystem.Fonts.serif(size: 15, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                
-                // Brand
-                Text(perfume.brand?.name ?? String(localized: "Unbekannte Marke"))
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(DesignSystem.Colors.primary.opacity(0.8))
-                    .lineLimit(1)
-                
-                // Top Notes Preview
-                if !perfume.topNotes.isEmpty {
-                    Text(perfume.topNotes.map(\.name).joined(separator: ", "))
-                        .font(.system(size: 9))
-                        .foregroundColor(Color(hex: "#94A3B8"))
-                        .lineLimit(1)
-                        .padding(.top, 1)
-                }
-                
-                // Concentration Badge
-                if let concentration = perfume.concentration, !concentration.isEmpty {
-                    Text(concentration.uppercased())
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(DesignSystem.Colors.primary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(DesignSystem.Colors.primary.opacity(0.1))
-                        .cornerRadius(4)
-                        .padding(.top, 4)
+    private var suggestedPerfumeNavigationBinding: Binding<Bool> {
+        Binding(
+            get: { selectedSuggestionPerfumeId != nil },
+            set: { isPresented in
+                if !isPresented {
+                    selectedSuggestionPerfumeId = nil
                 }
             }
-            .padding(10)
-        }
-        .background(DesignSystem.Colors.surfaceDark.opacity(0.6))
-        .background(.ultraThinMaterial)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(DesignSystem.Colors.primary.opacity(0.1), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func applyBrandSuggestion(_ brand: String) {
+        filterVM.activeFilter.brandName = brand
+        viewModel.searchText = ""
+        viewModel.clearSuggestions()
+        dismissSearch()
+    }
+
+    private func applyNoteSuggestion(_ note: String) {
+        if !filterVM.activeFilter.noteNames.contains(note) {
+            filterVM.activeFilter.noteNames.append(note)
+        }
+        viewModel.searchText = ""
+        viewModel.clearSuggestions()
+        dismissSearch()
+    }
+
+    private func openPerfumeSuggestion(_ perfumeId: UUID) {
+        selectedSuggestionPerfumeId = perfumeId
+        viewModel.clearSuggestions()
+        dismissSearch()
     }
 }
 
@@ -416,7 +390,7 @@ struct PerfumeCardView: View {
 
 struct PerfumeRowView: View {
     let perfume: Perfume
-    var ratingStats: RatingStats? = nil
+    var ratingStats: RatingStats?
     
     var body: some View {
         HStack {

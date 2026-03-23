@@ -48,34 +48,62 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				scentboxdTests/DeepLinkHandlerTests.swift,
+				scentboxdTests/FragranceProfileDTOTests.swift,
 				scentboxdTests/LoginUITests.swift,
 				scentboxdTests/MockPerfumeRepository.swift,
 				scentboxdTests/MockReviewDataSource.swift,
 				scentboxdTests/MockUserPerfumeDataSource.swift,
 				scentboxdTests/NetworkErrorTests.swift,
 				scentboxdTests/NetworkRetryTests.swift,
+				scentboxdTests/PerfumeCacheServiceTests.swift,
 				scentboxdTests/PerfumeDetailViewModelTests.swift,
+				scentboxdTests/PerfumeFilterTests.swift,
 				scentboxdTests/PerfumeListViewModelTests.swift,
+				scentboxdTests/PerfumeStatusServiceTests.swift,
+				scentboxdTests/SearchSuggestionServiceTests.swift,
 				scentboxdTests/ReviewCreationUITests.swift,
+				scentboxdTests/ReviewManagementServiceTests.swift,
+				scentboxdTests/SimilarPerfumesServiceTests.swift,
+				scentboxdTests/CompareSelectionManagerTests.swift,
+				scentboxdTests/FragranceProfileServiceTests.swift,
 				scentboxdTests/scentboxdTests.swift,
 				scentboxdTests/TestHelpers.swift,
+				scentboxdTests/PerfumeDataLoaderTests.swift,
+				scentboxdTests/PerfumeFilterViewModelTests.swift,
+				scentboxdTests/PublicProfileViewModelTests.swift,
+				scentboxdTests/UserSearchTests.swift,
 			);
 			target = BB248BC62F1071060092FCDD /* scentboxd */;
 		};
 		BB46E1762F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxdTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				scentboxdTests/DeepLinkHandlerTests.swift,
+				scentboxdTests/FragranceProfileDTOTests.swift,
 				scentboxdTests/LoginUITests.swift,
 				scentboxdTests/MockPerfumeRepository.swift,
 				scentboxdTests/MockReviewDataSource.swift,
 				scentboxdTests/MockUserPerfumeDataSource.swift,
 				scentboxdTests/NetworkErrorTests.swift,
 				scentboxdTests/NetworkRetryTests.swift,
+				scentboxdTests/PerfumeCacheServiceTests.swift,
 				scentboxdTests/PerfumeDetailViewModelTests.swift,
+				scentboxdTests/PerfumeFilterTests.swift,
 				scentboxdTests/PerfumeListViewModelTests.swift,
+				scentboxdTests/PerfumeStatusServiceTests.swift,
+				scentboxdTests/SearchSuggestionServiceTests.swift,
 				scentboxdTests/ReviewCreationUITests.swift,
+				scentboxdTests/ReviewManagementServiceTests.swift,
+				scentboxdTests/SimilarPerfumesServiceTests.swift,
+				scentboxdTests/CompareSelectionManagerTests.swift,
+				scentboxdTests/FragranceProfileServiceTests.swift,
 				scentboxdTests/scentboxdTests.swift,
 				scentboxdTests/TestHelpers.swift,
+				scentboxdTests/PerfumeDataLoaderTests.swift,
+				scentboxdTests/PerfumeFilterViewModelTests.swift,
+				scentboxdTests/PublicProfileViewModelTests.swift,
+				scentboxdTests/UserSearchTests.swift,
 			);
 			target = BB248BD32F1071080092FCDD /* scentboxdTests */;
 		};
@@ -92,6 +120,28 @@
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BB9999992F1FFFFF00000001 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null 2>&1; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		BB248BC42F1071060092FCDD /* Frameworks */ = {
@@ -157,6 +207,7 @@
 				BB248BC32F1071060092FCDD /* Sources */,
 				BB248BC42F1071060092FCDD /* Frameworks */,
 				BB248BC52F1071060092FCDD /* Resources */,
+				BB9999992F1FFFFF00000001 /* SwiftLint */,
 			);
 			buildRules = (
 			);

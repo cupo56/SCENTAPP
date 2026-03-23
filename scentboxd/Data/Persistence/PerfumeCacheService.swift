@@ -11,6 +11,7 @@ import os
 class PerfumeCacheService {
     
     private static let lastSyncedAtKey = "PerfumeCatalog_lastSyncedAt"
+    private var isCaching = false
     
     var lastSyncedAt: Date? {
         get { UserDefaults.standard.object(forKey: Self.lastSyncedAtKey) as? Date }
@@ -148,23 +149,26 @@ class PerfumeCacheService {
     // MARK: - Write to Cache (Upsert)
     
     func cachePerfumes(_ remotePerfumes: [Perfume], modelContext: ModelContext) throws {
+        guard !isCaching else { return }
+        isCaching = true
+        defer { isCaching = false }
+
+        let perfumeIds = remotePerfumes.map(\.id)
+        var existingPerfumes = try buildPerfumeLookup(ids: perfumeIds, modelContext: modelContext)
+        var brandLookup = try buildBrandLookup(for: remotePerfumes, modelContext: modelContext)
+        var noteLookup = try buildNoteLookup(for: remotePerfumes, modelContext: modelContext)
+
         for remote in remotePerfumes {
-            let id = remote.id
-            let predicate = #Predicate<Perfume> { $0.id == id }
-            var descriptor = FetchDescriptor<Perfume>(predicate: predicate)
-            descriptor.fetchLimit = 1
-            
-            let existing = try modelContext.fetch(descriptor).first
             let target: Perfume
-            
-            if let existing {
+
+            if let existing = existingPerfumes[remote.id] {
                 target = existing
             } else {
                 target = Perfume(id: remote.id, name: remote.name)
                 modelContext.insert(target)
+                existingPerfumes[remote.id] = target
             }
-            
-            // Skalare Properties aktualisieren
+
             target.name = remote.name
             target.concentration = remote.concentration
             target.longevity = remote.longevity
@@ -173,65 +177,95 @@ class PerfumeCacheService {
             target.desc = remote.desc
             target.imageUrl = remote.imageUrl
             target.occasions = remote.occasions
-            
-            // Brand aktualisieren
+
             if let remoteBrand = remote.brand {
-                target.brand = findOrCreateBrand(
+                target.brand = resolveOrCreateBrand(
                     name: remoteBrand.name,
                     country: remoteBrand.country,
+                    lookup: &brandLookup,
                     modelContext: modelContext
                 )
             } else {
                 target.brand = nil
             }
-            
-            // Noten aktualisieren
+
             target.topNotes = remote.topNotes.map {
-                findOrCreateNote(name: $0.name, category: $0.category, modelContext: modelContext)
+                resolveOrCreateNote(name: $0.name, category: $0.category, lookup: &noteLookup, modelContext: modelContext)
             }
             target.midNotes = remote.midNotes.map {
-                findOrCreateNote(name: $0.name, category: $0.category, modelContext: modelContext)
+                resolveOrCreateNote(name: $0.name, category: $0.category, lookup: &noteLookup, modelContext: modelContext)
             }
             target.baseNotes = remote.baseNotes.map {
-                findOrCreateNote(name: $0.name, category: $0.category, modelContext: modelContext)
+                resolveOrCreateNote(name: $0.name, category: $0.category, lookup: &noteLookup, modelContext: modelContext)
             }
         }
-        
+
         try modelContext.save()
         lastSyncedAt = Date()
-        
+
         AppLogger.cache.info("Katalog gecached: \(remotePerfumes.count) Parfums")
     }
-    
-    // MARK: - Helpers
-    
-    private func findOrCreateBrand(name: String, country: String?, modelContext: ModelContext) -> Brand {
-        let predicate = #Predicate<Brand> { $0.name == name }
-        var descriptor = FetchDescriptor<Brand>(predicate: predicate)
-        descriptor.fetchLimit = 1
-        
-        if let existing = try? modelContext.fetch(descriptor).first {
+
+    // MARK: - Batch Lookup Helpers
+
+    private func buildPerfumeLookup(ids: [UUID], modelContext: ModelContext) throws -> [UUID: Perfume] {
+        guard !ids.isEmpty else { return [:] }
+
+        let predicate = #Predicate<Perfume> { perfume in
+            ids.contains(perfume.id)
+        }
+        let descriptor = FetchDescriptor<Perfume>(predicate: predicate)
+        let perfumes = try modelContext.fetch(descriptor)
+        return Dictionary(perfumes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private func buildBrandLookup(for remotePerfumes: [Perfume], modelContext: ModelContext) throws -> [String: Brand] {
+        let brandNames = Array(Set(remotePerfumes.compactMap { $0.brand?.name }))
+        guard !brandNames.isEmpty else { return [:] }
+
+        let predicate = #Predicate<Brand> { brand in
+            brandNames.contains(brand.name)
+        }
+        let descriptor = FetchDescriptor<Brand>(predicate: predicate)
+        let brands = try modelContext.fetch(descriptor)
+        return Dictionary(brands.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private func buildNoteLookup(for remotePerfumes: [Perfume], modelContext: ModelContext) throws -> [String: Note] {
+        let noteNames = Array(Set(
+            remotePerfumes.flatMap { perfume in
+                (perfume.topNotes + perfume.midNotes + perfume.baseNotes).map(\.name)
+            }
+        ))
+        guard !noteNames.isEmpty else { return [:] }
+
+        let predicate = #Predicate<Note> { note in
+            noteNames.contains(note.name)
+        }
+        let descriptor = FetchDescriptor<Note>(predicate: predicate)
+        let notes = try modelContext.fetch(descriptor)
+        return Dictionary(notes.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private func resolveOrCreateBrand(name: String, country: String?, lookup: inout [String: Brand], modelContext: ModelContext) -> Brand {
+        if let existing = lookup[name] {
             existing.country = country
             return existing
         }
-        
         let brand = Brand(name: name, country: country)
         modelContext.insert(brand)
+        lookup[name] = brand
         return brand
     }
-    
-    private func findOrCreateNote(name: String, category: String?, modelContext: ModelContext) -> Note {
-        let predicate = #Predicate<Note> { $0.name == name }
-        var descriptor = FetchDescriptor<Note>(predicate: predicate)
-        descriptor.fetchLimit = 1
-        
-        if let existing = try? modelContext.fetch(descriptor).first {
+
+    private func resolveOrCreateNote(name: String, category: String?, lookup: inout [String: Note], modelContext: ModelContext) -> Note {
+        if let existing = lookup[name] {
             existing.category = category
             return existing
         }
-        
         let note = Note(name: name, category: category)
         modelContext.insert(note)
+        lookup[name] = note
         return note
     }
 }

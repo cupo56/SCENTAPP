@@ -11,6 +11,7 @@ struct ForgotPasswordView: View {
     @State private var email = ""
     @State private var emailSent = false
     @FocusState private var isEmailFocused: Bool
+    @State private var resetTask: Task<Void, Never>?
 
     private var isFormValid: Bool {
         let trimmed = email.trimmingCharacters(in: .whitespaces)
@@ -71,12 +72,16 @@ struct ForgotPasswordView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") {
+                        resetTask?.cancel()
                         authManager.errorMessage = nil
                         dismiss()
                     }
                     .foregroundColor(DesignSystem.Colors.champagne)
                 }
             }
+        }
+        .onDisappear {
+            resetTask?.cancel()
         }
     }
 
@@ -102,6 +107,8 @@ struct ForgotPasswordView: View {
                         }
                     }
                     .foregroundColor(.white)
+                    .accessibilityLabel("E-Mail-Adresse")
+                    .accessibilityHint("E-Mail für den Passwort-Reset-Link")
             }
             .padding(16)
             .glassPanel()
@@ -134,6 +141,8 @@ struct ForgotPasswordView: View {
             .buttonStyle(PrimaryButtonStyle())
             .disabled(!isFormValid || authManager.isLoading)
             .padding(.horizontal)
+            .accessibilityLabel("Link senden")
+            .accessibilityHint("Doppeltippen, um den Passwort-Reset-Link zu senden")
         }
         .onAppear {
             isEmailFocused = true
@@ -165,6 +174,7 @@ struct ForgotPasswordView: View {
                     .foregroundColor(DesignSystem.Colors.champagne)
             }
             .padding(.top, 8)
+            .accessibilityHint("Schließt diese Ansicht und kehrt zur Anmeldung zurück")
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 20)
@@ -175,9 +185,10 @@ struct ForgotPasswordView: View {
     // MARK: - Actions
 
     private func sendResetEmail() {
-        Task {
+        resetTask?.cancel()
+        resetTask = Task {
             let success = await authManager.resetPassword(email: email)
-            if success {
+            if success, !Task.isCancelled {
                 withAnimation(.easeInOut) {
                     emailSent = true
                 }
@@ -188,5 +199,5 @@ struct ForgotPasswordView: View {
 
 #Preview {
     ForgotPasswordView()
-        .environment(AuthManager())
+        .environment(AuthManager(profileService: ProfileService()))
 }

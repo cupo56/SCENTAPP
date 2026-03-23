@@ -1,0 +1,34 @@
+included:
+  - scentboxd
+excluded:
+  - scentboxd/scentboxdTests
+
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+  - nesting
+
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+
+force_cast: warning
+force_try: warning
+
+identifier_name:
+  min_length: 1
+  excluded:
+    - id
+    - i
+    - x
+    - y
+
+file_length:
+  warning: 500
+  error: 800
+
+type_body_length:
+  warning: 350
+  error: 500

@@ -9,12 +9,12 @@ import Foundation
 
 struct ReviewDTO: Codable {
     let id: UUID
-    let perfumeId: UUID
+    let perfumeId: UUID?
     let userId: UUID?
     let authorName: String?
     let title: String
     let text: String
-    let rating: Int
+    let rating: Int?
     let longevity: Int?
     let sillage: Int?
     let createdAt: Date

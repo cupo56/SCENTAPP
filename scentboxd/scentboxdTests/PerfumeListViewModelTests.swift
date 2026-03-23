@@ -13,12 +13,14 @@ final class PerfumeListViewModelTests: XCTestCase {
     private var mockReviewDS: MockReviewDataSource!
     private var filterVM: PerfumeFilterViewModel!
     private var sut: PerfumeListViewModel!
+    private var searchSuggestionService: SearchSuggestionService!
 
     override func setUp() {
         super.setUp()
         mockRepo = MockPerfumeRepository()
         mockReviewDS = MockReviewDataSource()
         filterVM = PerfumeFilterViewModel(repository: mockRepo)
+        searchSuggestionService = SearchSuggestionService(repository: mockRepo)
 
         let dataLoader = PerfumeDataLoader(
             repository: mockRepo,
@@ -30,13 +32,15 @@ final class PerfumeListViewModelTests: XCTestCase {
         sut = PerfumeListViewModel(
             dataLoader: dataLoader,
             networkMonitor: NetworkMonitor.shared,
-            filterVM: filterVM
+            filterVM: filterVM,
+            searchSuggestionService: searchSuggestionService
         )
     }
 
     override func tearDown() {
         sut = nil
         filterVM = nil
+        searchSuggestionService = nil
         mockRepo = nil
         mockReviewDS = nil
         super.tearDown()

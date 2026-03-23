@@ -9,7 +9,9 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     
     // MARK: - Paginated Fetch
     
-    func fetchTotalCount(searchQuery: String? = nil, filter: PerfumeFilter = PerfumeFilter()) async throws -> Int {
+    // MARK: - Paginated Fetch
+    
+    func fetchTotalCount(searchQuery: String?, filter: PerfumeFilter) async throws -> Int {
         var query = client
             .from("perfumes")
             .select("id", head: true, count: .exact)
@@ -41,9 +43,9 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         return response.count ?? 0
     }
     
-    func fetchPerfumes(page: Int, pageSize: Int, filter: PerfumeFilter = PerfumeFilter(), sort: PerfumeSortOption = .nameAsc) async throws -> [Perfume] {
+    func fetchPerfumes(page: Int, pageSize: Int, filter: PerfumeFilter, sort: PerfumeSortOption) async throws -> [Perfume] {
         let from = page * pageSize
-        let to = from + pageSize - 1
+        let end = from + pageSize - 1
         
         var query = client
             .from("perfumes")
@@ -64,18 +66,18 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         
         let dtos: [PerfumeDTO] = try await query
             .order(orderColumn, ascending: ascending)
-            .range(from: from, to: to)
+            .range(from: from, to: end)
             .execute()
             .value
-        
+
         return dtos.map { mapDTO($0) }
     }
-    
+
     // MARK: - Server-Side Search
     
-    func searchPerfumes(query: String, page: Int, pageSize: Int, filter: PerfumeFilter = PerfumeFilter(), sort: PerfumeSortOption = .nameAsc) async throws -> [Perfume] {
+    func searchPerfumes(query: String, page: Int, pageSize: Int, filter: PerfumeFilter, sort: PerfumeSortOption) async throws -> [Perfume] {
         let from = page * pageSize
-        let to = from + pageSize - 1
+        let end = from + pageSize - 1
         let sanitized = sanitize(query)
 
         // Brand-IDs suchen, die zum Suchbegriff passen
@@ -110,13 +112,30 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         
         let dtos: [PerfumeDTO] = try await dbQuery
             .order(orderColumn, ascending: ascending)
-            .range(from: from, to: to)
+            .range(from: from, to: end)
             .execute()
             .value
-        
+
         return dtos.map { mapDTO($0) }
     }
-    
+
+    func fetchSearchSuggestions(query: String) async throws -> [SearchSuggestionDTO] {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedQuery.count >= 2 else { return [] }
+
+        let params: [String: AnyJSON] = [
+            "search_query": .string(trimmedQuery),
+            "max_results": .integer(5)
+        ]
+
+        let suggestions: [SearchSuggestionDTO] = try await client
+            .rpc("search_suggestions", params: params)
+            .execute()
+            .value
+
+        return suggestions
+    }
+
     // MARK: - Metadata für Filter-Picker
     
     func fetchAvailableBrands() async throws -> [String] {
@@ -150,35 +169,35 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     // MARK: - Server-Side Filter Builder
     
     private func applyServerFilters(to query: PostgrestFilterBuilder, filter: PerfumeFilter) -> PostgrestFilterBuilder {
-        var q = query
+        var filtered = query
         
         if let brand = filter.brandName, !brand.isEmpty {
-            q = q.eq("brands.name", value: brand)
+            filtered = filtered.eq("brands.name", value: brand)
         }
         if let concentration = filter.concentration, !concentration.isEmpty {
-            q = q.ilike("concentration", pattern: concentration)
+            filtered = filtered.ilike("concentration", pattern: concentration)
         }
         if let longevity = filter.longevity, !longevity.isEmpty {
-            q = q.ilike("longevity", pattern: longevity)
+            filtered = filtered.ilike("longevity", pattern: longevity)
         }
         if let sillage = filter.sillage, !sillage.isEmpty {
-            q = q.ilike("sillage", pattern: sillage)
+            filtered = filtered.ilike("sillage", pattern: sillage)
         }
-        
+
         // Rating-Range-Filter (server-seitig auf performance)
         if let minRating = filter.minRating {
-            q = q.gte("performance", value: minRating)
+            filtered = filtered.gte("performance", value: minRating)
         }
         if let maxRating = filter.maxRating {
-            q = q.lte("performance", value: maxRating)
+            filtered = filtered.lte("performance", value: maxRating)
         }
-        
+
         // Occasions-Filter (server-seitig via Array-Contains)
         if !filter.occasions.isEmpty {
-            q = q.contains("occasions", value: filter.occasions)
+            filtered = filtered.contains("occasions", value: filter.occasions)
         }
-        
-        return q
+
+        return filtered
     }
     
     // MARK: - Notes-Filter (Two-Step: IDs ermitteln, dann filtern)
@@ -186,10 +205,10 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     /// Ermittelt Parfum-IDs, die mindestens eine der angegebenen Noten enthalten.
     /// Wird als Vorstufe genutzt, um die Hauptabfrage mit `.in("id")` einzuschränken.
     private func fetchPerfumeIdsByNotes(_ noteNames: [String]) async throws -> [UUID] {
-        struct PerfumeNoteIdDTO: Codable {
+        struct PerfumeNoteIdDTO: Codable { // swiftlint:disable:this nesting
             let perfumeId: UUID
-            
-            enum CodingKeys: String, CodingKey {
+
+            enum CodingKeys: String, CodingKey { // swiftlint:disable:this nesting
                 case perfumeId = "perfume_id"
             }
         }
@@ -238,11 +257,15 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         return results.map(\.id)
     }
 
+    /// Sanitizes user input for use in PostgREST filter strings.
+    /// Escapes LIKE wildcards and strips PostgREST metacharacters that could
+    /// alter filter logic when interpolated into `.or()` expressions.
     private func sanitize(_ input: String) -> String {
         input
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "%", with: "\\%")
             .replacingOccurrences(of: "_", with: "\\_")
+            .filter { $0 != "," && $0 != "(" && $0 != ")" }
     }
     
     // MARK: - Mapping
@@ -257,7 +280,7 @@ class PerfumeRemoteDataSource: PerfumeRepository {
             performance: dto.performance ?? 0.0,
             desc: dto.description,
             occasions: dto.occasions ?? [],
-            imageUrl: dto.imageUrl.flatMap { URL(string: $0) }
+            imageUrl: dto.imageUrl.flatMap { URL(string: $0) }.flatMap { $0.scheme == "https" ? $0 : nil }
         )
         
         // Marke setzen
@@ -283,5 +306,50 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         
         return perfume
     }
-    
+
+    // MARK: - Fetch by IDs
+
+    func fetchPerfumesByIds(_ ids: [UUID]) async throws -> [Perfume] {
+        guard !ids.isEmpty else { return [] }
+
+        let dtos: [PerfumeDTO] = try await client
+            .from("perfumes")
+            .select(selectQuery)
+            .in("id", values: ids)
+            .execute()
+            .value
+
+        return dtos.map { mapDTO($0) }
+    }
+
+    // MARK: - Similar Perfumes
+
+    func fetchSimilarPerfumes(for perfumeId: UUID, limit: Int = 6) async throws -> [Perfume] {
+
+        // 1. Hole ähnliche IDs und deren Score (Score wird vorerst nur für Sortierung in DB verwendet)
+        let params: [String: AnyJSON] = [
+            "p_perfume_id": .string(perfumeId.uuidString),
+            "p_limit": .integer(limit)
+        ]
+        
+        let similarDTOs: [SimilarPerfumeDTO] = try await client
+            .rpc("get_similar_perfumes", params: params)
+            .execute()
+            .value
+        
+        let ids = similarDTOs.map { $0.perfumeId }
+        guard !ids.isEmpty else { return [] }
+        
+        // 2. Lade volle Parfum-Details (um Reviews, Brands etc. zu bekommen)
+        let perfumes = try await fetchPerfumesByIds(ids)
+        
+        // 3. Sortiere die Ergebnisse anhand der ursprünglichen Reihenfolge aus dem RPC-Call
+        let idToScore = Dictionary(uniqueKeysWithValues: similarDTOs.map { ($0.perfumeId, $0.similarityScore) })
+        
+        return perfumes.sorted { first, second in
+            let score1 = idToScore[first.id] ?? 0
+            let score2 = idToScore[second.id] ?? 0
+            return score1 > score2
+        }
+    }
 }
