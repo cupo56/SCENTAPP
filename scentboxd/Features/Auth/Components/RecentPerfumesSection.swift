@@ -8,7 +8,7 @@ struct RecentPerfumesSection: View {
             HStack {
                 Text("Zuletzt hinzugefügt")
                     .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                 Spacer()
                 NavigationLink(destination: OwnedPerfumesView()) {
                     Text("ALLE ANSEHEN")
@@ -56,11 +56,11 @@ struct RecentPerfumesSection: View {
                                 .resizable()
                                 .scaledToFill()
                         } placeholder: {
-                            DesignSystem.Colors.surfaceDark
+                            DesignSystem.Colors.appSurface
                         }
                     } else {
                         ZStack {
-                            DesignSystem.Colors.surfaceDark
+                            DesignSystem.Colors.appSurface
                             Image(systemName: "flame.circle.fill")
                                 .resizable()
                                 .frame(width: 28, height: 28)
@@ -73,7 +73,7 @@ struct RecentPerfumesSection: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(perfume.name)
                     .font(DesignSystem.Fonts.serif(size: 13))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                     .lineLimit(1)
                 
                 Text(perfume.brand?.name ?? String(localized: "Unbekannte Marke"))

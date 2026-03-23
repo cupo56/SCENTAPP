@@ -19,7 +19,7 @@ struct FragranceProfileView: View {
 
     var body: some View {
         ZStack {
-            DesignSystem.Colors.bgDark.ignoresSafeArea()
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
 
             if service.isLoading {
                 loadingView
@@ -33,7 +33,6 @@ struct FragranceProfileView: View {
         }
         .navigationTitle("Duftprofil")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
             profileTask = Task {
                 async let profileLoad: Void = service.loadProfile()
@@ -83,7 +82,7 @@ struct FragranceProfileView: View {
 
             Text("Dein Duftprofil")
                 .font(DesignSystem.Fonts.serif(size: 28, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.primary)
 
             Text("Basierend auf deinen Favoriten und deiner Sammlung")
                 .font(DesignSystem.Fonts.display(size: 13))
@@ -128,7 +127,7 @@ struct FragranceProfileView: View {
                         HStack(spacing: 12) {
                             Text(note.name)
                                 .font(DesignSystem.Fonts.display(size: 14))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.primary)
                                 .frame(width: 100, alignment: .leading)
 
                             GeometryReader { geo in
@@ -193,7 +192,7 @@ struct FragranceProfileView: View {
                                     .frame(width: 10, height: 10)
                                 Text(item.type)
                                     .font(DesignSystem.Fonts.display(size: 13))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.primary)
                                 Spacer()
                                 Text("\(item.count)")
                                     .font(DesignSystem.Fonts.display(size: 13, weight: .semibold))
@@ -298,7 +297,7 @@ struct FragranceProfileView: View {
                 .foregroundStyle(Color(hex: "#94A3B8"))
             Text("Noch kein Duftprofil")
                 .font(DesignSystem.Fonts.serif(size: 20, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.primary)
             Text("Füge Düfte zu deiner Sammlung oder deinen Favoriten hinzu, um dein persönliches Duftprofil zu sehen.")
                 .font(DesignSystem.Fonts.display(size: 14))
                 .foregroundStyle(Color(hex: "#94A3B8"))

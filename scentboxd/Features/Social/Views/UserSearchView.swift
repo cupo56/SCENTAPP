@@ -19,7 +19,7 @@ struct UserSearchView: View {
 
     var body: some View {
         ZStack {
-            DesignSystem.Colors.bgDark.ignoresSafeArea()
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
 
             Group {
                 if !hasSearched && results.isEmpty && !isSearching {
@@ -37,7 +37,6 @@ struct UserSearchView: View {
         }
         .navigationTitle("Community")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .searchable(text: $searchText, prompt: "Benutzername suchen...")
         .onChange(of: searchText) { _, newValue in
             searchSubject.send(newValue)
@@ -56,7 +55,7 @@ struct UserSearchView: View {
                 .foregroundColor(DesignSystem.Colors.primary.opacity(0.4))
             Text("Entdecke andere Duftliebhaber")
                 .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
             Text("Suche nach Benutzernamen, um Profile und Sammlungen zu entdecken.")
                 .font(.subheadline)
                 .foregroundColor(Color(hex: "#94A3B8"))
@@ -110,7 +109,7 @@ struct UserSearchView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("@\(profile.username)")
                     .font(DesignSystem.Fonts.display(size: 15, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
 
                 if let bio = profile.bio, !bio.isEmpty {
                     Text(bio)

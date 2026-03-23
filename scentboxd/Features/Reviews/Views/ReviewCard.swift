@@ -30,7 +30,7 @@ struct ReviewCard: View {
                                 .foregroundColor(DesignSystem.Colors.primary)
                             Text(review.authorName ?? String(localized: "Anonym"))
                                 .fontWeight(.medium)
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.subheadline)
                     }
@@ -41,7 +41,7 @@ struct ReviewCard: View {
                             .foregroundColor(DesignSystem.Colors.primary)
                         Text(review.authorName ?? String(localized: "Anonym"))
                             .fontWeight(.medium)
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
                     }
                     .font(.subheadline)
                 }
@@ -58,7 +58,7 @@ struct ReviewCard: View {
                 ForEach(1...5, id: \.self) { star in
                     Image(systemName: star <= review.rating ? "star.fill" : "star")
                         .font(.caption)
-                        .foregroundColor(star <= review.rating ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
+                        .foregroundColor(star <= review.rating ? DesignSystem.Colors.champagne : Color.primary.opacity(0.2))
                 }
             }
             .accessibilityElement(children: .ignore)
@@ -69,14 +69,14 @@ struct ReviewCard: View {
                 Text(review.title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
             }
             
             // Text
             if !review.text.isEmpty {
                 Text(review.text)
                     .font(.subheadline)
-                    .foregroundColor(Color(hex: "#CBD5E1"))
+                    .foregroundColor(Color.secondary)
                     .lineLimit(4)
             }
             
@@ -88,12 +88,12 @@ struct ReviewCard: View {
                             Image(systemName: "clock")
                                 .foregroundColor(DesignSystem.Colors.champagne)
                             Text(longevityText(for: lon))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.05))
+                        .background(Color.primary.opacity(0.05))
                         .cornerRadius(6)
                     }
                     
@@ -102,12 +102,12 @@ struct ReviewCard: View {
                             Image(systemName: "wind")
                                 .foregroundColor(DesignSystem.Colors.champagne)
                             Text(sillageText(for: sil))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.05))
+                        .background(Color.primary.opacity(0.05))
                         .cornerRadius(6)
                     }
                 }
@@ -192,7 +192,7 @@ struct ReviewCard: View {
                     .background(
                         isLiked
                             ? DesignSystem.Colors.primary.opacity(0.1)
-                            : Color.white.opacity(0.05)
+                            : Color.primary.opacity(0.05)
                     )
                     .cornerRadius(8)
                 }
@@ -205,11 +205,11 @@ struct ReviewCard: View {
             .padding(.top, 4)
         }
         .padding(16)
-        .background(Color(hex: "#341826"))
+        .background(DesignSystem.Colors.appSurface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                .stroke(Color.primary.opacity(0.05), lineWidth: 1)
         )
         .alert("Bewertung löschen", isPresented: $showDeleteConfirmation) {
             Button("Abbrechen", role: .cancel) { }

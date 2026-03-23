@@ -20,7 +20,7 @@ struct UserPerfumeDTO: Codable {
         case perfumeId = "perfume_id"
         case isFavorite = "is_favorite"
         case isOwned = "is_owned"
-        case isWantToTry = "is_empty"
+        case isWantToTry = "is_want_to_try"
         case createdAt = "created_at"
     }
 }

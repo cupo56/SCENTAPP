@@ -11,7 +11,7 @@ struct CompareView: View {
                 // Intro Text
                 Text("Duft-Vergleich")
                     .font(DesignSystem.Fonts.serif(size: 28, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                     .padding(.top, 16)
                 
                 Text("Vergleiche Noten, Performance und Konzentration Seite an Seite.")
@@ -35,7 +35,7 @@ struct CompareView: View {
                 Spacer(minLength: 40)
             }
         }
-        .background(DesignSystem.Colors.bgDark)
+        .background(DesignSystem.Colors.appBackground)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { commonNotes = Self.computeCommonNotes(perfumes) }
         .onChange(of: perfumes.map(\.id)) { _, _ in commonNotes = Self.computeCommonNotes(perfumes) }

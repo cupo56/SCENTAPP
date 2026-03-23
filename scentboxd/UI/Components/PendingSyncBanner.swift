@@ -28,7 +28,7 @@ struct PendingSyncBanner: View {
                     Text(String(localized: "\(totalPending) Änderung(en) nicht synchronisiert"))
                         .font(.caption)
                         .fontWeight(.medium)
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                     Text(String(localized: "Wird beim nächsten Online-Start hochgeladen"))
                         .font(.caption2)
                         .foregroundColor(Color(hex: "#94A3B8"))

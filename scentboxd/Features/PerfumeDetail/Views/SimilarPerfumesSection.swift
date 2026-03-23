@@ -79,27 +79,27 @@ struct SimilarPerfumesSection: View {
     private var placeholderCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             RoundedRectangle(cornerRadius: 8)
-                .fill(DesignSystem.Colors.surfaceDark.opacity(0.6))
+                .fill(DesignSystem.Colors.appSurface.opacity(0.6))
                 .frame(width: 140, height: 180)
                 .shimmer()
 
             VStack(alignment: .leading, spacing: 4) {
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color.primary.opacity(0.1))
                     .frame(width: 100, height: 12)
 
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.primary.opacity(0.06))
                     .frame(width: 70, height: 10)
             }
             .padding(8)
         }
         .frame(width: 140)
-        .background(DesignSystem.Colors.surfaceDark.opacity(0.4))
+        .background(DesignSystem.Colors.appSurface.opacity(0.4))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                .stroke(Color.primary.opacity(0.06), lineWidth: 1)
         )
         .accessibilityHidden(true)
     }
@@ -128,13 +128,13 @@ private struct SimilarPerfumeCard: View {
                                     .resizable()
                                     .scaledToFill()
                             } else {
-                                DesignSystem.Colors.surfaceDark
+                                DesignSystem.Colors.appSurface
                             }
                         }
                         .transition(.opacity)
                     } else {
                         ZStack {
-                            DesignSystem.Colors.surfaceDark
+                            DesignSystem.Colors.appSurface
                             Image(systemName: "flame.circle.fill")
                                 .resizable()
                                 .frame(width: 32, height: 32)
@@ -148,7 +148,7 @@ private struct SimilarPerfumeCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(perfume.name)
                     .font(DesignSystem.Fonts.serif(size: 13, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                     .lineLimit(1)
 
                 Text(perfume.brand?.name ?? "")
@@ -169,7 +169,7 @@ private struct SimilarPerfumeCard: View {
             .padding(8)
         }
         .frame(width: 140)
-        .background(DesignSystem.Colors.surfaceDark.opacity(0.6))
+        .background(DesignSystem.Colors.appSurface.opacity(0.6))
         .background(.ultraThinMaterial)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

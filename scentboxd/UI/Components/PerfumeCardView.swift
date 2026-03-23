@@ -36,13 +36,13 @@ struct PerfumeCardView: View {
                                         .resizable()
                                         .scaledToFill()
                                 } else {
-                                    DesignSystem.Colors.surfaceDark
+                                    DesignSystem.Colors.appSurface
                                 }
                             }
                             .transition(.opacity)
                         } else {
                             ZStack {
-                                DesignSystem.Colors.surfaceDark
+                                DesignSystem.Colors.appSurface
                                 Image(systemName: "flame.circle.fill")
                                     .resizable()
                                     .frame(width: 40, height: 40)
@@ -104,7 +104,7 @@ struct PerfumeCardView: View {
                 
                 Text(perfume.name)
                     .font(DesignSystem.Fonts.serif(size: 15, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                     .lineLimit(1)
                 
                 Text(perfume.brand?.name ?? String(localized: "Unbekannte Marke"))

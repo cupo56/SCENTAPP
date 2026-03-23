@@ -46,11 +46,11 @@ struct ReviewOccasionSection: View {
                         .foregroundColor(isSelected ? .white : Color(hex: "#94A3B8"))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
-                        .background(isSelected ? DesignSystem.Colors.primary : DesignSystem.Colors.surfaceDark)
+                        .background(isSelected ? DesignSystem.Colors.primary : DesignSystem.Colors.appSurface)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(
-                                    isSelected ? DesignSystem.Colors.primary : Color.white.opacity(0.08),
+                                    isSelected ? DesignSystem.Colors.primary : Color.primary.opacity(0.08),
                                     lineWidth: 1
                                 )
                         )
