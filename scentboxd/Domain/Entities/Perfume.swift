@@ -62,7 +62,7 @@ class Perfume {
 class UserPersonalData {
     var isFavorite: Bool
     var isOwned: Bool
-    var isEmpty: Bool
+    var isWantToTry: Bool
     var dateAdded: Date
     var personalNotes: String?
 
@@ -72,13 +72,13 @@ class UserPersonalData {
 
     /// true wenn kein Status gesetzt ist
     var hasNoStatus: Bool {
-        !isFavorite && !isOwned && !isEmpty
+        !isFavorite && !isOwned && !isWantToTry
     }
 
-    init(isFavorite: Bool = false, isOwned: Bool = false, isEmpty: Bool = false, dateAdded: Date = Date(), personalNotes: String? = nil, hasPendingSync: Bool = false) {
+    init(isFavorite: Bool = false, isOwned: Bool = false, isWantToTry: Bool = false, dateAdded: Date = Date(), personalNotes: String? = nil, hasPendingSync: Bool = false) {
         self.isFavorite = isFavorite
         self.isOwned = isOwned
-        self.isEmpty = isEmpty
+        self.isWantToTry = isWantToTry
         self.dateAdded = dateAdded
         self.personalNotes = personalNotes
         self.hasPendingSync = hasPendingSync

@@ -9,7 +9,7 @@ import Foundation
 @MainActor
 protocol UserPerfumeDataSourceProtocol {
     /// Saves or updates a perfume status for the current user.
-    func saveUserPerfume(perfumeId: UUID, isFavorite: Bool, isOwned: Bool, isEmpty: Bool) async throws
+    func saveUserPerfume(perfumeId: UUID, isFavorite: Bool, isOwned: Bool, isWantToTry: Bool) async throws
     
     /// Deletes a perfume status for the current user.
     func deleteUserPerfume(perfumeId: UUID) async throws

@@ -207,12 +207,15 @@ struct PublicProfileView: View {
                     GridItem(.flexible(), spacing: 16)
                 ], spacing: 16) {
                     ForEach(vm.collection) { item in
-                        PublicPerfumeCard(item: item)
-                            .onAppear {
-                                if item.id == vm.collection.last?.id {
-                                    Task { await vm.loadCollection(userId: userId) }
-                                }
+                        NavigationLink(destination: PerfumeDetailView(perfumeId: item.id)) {
+                            PublicPerfumeCard(item: item)
+                        }
+                        .buttonStyle(.plain)
+                        .onAppear {
+                            if item.id == vm.collection.last?.id {
+                                Task { await vm.loadCollection(userId: userId) }
                             }
+                        }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -337,15 +340,20 @@ struct PublicUserReviewsSection: View {
     @Environment(\.dependencies) private var dependencies
     @State private var reviews: [ReviewDTO] = []
     @State private var isLoading = true
+    @State private var isLoadingMore = false
     @State private var errorMessage: String?
+    @State private var currentPage = 0
+    @State private var hasMorePages = true
+
+    private let pageSize = AppConfig.Pagination.reviewPageSize
 
     var body: some View {
         Group {
-            if isLoading {
+            if isLoading && reviews.isEmpty {
                 ProgressView()
                     .tint(DesignSystem.Colors.primary)
                     .padding(.top, 40)
-            } else if let error = errorMessage {
+            } else if let error = errorMessage, reviews.isEmpty {
                 Text(error)
                     .font(.subheadline)
                     .foregroundColor(Color(hex: "#94A3B8"))
@@ -364,6 +372,17 @@ struct PublicUserReviewsSection: View {
                 LazyVStack(spacing: 12) {
                     ForEach(reviews, id: \.id) { reviewDTO in
                         publicReviewCard(reviewDTO: reviewDTO)
+                            .onAppear {
+                                if reviewDTO.id == reviews.last?.id {
+                                    Task { await loadMoreReviews() }
+                                }
+                            }
+                    }
+
+                    if isLoadingMore {
+                        ProgressView()
+                            .tint(DesignSystem.Colors.primary)
+                            .padding(.vertical, 8)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -376,13 +395,36 @@ struct PublicUserReviewsSection: View {
 
     private func loadReviews() async {
         isLoading = true
+        currentPage = 0
+        hasMorePages = true
         do {
-            reviews = try await dependencies.reviewDataSource.fetchReviewsByUser(userId: userId)
+            let page = try await dependencies.reviewDataSource.fetchReviewsByUser(
+                userId: userId, page: 0, pageSize: pageSize
+            )
+            reviews = page
+            hasMorePages = page.count >= pageSize
+            currentPage = 1
         } catch {
             errorMessage = String(localized: "Bewertungen konnten nicht geladen werden.")
             AppLogger.reviews.error("Failed to load public reviews: \(error.localizedDescription)")
         }
         isLoading = false
+    }
+
+    private func loadMoreReviews() async {
+        guard !isLoadingMore, hasMorePages else { return }
+        isLoadingMore = true
+        do {
+            let page = try await dependencies.reviewDataSource.fetchReviewsByUser(
+                userId: userId, page: currentPage, pageSize: pageSize
+            )
+            reviews.append(contentsOf: page)
+            hasMorePages = page.count >= pageSize
+            currentPage += 1
+        } catch {
+            AppLogger.reviews.error("Failed to load more public reviews: \(error.localizedDescription)")
+        }
+        isLoadingMore = false
     }
 
     private func publicReviewCard(reviewDTO: ReviewDTO) -> some View {

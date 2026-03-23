@@ -25,6 +25,11 @@ final class ReviewManagementService {
     var showSyncErrorAlert = false
     var deleteErrorMessage: String?
 
+    // MARK: - Like State (managed separately from SwiftData)
+
+    var likeCounts: [UUID: Int] = [:]
+    var likedByCurrentUser: Set<UUID> = []
+
     var reviewCount: Int {
         serverReviewCount ?? reviewTotalCount ?? reviews.count
     }
@@ -56,6 +61,7 @@ final class ReviewManagementService {
             reviews = try await reviewDataSource.fetchReviews(for: perfumeId, page: 0, pageSize: pageSize)
             hasMoreReviews = reviews.count >= pageSize
             await loadRatingStats()
+            await loadLikeStatus(for: reviews.map(\.id))
         } catch {
             errorMessage = NetworkError.handle(error, logger: AppLogger.reviews, context: "Bewertungen laden")
             showErrorAlert = true
@@ -81,6 +87,7 @@ final class ReviewManagementService {
             self.reviews.append(contentsOf: moreReviews)
             self.currentPage = nextPage
             self.hasMoreReviews = moreReviews.count >= pageSize
+            await loadLikeStatus(for: moreReviews.map(\.id))
         } catch {
             NetworkError.handle(error, logger: AppLogger.reviews, context: "Bewertungen nachladen")
         }
@@ -199,6 +206,69 @@ final class ReviewManagementService {
 
         if remoteSuccess {
             await loadRatingStats()
+        }
+    }
+
+    // MARK: - Likes
+
+    func likeCount(for reviewId: UUID) -> Int {
+        likeCounts[reviewId, default: 0]
+    }
+
+    func isLiked(_ reviewId: UUID) -> Bool {
+        likedByCurrentUser.contains(reviewId)
+    }
+
+    /// Loads like counts and current-user like status for the given review IDs.
+    func loadLikeStatus(for reviewIds: [UUID]) async {
+        guard !reviewIds.isEmpty else { return }
+        do {
+            let statusMap = try await reviewDataSource.fetchLikeStatus(reviewIds: reviewIds)
+            for (id, info) in statusMap {
+                likeCounts[id] = info.likeCount
+                if info.isLiked {
+                    likedByCurrentUser.insert(id)
+                } else {
+                    likedByCurrentUser.remove(id)
+                }
+            }
+        } catch {
+            AppLogger.reviews.error("Like-Status laden fehlgeschlagen: \(error.localizedDescription)")
+        }
+    }
+
+    /// Optimistic toggle: updates UI immediately, reverts on server error.
+    func toggleLike(reviewId: UUID) async {
+        let wasLiked = likedByCurrentUser.contains(reviewId)
+        let previousCount = likeCounts[reviewId, default: 0]
+
+        // Optimistic update
+        if wasLiked {
+            likedByCurrentUser.remove(reviewId)
+            likeCounts[reviewId] = max(0, previousCount - 1)
+        } else {
+            likedByCurrentUser.insert(reviewId)
+            likeCounts[reviewId] = previousCount + 1
+        }
+
+        do {
+            let result = try await reviewDataSource.toggleLike(reviewId: reviewId)
+            // Reconcile with server truth
+            likeCounts[reviewId] = result.likeCount
+            if result.liked {
+                likedByCurrentUser.insert(reviewId)
+            } else {
+                likedByCurrentUser.remove(reviewId)
+            }
+        } catch {
+            // Revert optimistic update
+            if wasLiked {
+                likedByCurrentUser.insert(reviewId)
+            } else {
+                likedByCurrentUser.remove(reviewId)
+            }
+            likeCounts[reviewId] = previousCount
+            AppLogger.reviews.error("Like-Toggle fehlgeschlagen: \(error.localizedDescription)")
         }
     }
 

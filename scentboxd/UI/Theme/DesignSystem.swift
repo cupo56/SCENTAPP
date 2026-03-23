@@ -11,6 +11,24 @@ enum DesignSystem {
         static let bgDark = Color(hex: "#221019")         // Dark Background
         static let surfaceDark = Color(hex: "#2E1A24")    // Dark Surface Menu/Cards
         
+        // Scent Family Colors
+        static let scentFamilyColors: [String: Color] = [
+            "Floral":    Color(hex: "#FFB6C1"),
+            "Woody":     Color(hex: "#8B7355"),
+            "Oriental":  Color(hex: "#DAA520"),
+            "Fresh":     Color(hex: "#98FB98"),
+            "Citrus":    Color(hex: "#FFD700"),
+            "Gourmand":  Color(hex: "#D2691E"),
+            "Aquatic":   Color(hex: "#87CEEB"),
+            "Green":     Color(hex: "#3CB371"),
+            "Spicy":     Color(hex: "#CD5C5C"),
+            "Musky":     Color(hex: "#C0C0C0")
+        ]
+
+        static func scentFamily(_ family: String) -> Color {
+            scentFamilyColors[family] ?? Color(hex: "#94A3B8")
+        }
+
         // Gradient
         static let textGradientGold = LinearGradient(
             colors: [Color(hex: "#F7E7CE"), Color(hex: "#CBBCA5")],

@@ -10,10 +10,14 @@ import SwiftUI
 struct ReviewCard: View {
     let review: Review
     let isOwn: Bool
+    var likeCount: Int = 0
+    var isLiked: Bool = false
     var onEdit: (() -> Void)?
     var onDelete: (() -> Void)?
+    var onToggleLike: (() -> Void)?
     
     @State private var showDeleteConfirmation = false
+    @State private var likeAnimating = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -110,9 +114,31 @@ struct ReviewCard: View {
                 .padding(.top, 2)
             }
             
-            // Bearbeiten / Löschen Buttons
-            if isOwn {
-                HStack(spacing: 12) {
+            // Occasion Badges
+            if !review.occasions.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(review.occasions, id: \.self) { occasion in
+                            Text(occasion)
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundColor(DesignSystem.Colors.primary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(DesignSystem.Colors.primary.opacity(0.1))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(DesignSystem.Colors.primary.opacity(0.25), lineWidth: 1)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                        }
+                    }
+                }
+                .accessibilityLabel("Anlässe: \(review.occasions.joined(separator: ", "))")
+            }
+
+            // Footer: Like-Button + Bearbeiten / Löschen
+            HStack(spacing: 12) {
+                if isOwn {
                     Button {
                         onEdit?()
                     } label: {
@@ -136,11 +162,47 @@ struct ReviewCard: View {
                         .foregroundColor(.red.opacity(0.8))
                     }
                     .accessibilityLabel(String(localized: "Bewertung löschen"))
-                    
-                    Spacer()
                 }
-                .padding(.top, 4)
+
+                Spacer()
+
+                // Like Button
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        likeAnimating = true
+                    }
+                    onToggleLike?()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        likeAnimating = false
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isLiked ? "heart.fill" : "heart")
+                            .font(.system(size: 14))
+                            .foregroundColor(isLiked ? DesignSystem.Colors.primary : Color(hex: "#94A3B8"))
+                            .scaleEffect(likeAnimating ? 1.3 : 1.0)
+                        if likeCount > 0 {
+                            Text("\(likeCount)")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(isLiked ? DesignSystem.Colors.primary : Color(hex: "#94A3B8"))
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        isLiked
+                            ? DesignSystem.Colors.primary.opacity(0.1)
+                            : Color.white.opacity(0.05)
+                    )
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isLiked
+                    ? String(localized: "Hilfreich markiert, \(likeCount) Likes")
+                    : String(localized: "Als hilfreich markieren, \(likeCount) Likes"))
+                .accessibilityHint(String(localized: "Doppeltippen zum Umschalten"))
             }
+            .padding(.top, 4)
         }
         .padding(16)
         .background(Color(hex: "#341826"))
@@ -181,12 +243,24 @@ struct ReviewCard: View {
 }
 
 #Preview {
-    ReviewCard(
-        review: Review(title: "Toller Duft!", text: "Einer meiner absoluten Favoriten. Perfekt für den Sommer.", rating: 5, longevity: 80, sillage: 45),
-        isOwn: true,
-        onEdit: { },
-        onDelete: { }
-    )
+    VStack(spacing: 16) {
+        ReviewCard(
+            review: Review(title: "Toller Duft!", text: "Einer meiner absoluten Favoriten. Perfekt für den Sommer.", rating: 5, longevity: 80, sillage: 45),
+            isOwn: true,
+            likeCount: 12,
+            isLiked: false,
+            onEdit: { },
+            onDelete: { },
+            onToggleLike: { }
+        )
+        ReviewCard(
+            review: Review(title: "Sehr empfehlenswert", text: "Ein wunderbarer Duft für jeden Anlass.", rating: 4),
+            isOwn: false,
+            likeCount: 3,
+            isLiked: true,
+            onToggleLike: { }
+        )
+    }
     .padding()
     .background(Color(hex: "#221019"))
 }

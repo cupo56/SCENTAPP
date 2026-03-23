@@ -20,17 +20,17 @@ final class MockUserPerfumeDataSource: UserPerfumeDataSourceProtocol {
     private(set) var lastSavedPerfumeId: UUID?
     private(set) var lastSavedIsFavorite: Bool?
     private(set) var lastSavedIsOwned: Bool?
-    private(set) var lastSavedIsEmpty: Bool?
+    private(set) var lastSavedIsWantToTry: Bool?
     private(set) var lastDeletedPerfumeId: UUID?
     
     // MARK: - UserPerfumeDataSourceProtocol
     
-    func saveUserPerfume(perfumeId: UUID, isFavorite: Bool, isOwned: Bool, isEmpty: Bool) async throws {
+    func saveUserPerfume(perfumeId: UUID, isFavorite: Bool, isOwned: Bool, isWantToTry: Bool) async throws {
         saveCalled += 1
         lastSavedPerfumeId = perfumeId
         lastSavedIsFavorite = isFavorite
         lastSavedIsOwned = isOwned
-        lastSavedIsEmpty = isEmpty
+        lastSavedIsWantToTry = isWantToTry
         if let error = errorToThrow { throw error }
     }
     
