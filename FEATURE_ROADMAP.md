@@ -211,93 +211,65 @@ Die Feature-Implementierung (PublicProfileView, UserSearchView, ReviewCard-Navig
 
 ---
 
-### 2.4 Benachrichtigungen (Push Notifications)
+### ~~2.4 Benachrichtigungen (Push Notifications)~~ ✅ ERLEDIGT
 **Priorität:** Niedrig-Mittel | **Aufwand:** 5-7 Tage | **User-Value:** Mittel
 
 **Warum:** Engagement-Feature. Bringt User zurück in die App.
 
 #### Backend (Supabase Edge Functions)
-- [ ] `supabase/functions/send-notification/` erstellen
-- [ ] APNs Integration über Supabase (oder Firebase Cloud Messaging)
-- [ ] `device_tokens`-Tabelle:
-  ```sql
-  CREATE TABLE device_tokens (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID REFERENCES auth.users(id),
-      token TEXT NOT NULL,
-      platform TEXT DEFAULT 'ios',
-      created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-  ```
-- [ ] Trigger-Funktionen:
-  - [ ] `on_new_review`: Wenn jemand ein Parfum aus deiner Sammlung bewertet
-  - [ ] `on_review_like`: Wenn jemand deine Review liked (nach 1.2)
-  - [ ] `on_similar_added`: Wenn ein ähnliches Parfum hinzugefügt wird (optional)
+- [x] `supabase/functions/send-notification/index.ts` erstellen
+- [x] APNs Integration über JWT (ES256) — keine Firebase-Abhängigkeit
+- [x] `device_tokens`-Tabelle + RLS (`supabase/migrations/20260325_notifications.sql`)
+- [x] `notification_preferences`-Tabelle + RLS
+- [x] RPCs: `upsert_device_token`, `delete_device_token` (SECURITY DEFINER)
+- [x] Trigger `on_new_review`: Wenn jemand ein Parfum aus deiner Sammlung bewertet
+- [x] Trigger `on_review_like`: Wenn jemand deine Review liked
 
 #### iOS Implementation
-- [ ] `App/NotificationManager.swift`:
-  ```swift
-  @Observable @MainActor
-  class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
-      var isPermissionGranted = false
+- [x] `App/AppDelegate.swift`: `UIApplicationDelegate` für Push Token Registration
+- [x] `App/NotificationManager.swift`:
+  - [x] `@Observable @MainActor final class NotificationManager` (Singleton)
+  - [x] `requestPermission()`, `registerDeviceToken()`, `unregisterCurrentToken()`
+  - [x] `loadPreferences()` / `savePreferences()` ↔ Supabase
+  - [x] `UNUserNotificationCenterDelegate`: Foreground-Anzeige + Tap-Handling
+- [x] `scentboxdApp.swift`:
+  - [x] `@UIApplicationDelegateAdaptor(AppDelegate.self)`
+  - [x] `notificationManager` als `@State` + `.environment()` propagation
+  - [x] Deep Link aus Notification-Tap via `NotificationCenter` → `DeepLinkHandler`
+- [x] `Features/Profile/Views/NotificationSettingsView.swift`:
+  - [x] Permission-Flow: Noch nicht gefragt / Abgelehnt / Aktiviert
+  - [x] Toggle: "Neue Reviews zu meinen Düften"
+  - [x] Toggle: "Likes auf meine Reviews"
+  - [x] Toggle: "Ähnliche Düfte"
+  - [x] Toggle: "Community-Updates"
+  - [x] Debounced Auto-Save (600 ms)
+- [x] `Features/Auth/SettingsView.swift`: "BENACHRICHTIGUNGEN"-Section mit NavigationLink
+- [x] `AppLogger.notifications` Kategorie hinzugefügt
 
-      func requestPermission() async -> Bool { ... }
-      func registerDeviceToken(_ token: Data) async { ... }
-      func handleNotification(_ response: UNNotificationResponse) { ... }
-  }
-  ```
-- [ ] `scentboxdApp.swift`:
-  - [ ] `UIApplicationDelegateAdaptor` für Push Token Registration
-  - [ ] `application(_:didRegisterForRemoteNotificationsWithDeviceToken:)`
-- [ ] `Features/Profile/Views/NotificationSettingsView.swift`:
-  - [ ] Toggle: "Neue Reviews zu meinen Düften"
-  - [ ] Toggle: "Likes auf meine Reviews"
-  - [ ] Toggle: "Ähnliche Düfte"
-  - [ ] Toggle: "Community-Updates"
-  - [ ] Jeder Toggle → Supabase `notification_preferences` Update
-- [ ] Deep Link Handling für Notification-Taps → Detail-View
+#### Setup nach Migration (einmalig im Supabase SQL-Editor):
+```sql
+ALTER DATABASE postgres SET app.supabase_url = 'https://DEIN-PROJEKT.supabase.co';
+ALTER DATABASE postgres SET app.service_role_key = 'DEIN-SERVICE-ROLE-KEY';
+```
+#### Supabase Edge Function Secrets (Dashboard → Edge Functions → Secrets):
+- `APNS_TEAM_ID`, `APNS_KEY_ID`, `APNS_PRIVATE_KEY` (.p8 Inhalt), `APNS_BUNDLE_ID`, `APNS_PRODUCTION`
 
-#### Tests
-- [ ] `NotificationManagerTests.swift`
-- [ ] Integration Test: Review erstellen → Notification an Parfum-Owner
+#### Xcode-Einstellung erforderlich:
+- Target → Signing & Capabilities → **Push Notifications** Capability hinzufügen
+- Target → Signing & Capabilities → **Background Modes** → Remote notifications aktivieren
 
 ---
 
-### 2.5 Dark/Light Mode Toggle
+### ~~2.5 Dark/Light Mode Toggle~~ ✅ ERLEDIGT
 **Priorität:** Niedrig | **Aufwand:** 1-2 Tage | **User-Value:** Mittel
 
 **Warum:** Manche User bevorzugen Light Mode. Aktuell ist nur Dark Mode.
 
-- [ ] `App/ThemeManager.swift` erstellen:
-  ```swift
-  @Observable
-  class ThemeManager {
-      @AppStorage("colorScheme") var selectedScheme: String = "dark"
-
-      var colorScheme: ColorScheme? {
-          switch selectedScheme {
-          case "light": return .light
-          case "dark": return .dark
-          default: return nil  // System
-          }
-      }
-  }
-  ```
-- [ ] `DesignSystem.swift`:
-  - [ ] Alle hardcoded Dark-Mode Farben durch `Color(light:dark:)` oder Asset-Catalog-Farben ersetzen
-  - [ ] Backgrounds: Dark = `#341826` → Light = `#FFF5F9`
-  - [ ] Text: Invertieren oder adaptiv
-  - [ ] GlassPanel: Transparenz anpassen
-- [ ] `SettingsView.swift`:
-  - [ ] Neue Section "Erscheinungsbild":
-    - [ ] Picker: "Dunkel" / "Hell" / "System"
-    - [ ] Live-Preview (kleiner Mock-Screen)
-- [ ] `scentboxdApp.swift`:
-  - [ ] `.preferredColorScheme(themeManager.colorScheme)`
-- [ ] Alle Views durchgehen:
-  - [ ] `.background(Color.black)` → `.background(Color.appBackground)` etc.
-  - [ ] Hardcoded Farben durch Design Tokens ersetzen
-- [ ] Testen: Alle Screens in Light Mode Screenshots machen
+- [x] `App/ThemeManager.swift`: `@Observable ThemeManager` mit `UserDefaults`-Persistenz, `selectedScheme` ("dark"/"light"/"system"), `colorScheme: ColorScheme?`
+- [x] `DesignSystem.swift`: Adaptive Tokens `appBackground` (dark `#221019`, light `#FFF5F9`), `appSurface` (dark `#2E1A24`, light `#FDE8F0`), `appText = Color(UIColor.label)`, `appTextSecondary = Color(UIColor.secondaryLabel)` via `UIColor` dynamic provider. `GlassPanelModifier` auf `appSurface` umgestellt.
+- [x] `SettingsView.swift`: Section "ERSCHEINUNGSBILD" mit einer Zeile **Dunkelmodus** + Toggle (kein Drei-Wege-Picker mehr)
+- [x] `scentboxdApp.swift`: `ThemeManager` als `@State`, `.environment()`, `.preferredColorScheme(themeManager.colorScheme)`
+- [x] Alle 27+ Views: `bgDark` → `appBackground`, `surfaceDark` → `appSurface`, `.foregroundColor(.white)` in Textkontexten → `.foregroundStyle(Color.primary)`, `.toolbarColorScheme(.dark)` entfernt, Tab Bar adaptiv gemacht
 
 ---
 

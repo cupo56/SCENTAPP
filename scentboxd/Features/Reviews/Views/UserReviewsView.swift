@@ -20,7 +20,7 @@ struct UserReviewsView: View {
     
     var body: some View {
         ZStack {
-            DesignSystem.Colors.bgDark.ignoresSafeArea()
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
             
             if isLoading {
                 ProgressView("Bewertungen laden...")
@@ -50,7 +50,7 @@ struct UserReviewsView: View {
                         .foregroundColor(DesignSystem.Colors.primary.opacity(0.4))
                     Text("Noch keine Bewertungen")
                         .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                     Text("Du hast bisher keine Parfums bewertet.")
                         .font(.subheadline)
                         .foregroundColor(Color(hex: "#94A3B8"))
@@ -80,7 +80,6 @@ struct UserReviewsView: View {
         }
         .navigationTitle("Meine Bewertungen")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .task {
             guard userReviews.isEmpty && errorMessage == nil else { return }
             await loadReviews()
@@ -99,7 +98,7 @@ struct UserReviewsView: View {
                         if let image = state.image {
                             image.resizable().scaledToFill()
                         } else {
-                            DesignSystem.Colors.surfaceDark
+                            DesignSystem.Colors.appSurface
                         }
                     }
                     .frame(width: 48, height: 48)
@@ -107,7 +106,7 @@ struct UserReviewsView: View {
                     .clipped()
                 } else {
                     ZStack {
-                        DesignSystem.Colors.surfaceDark
+                        DesignSystem.Colors.appSurface
                         Image(systemName: "flame.circle.fill")
                             .resizable()
                             .frame(width: 24, height: 24)
@@ -120,7 +119,7 @@ struct UserReviewsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(perfume?.name ?? String(localized: "Unbekanntes Parfum"))
                         .font(DesignSystem.Fonts.serif(size: 15, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                         .lineLimit(1)
                     Text(perfume?.brand?.name ?? String(localized: "Marke unbekannt"))
                         .font(.caption)
@@ -136,14 +135,14 @@ struct UserReviewsView: View {
             }
             
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(Color.primary.opacity(0.1))
             
             // Rating
             HStack(spacing: 2) {
                 ForEach(1...5, id: \.self) { star in
                     Image(systemName: star <= (reviewDTO.rating ?? 0) ? "star.fill" : "star")
                         .font(.caption)
-                        .foregroundColor(star <= (reviewDTO.rating ?? 0) ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
+                        .foregroundColor(star <= (reviewDTO.rating ?? 0) ? DesignSystem.Colors.champagne : Color.primary.opacity(0.2))
                 }
             }
             
@@ -152,14 +151,14 @@ struct UserReviewsView: View {
                 Text(reviewDTO.title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
             }
             
             // Text
             if !reviewDTO.text.isEmpty {
                 Text(reviewDTO.text)
                     .font(.subheadline)
-                    .foregroundColor(Color(hex: "#CBD5E1"))
+                    .foregroundColor(Color.secondary)
                     .lineLimit(4)
             }
             
@@ -171,12 +170,12 @@ struct UserReviewsView: View {
                             Image(systemName: "clock")
                                 .foregroundColor(DesignSystem.Colors.champagne)
                             Text(longevityText(for: lon))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.05))
+                        .background(Color.primary.opacity(0.05))
                         .cornerRadius(6)
                     }
                     
@@ -185,12 +184,12 @@ struct UserReviewsView: View {
                             Image(systemName: "wind")
                                 .foregroundColor(DesignSystem.Colors.champagne)
                             Text(sillageText(for: sil))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.05))
+                        .background(Color.primary.opacity(0.05))
                         .cornerRadius(6)
                     }
                 }

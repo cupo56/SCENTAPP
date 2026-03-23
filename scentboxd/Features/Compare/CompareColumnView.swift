@@ -16,14 +16,14 @@ struct CompareColumnView: View {
                                 .resizable()
                                 .scaledToFill()
                         } else {
-                            DesignSystem.Colors.surfaceDark
+                            DesignSystem.Colors.appSurface
                         }
                     }
                     .frame(height: 120)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 } else {
                     ZStack {
-                        DesignSystem.Colors.surfaceDark
+                        DesignSystem.Colors.appSurface
                         Image(systemName: "flame.circle.fill")
                             .resizable()
                             .frame(width: 40, height: 40)
@@ -43,7 +43,7 @@ struct CompareColumnView: View {
                     
                     Text(perfume.name)
                         .font(DesignSystem.Fonts.serif(size: 14, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                         .frame(height: 40, alignment: .top)
@@ -53,7 +53,7 @@ struct CompareColumnView: View {
             }
             .padding(.bottom, 16)
             
-            Divider().background(Color.white.opacity(0.1))
+            Divider().background(Color.primary.opacity(0.1))
             
             // Concentration
             compareRow(
@@ -73,7 +73,7 @@ struct CompareColumnView: View {
                 value: perfume.sillage.isEmpty ? "–" : perfume.sillage
             )
             
-            Divider().background(Color.white.opacity(0.1))
+            Divider().background(Color.primary.opacity(0.1))
                 .padding(.vertical, 8)
             
             // Duftnoten
@@ -101,7 +101,7 @@ struct CompareColumnView: View {
             
             Text(value)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
                 .multilineTextAlignment(.center)
         }
         .frame(height: 50)
@@ -119,14 +119,14 @@ struct CompareColumnView: View {
             if notes.isEmpty {
                 Text("–")
                     .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(Color.secondary)
             } else {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(notes, id: \.id) { note in
                         let isCommon = commonNotes.contains(note.name)
                         Text(note.name)
                             .font(.system(size: 12, weight: isCommon ? .bold : .regular))
-                            .foregroundColor(isCommon ? DesignSystem.Colors.champagne : .white)
+                            .foregroundColor(isCommon ? DesignSystem.Colors.champagne : Color.primary)
                             .padding(.horizontal, isCommon ? 6 : 0)
                             .padding(.vertical, isCommon ? 2 : 0)
                             .background(isCommon ? DesignSystem.Colors.champagne.opacity(0.15) : Color.clear)

@@ -7,7 +7,7 @@ struct PerfumeDescriptionSection: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Über den Duft")
                 .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
             Text(description)
                 .font(.subheadline)
                 .foregroundColor(Color(hex: "#94A3B8"))

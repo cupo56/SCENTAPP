@@ -12,7 +12,7 @@ struct ReviewsSection: View {
             HStack {
                 Text("Community Reviews")
                     .font(DesignSystem.Fonts.serif(size: 22, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                 Spacer()
                 if let total = viewModel.reviewService.reviewTotalCount, total > 0 {
                     Text("\(total)")
@@ -113,13 +113,13 @@ struct ReviewsSection: View {
                     Text(viewModel.hasExistingReview ? String(localized: "Bewertung bearbeiten") : String(localized: "Bewertung schreiben"))
                         .font(.system(size: 13, weight: .medium))
                 }
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
                 .frame(maxWidth: .infinity)
                 .frame(height: 46)
-                .background(Color.white.opacity(0.05))
+                .background(Color.primary.opacity(0.05))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
                 )
                 .cornerRadius(12)
             }

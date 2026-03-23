@@ -24,7 +24,7 @@ struct PerfumeListView: View {
         @Bindable var filterVM = filterVM
         NavigationStack {
             ZStack {
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 0) {
@@ -114,7 +114,6 @@ struct PerfumeListView: View {
                 }
             }
             .navigationTitle("ScentBox")
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 // MARK: - Sort Menu
                 ToolbarItem(placement: .topBarLeading) {
@@ -253,10 +252,10 @@ struct PerfumeListView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 8, weight: .bold))
             }
-            .foregroundColor(.white.opacity(0.85))
+            .foregroundColor(Color.primary.opacity(0.85))
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(DesignSystem.Colors.surfaceDark)
+            .background(DesignSystem.Colors.appSurface)
             .overlay(Capsule().stroke(DesignSystem.Colors.primary.opacity(0.2), lineWidth: 1))
             .clipShape(Capsule())
         }
@@ -274,7 +273,7 @@ struct PerfumeListView: View {
                 Text(String(localized: "Offline-Modus — Daten eventuell nicht aktuell"))
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                 if let lastSync = viewModel.dataLoader.lastSyncedAt {
                     Text("Zuletzt synchronisiert: ") + Text(lastSync, style: .relative)
                         .font(.caption2)
@@ -333,17 +332,17 @@ struct PerfumeListView: View {
     private var skeletonCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             RoundedRectangle(cornerRadius: 0)
-                .fill(DesignSystem.Colors.surfaceDark)
+                .fill(DesignSystem.Colors.appSurface)
                 .aspectRatio(3/4, contentMode: .fit)
                 .shimmer()
             
             VStack(alignment: .leading, spacing: 6) {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color.primary.opacity(0.1))
                     .frame(height: 12)
                     .frame(maxWidth: 80)
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.primary.opacity(0.06))
                     .frame(height: 10)
                     .frame(maxWidth: 60)
             }
@@ -407,7 +406,7 @@ struct PerfumeRowView: View {
                             .resizable()
                             .scaledToFill()
                     } else {
-                        DesignSystem.Colors.surfaceDark
+                        DesignSystem.Colors.appSurface
                     }
                 }
                 .transition(.opacity)
@@ -424,7 +423,7 @@ struct PerfumeRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(perfume.name)
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                 Text(perfume.brand?.name ?? String(localized: "Unbekannte Marke"))
                     .font(.subheadline)
                     .foregroundColor(Color(hex: "#94A3B8"))

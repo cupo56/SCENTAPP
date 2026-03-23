@@ -11,6 +11,7 @@ import os
 
 struct SettingsView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(ThemeManager.self) private var themeManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -21,11 +22,13 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            DesignSystem.Colors.bgDark.ignoresSafeArea()
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
+                    appearanceSection
                     cacheSection
+                    notificationSection
                     accountSection
                     aboutSection
                 }
@@ -34,7 +37,6 @@ struct SettingsView: View {
         }
         .navigationTitle("Einstellungen")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .confirmationDialog(
             "Möchtest du dich wirklich abmelden?",
             isPresented: $showLogoutConfirmation,
@@ -53,6 +55,42 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Appearance Section
+
+    private var appearanceSection: some View {
+        settingsSection(title: "ERSCHEINUNGSBILD") {
+            darkModeToggleRow
+        }
+    }
+
+    /// Eine Zeile mit Label + erklärendem Text; rechts ein klarer Toggle (Bar-Stil).
+    private var darkModeToggleRow: some View {
+        HStack(alignment: .center, spacing: 14) {
+            settingsIcon("moon.stars.fill", color: DesignSystem.Colors.primary)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Dunkelmodus")
+                    .font(DesignSystem.Fonts.display(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.primary)
+
+                Text(themeManager.prefersDarkAppearance
+                     ? "Dunkles Design ist aktiv"
+                     : "Helles Design ist aktiv")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.secondary)
+            }
+
+            Spacer(minLength: 8)
+
+            Toggle("", isOn: Bindable(themeManager).prefersDarkAppearance)
+                .labelsHidden()
+                .tint(DesignSystem.Colors.primary)
+                .accessibilityLabel(String(localized: "Dunkelmodus"))
+                .accessibilityHint(String(localized: "Schaltet zwischen hellem und dunklem Erscheinungsbild"))
+        }
+        .padding(.vertical, 4)
+    }
+
     // MARK: - Cache Section
 
     private var cacheSection: some View {
@@ -66,7 +104,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Cache leeren")
                             .font(DesignSystem.Fonts.display(size: 15, weight: .medium))
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
 
                         Text("Lokale Daten und Bilder löschen")
                             .font(.system(size: 12))
@@ -91,6 +129,36 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Notification Section
+
+    private var notificationSection: some View {
+        settingsSection(title: "BENACHRICHTIGUNGEN") {
+            NavigationLink(destination: NotificationSettingsView()) {
+                HStack(spacing: 12) {
+                    settingsIcon("bell", color: DesignSystem.Colors.champagne)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Benachrichtigungen")
+                            .font(DesignSystem.Fonts.display(size: 15, weight: .medium))
+                            .foregroundStyle(Color.primary)
+
+                        Text("Push-Nachrichten verwalten")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color(hex: "#94A3B8"))
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Color(hex: "#94A3B8"))
+                }
+            }
+            .accessibilityLabel("Benachrichtigungen")
+            .accessibilityHint("Öffnet die Benachrichtigungseinstellungen")
+        }
+    }
+
     // MARK: - Account Section
 
     private var accountSection: some View {
@@ -102,7 +170,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("E-Mail")
                             .font(DesignSystem.Fonts.display(size: 15, weight: .medium))
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
 
                         Text(email)
                             .font(.system(size: 12))
@@ -120,7 +188,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Mitglied seit")
                             .font(DesignSystem.Fonts.display(size: 15, weight: .medium))
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
 
                         Text(createdAt.formatted(date: .abbreviated, time: .omitted))
                             .font(.system(size: 12))
@@ -132,7 +200,7 @@ struct SettingsView: View {
             }
 
             Divider()
-                .overlay(Color.white.opacity(0.06))
+                .overlay(Color.primary.opacity(0.06))
 
             Button {
                 showLogoutConfirmation = true
@@ -199,7 +267,7 @@ struct SettingsView: View {
         HStack {
             Text(label)
                 .font(DesignSystem.Fonts.display(size: 15, weight: .medium))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
             Spacer()
             Text(value)
                 .font(.system(size: 14))

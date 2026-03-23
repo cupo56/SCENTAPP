@@ -1,5 +1,5 @@
 -- Scentboxd Database Schema Reference
--- Stand: 24.03.2026
+-- Stand: 25.03.2026
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
@@ -81,13 +81,35 @@ CREATE TABLE public.reviews (
   CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 
+CREATE TABLE public.device_tokens (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  token text NOT NULL,
+  platform text NOT NULL DEFAULT 'ios',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT device_tokens_pkey PRIMARY KEY (id),
+  CONSTRAINT device_tokens_user_token_key UNIQUE (user_id, token),
+  CONSTRAINT device_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE public.notification_preferences (
+  user_id uuid NOT NULL,
+  new_reviews boolean NOT NULL DEFAULT true,
+  review_likes boolean NOT NULL DEFAULT true,
+  similar_added boolean NOT NULL DEFAULT false,
+  community_updates boolean NOT NULL DEFAULT false,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT notification_preferences_pkey PRIMARY KEY (user_id),
+  CONSTRAINT notification_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE public.user_perfumes (
   user_id uuid NOT NULL,
   perfume_id uuid NOT NULL,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   is_favorite boolean NOT NULL DEFAULT false,
   is_owned boolean NOT NULL DEFAULT false,
-  is_empty boolean NOT NULL DEFAULT false,
+  is_want_to_try boolean NOT NULL DEFAULT false,
   CONSTRAINT user_perfumes_pkey PRIMARY KEY (user_id, perfume_id),
   CONSTRAINT user_perfumes_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
   CONSTRAINT user_perfumes_perfume_id_fkey FOREIGN KEY (perfume_id) REFERENCES public.perfumes(id)

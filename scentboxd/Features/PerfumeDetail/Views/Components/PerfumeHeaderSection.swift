@@ -15,7 +15,7 @@ struct PerfumeHeaderSection: View {
             
             Text(perfume.name)
                 .font(DesignSystem.Fonts.serif(size: 34, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
             
             HStack(spacing: 10) {
                 // Concentration
@@ -41,16 +41,16 @@ struct PerfumeHeaderSection: View {
                             .foregroundColor(DesignSystem.Colors.champagne)
                         Text(String(format: "%.1f", avg))
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.primary)
                         if reviewService.reviewCount > 0 {
                             Text("(\(reviewService.reviewCount))")
                                 .font(.system(size: 11))
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(Color.secondary)
                         }
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 5)
-                    .background(Color.black.opacity(0.2))
+                    .background(Color.primary.opacity(0.08))
                     .cornerRadius(8)
                 }
             }

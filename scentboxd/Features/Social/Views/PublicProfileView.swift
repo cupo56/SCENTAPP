@@ -21,7 +21,7 @@ struct PublicProfileView: View {
 
     var body: some View {
         ZStack {
-            DesignSystem.Colors.bgDark.ignoresSafeArea()
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
 
             if let vm = viewModel {
                 if vm.isLoading && vm.profile == nil {
@@ -41,7 +41,6 @@ struct PublicProfileView: View {
         }
         .navigationTitle("Profil")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .task {
             let vm = PublicProfileViewModel(dataSource: dependencies.publicProfileDataSource)
             viewModel = vm
@@ -97,13 +96,13 @@ struct PublicProfileView: View {
             // Username
             Text("@\(profile.username)")
                 .font(DesignSystem.Fonts.serif(size: 22, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
 
             // Bio
             if let bio = profile.bio, !bio.isEmpty {
                 Text(bio)
                     .font(.subheadline)
-                    .foregroundColor(Color(hex: "#CBD5E1"))
+                    .foregroundColor(Color.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
@@ -134,11 +133,11 @@ struct PublicProfileView: View {
             statItem(value: "\(profile.ownedCount)", label: "Sammlung")
             Divider()
                 .frame(height: 40)
-                .background(Color.white.opacity(0.1))
+                .background(Color.primary.opacity(0.1))
             statItem(value: "\(profile.reviewCount)", label: "Bewertungen")
             Divider()
                 .frame(height: 40)
-                .background(Color.white.opacity(0.1))
+                .background(Color.primary.opacity(0.1))
             statItem(value: "\(profile.favoriteCount)", label: "Favoriten")
         }
         .padding(.vertical, 16)
@@ -150,7 +149,7 @@ struct PublicProfileView: View {
         VStack(spacing: 4) {
             Text(value)
                 .font(DesignSystem.Fonts.serif(size: 20, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
             Text(label)
                 .font(.caption)
                 .foregroundColor(Color(hex: "#94A3B8"))
@@ -182,7 +181,7 @@ struct PublicProfileView: View {
                 }
             }
         }
-        .background(Color.white.opacity(0.05))
+        .background(Color.primary.opacity(0.05))
         .cornerRadius(10)
         .padding(.horizontal, 16)
     }
@@ -260,7 +259,7 @@ struct PublicProfileView: View {
                 .foregroundColor(DesignSystem.Colors.primary.opacity(0.5))
             Text("Privates Profil")
                 .font(DesignSystem.Fonts.serif(size: 22, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
             Text("@\(username) hat sein Profil auf privat gestellt.")
                 .font(.subheadline)
                 .foregroundColor(Color(hex: "#94A3B8"))
@@ -287,13 +286,13 @@ private struct PublicPerfumeCard: View {
                                 if let image = state.image {
                                     image.resizable().scaledToFill()
                                 } else {
-                                    DesignSystem.Colors.surfaceDark
+                                    DesignSystem.Colors.appSurface
                                 }
                             }
                             .transition(.opacity)
                         } else {
                             ZStack {
-                                DesignSystem.Colors.surfaceDark
+                                DesignSystem.Colors.appSurface
                                 Image(systemName: "flame.circle.fill")
                                     .resizable()
                                     .frame(width: 40, height: 40)
@@ -308,7 +307,7 @@ private struct PublicPerfumeCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.name)
                     .font(DesignSystem.Fonts.serif(size: 15, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                     .lineLimit(1)
 
                 if let concentration = item.concentration, !concentration.isEmpty {
@@ -435,7 +434,7 @@ struct PublicUserReviewsSection: View {
                     ForEach(1...5, id: \.self) { star in
                         Image(systemName: star <= (reviewDTO.rating ?? 0) ? "star.fill" : "star")
                             .font(.caption)
-                            .foregroundColor(star <= (reviewDTO.rating ?? 0) ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
+                            .foregroundColor(star <= (reviewDTO.rating ?? 0) ? DesignSystem.Colors.champagne : Color.primary.opacity(0.2))
                     }
                 }
                 Spacer()
@@ -448,13 +447,13 @@ struct PublicUserReviewsSection: View {
                 Text(reviewDTO.title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
             }
 
             if !reviewDTO.text.isEmpty {
                 Text(reviewDTO.text)
                     .font(.subheadline)
-                    .foregroundColor(Color(hex: "#CBD5E1"))
+                    .foregroundColor(Color.secondary)
                     .lineLimit(4)
             }
         }

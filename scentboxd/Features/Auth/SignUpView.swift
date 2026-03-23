@@ -77,7 +77,7 @@ struct SignUpView: View {
         NavigationStack {
             ZStack {
                 // Background
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
                 
                 // Subtle glow
                 Circle()
@@ -96,7 +96,7 @@ struct SignUpView: View {
                             
                             Text("Konto erstellen")
                                 .font(DesignSystem.Fonts.serif(size: 28, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                             
                             Text("Registriere dich, um deine Düfte zu speichern")
                                 .font(DesignSystem.Fonts.display(size: 14))
@@ -121,7 +121,7 @@ struct SignUpView: View {
                                         .focused($focusedField, equals: .email)
                                         .submitLabel(.next)
                                         .onSubmit { focusedField = .username }
-                                        .foregroundColor(.white)
+                                        .foregroundStyle(Color.primary)
                                         .accessibilityLabel("E-Mail-Adresse")
                                 }
                                 .padding(16)
@@ -148,7 +148,7 @@ struct SignUpView: View {
                                         .focused($focusedField, equals: .username)
                                         .submitLabel(.next)
                                         .onSubmit { focusedField = .password }
-                                        .foregroundColor(.white)
+                                        .foregroundStyle(Color.primary)
                                         .accessibilityLabel("Benutzername")
                                         .accessibilityHint("3 bis 20 Zeichen, nur Buchstaben, Zahlen und Unterstriche")
                                         .onChange(of: username) { _, newValue in
@@ -179,7 +179,7 @@ struct SignUpView: View {
                                         .focused($focusedField, equals: .password)
                                         .submitLabel(.next)
                                         .onSubmit { focusedField = .confirmPassword }
-                                        .foregroundColor(.white)
+                                        .foregroundStyle(Color.primary)
                                         .accessibilityLabel("Passwort")
                                         .accessibilityHint("Mindestens 6 Zeichen")
                                 }
@@ -209,7 +209,7 @@ struct SignUpView: View {
                                                 focusedField = nil
                                             }
                                         }
-                                        .foregroundColor(.white)
+                                        .foregroundStyle(Color.primary)
                                         .accessibilityLabel("Passwort bestätigen")
                                 }
                                 .padding(16)
@@ -242,7 +242,7 @@ struct SignUpView: View {
                                     .foregroundStyle(.green)
                                 Text("Registrierung erfolgreich!")
                                     .fontWeight(.medium)
-                                    .foregroundColor(.white)
+                                    .foregroundStyle(Color.primary)
                                 if authManager.pendingEmailConfirmation {
                                     Text("Bitte bestätige deine E-Mail-Adresse. Nach der Bestätigung kannst du dich einloggen.")
                                         .font(.footnote)

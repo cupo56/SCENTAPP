@@ -13,7 +13,7 @@ struct ReviewPerformanceSliders: View {
                         Image(systemName: "clock")
                             .foregroundColor(DesignSystem.Colors.champagne)
                         Text("Haltbarkeit")
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
                             .fontWeight(.medium)
                     }
                     Spacer()
@@ -49,7 +49,7 @@ struct ReviewPerformanceSliders: View {
                         Image(systemName: "wind")
                             .foregroundColor(DesignSystem.Colors.champagne)
                         Text("Sillage")
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
                             .fontWeight(.medium)
                     }
                     Spacer()

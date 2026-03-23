@@ -76,7 +76,7 @@ struct ScentWheelView: View {
                 VStack(spacing: 2) {
                     Text(segment.family)
                         .font(DesignSystem.Fonts.display(size: 13, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.primary)
                     Text(String(format: "%.0f%%", segment.percentage))
                         .font(DesignSystem.Fonts.display(size: 11))
                         .foregroundStyle(DesignSystem.Colors.champagne)
@@ -103,7 +103,7 @@ struct ScentWheelView: View {
                             .frame(width: 10, height: 10)
                         Text(segment.family)
                             .font(DesignSystem.Fonts.display(size: 13))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.primary)
                             .lineLimit(1)
                         Spacer()
                         Text("\(segment.count)")
@@ -183,7 +183,7 @@ struct ScentWheelView: View {
 
 #Preview {
     ZStack {
-        DesignSystem.Colors.bgDark.ignoresSafeArea()
+        DesignSystem.Colors.appBackground.ignoresSafeArea()
         ScentWheelView(segments: [
             ScentWheelSegment(family: "Woody", count: 8, percentage: 32),
             ScentWheelSegment(family: "Floral", count: 6, percentage: 24),

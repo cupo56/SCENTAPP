@@ -57,7 +57,7 @@ struct ReviewFormView: View {
     
     var body: some View {
         ZStack {
-            DesignSystem.Colors.bgDark
+            DesignSystem.Colors.appBackground
                 .ignoresSafeArea()
                 .onTapGesture {
                     focusedField = nil
@@ -71,9 +71,9 @@ struct ReviewFormView: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
                             .frame(width: 40, height: 40)
-                            .background(Color.white.opacity(0.05))
+                            .background(Color.primary.opacity(0.05))
                             .clipShape(Circle())
                     }
                     .accessibilityLabel("Schließen")
@@ -95,7 +95,7 @@ struct ReviewFormView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(DesignSystem.Colors.bgDark.opacity(0.8))
+                .background(DesignSystem.Colors.appBackground.opacity(0.8))
                 .background(.ultraThinMaterial)
                 .zIndex(10)
                 
@@ -106,7 +106,7 @@ struct ReviewFormView: View {
                         VStack(spacing: 8) {
                             Text("Teile dein Erlebnis")
                                 .font(DesignSystem.Fonts.serif(size: 32, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                                 .multilineTextAlignment(.center)
                             
                             Text("Erfasse die Essenz des Moments")
@@ -155,7 +155,7 @@ struct ReviewFormView: View {
                                         title = String(newValue.prefix(AppConfig.ReviewDefaults.maxTitleLength))
                                     }
                                 }
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                                 .padding(16)
                                 .glassPanel()
 
@@ -194,7 +194,7 @@ struct ReviewFormView: View {
                             ZStack(alignment: .bottomTrailing) {
                                 TextEditor(text: $text)
                                     .focused($focusedField, equals: .text)
-                                    .foregroundColor(.white)
+                                    .foregroundStyle(Color.primary)
                                     .scrollContentBackground(.hidden)
                                     .frame(minHeight: 180)
                                     .padding(16)
@@ -257,7 +257,7 @@ struct ReviewFormView: View {
                 .padding(.bottom, 24)
                 .background(
                     LinearGradient(
-                        colors: [DesignSystem.Colors.bgDark, DesignSystem.Colors.bgDark.opacity(0.9), .clear],
+                        colors: [DesignSystem.Colors.appBackground, DesignSystem.Colors.appBackground.opacity(0.9), .clear],
                         startPoint: .bottom,
                         endPoint: .top
                     )
@@ -272,7 +272,7 @@ struct ReviewFormView: View {
                     Color.black.opacity(0.3)
                         .ignoresSafeArea()
                     ProgressView("Wird gespeichert…")
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                         .padding(24)
                         .glassPanel()
                 }

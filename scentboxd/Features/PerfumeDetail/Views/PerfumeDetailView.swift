@@ -50,7 +50,7 @@ private struct PerfumeDetailLoaderView: View {
                 )
             } else if isLoading {
                 ZStack {
-                    DesignSystem.Colors.bgDark.ignoresSafeArea()
+                    DesignSystem.Colors.appBackground.ignoresSafeArea()
                     ProgressView("Parfum wird geladen...")
                         .tint(DesignSystem.Colors.primary)
                 }
@@ -61,7 +61,7 @@ private struct PerfumeDetailLoaderView: View {
                     description: Text(errorMessage ?? "Dieses Parfum konnte nicht geladen werden.")
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(DesignSystem.Colors.bgDark)
+                .background(DesignSystem.Colors.appBackground)
             }
         }
         .task(id: perfumeId) {
@@ -148,14 +148,13 @@ private struct PerfumeDetailContent: View {
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, -24)
-                    .background(DesignSystem.Colors.bgDark)
+                    .background(DesignSystem.Colors.appBackground)
                 }
             }
             .ignoresSafeArea(.all, edges: .top)
-            .background(DesignSystem.Colors.bgDark)
+            .background(DesignSystem.Colors.appBackground)
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .sheet(isPresented: Bindable(viewModel).showReviewSheet, onDismiss: {
             viewModel.editingReview = nil
         }) {
@@ -236,7 +235,7 @@ private struct HeroImageSection: View {
                                     .resizable()
                                     .scaledToFill()
                             } else {
-                                DesignSystem.Colors.bgDark
+                                DesignSystem.Colors.appBackground
                             }
                         }
                         .transition(.opacity)
@@ -244,7 +243,7 @@ private struct HeroImageSection: View {
                     .clipped()
             } else {
                 ZStack {
-                    DesignSystem.Colors.bgDark
+                    DesignSystem.Colors.appBackground
                     Image(systemName: "flame")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -265,7 +264,7 @@ private struct HeroImageSection: View {
                 Spacer()
 
                 LinearGradient(
-                    colors: [.clear, DesignSystem.Colors.bgDark],
+                    colors: [.clear, DesignSystem.Colors.appBackground],
                     startPoint: .top,
                     endPoint: .bottom
                 )

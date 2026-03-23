@@ -28,7 +28,7 @@ struct LoginView: View {
         NavigationStack {
             ZStack {
                 // Background
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
                 
                 // Subtle glow
                 Circle()
@@ -81,7 +81,7 @@ struct LoginView: View {
                                     .focused($focusedField, equals: .email)
                                     .submitLabel(.next)
                                     .onSubmit { focusedField = .password }
-                                    .foregroundColor(.white)
+                                    .foregroundStyle(Color.primary)
                                     .accessibilityLabel("E-Mail-Adresse")
                             }
                             .padding(16)
@@ -101,7 +101,7 @@ struct LoginView: View {
                                             Task { await authManager.signIn(email: email, password: password) }
                                         }
                                     }
-                                    .foregroundColor(.white)
+                                    .foregroundStyle(Color.primary)
                                     .accessibilityLabel("Passwort")
                             }
                             .padding(16)
@@ -155,13 +155,13 @@ struct LoginView: View {
                         HStack {
                             Rectangle()
                                 .frame(height: 1)
-                                .foregroundStyle(Color.white.opacity(0.1))
+                                .foregroundStyle(Color.primary.opacity(0.1))
                             Text("oder")
                                 .font(.footnote)
                                 .foregroundStyle(Color(hex: "#94A3B8"))
                             Rectangle()
                                 .frame(height: 1)
-                                .foregroundStyle(Color.white.opacity(0.1))
+                                .foregroundStyle(Color.primary.opacity(0.1))
                         }
                         .padding(.horizontal)
                         
