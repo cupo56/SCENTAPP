@@ -8,7 +8,7 @@ struct ReviewRatingSection: View {
             ForEach(1...5, id: \.self) { star in
                 Image(systemName: star <= rating ? "star.fill" : "star")
                     .font(.system(size: 36))
-                    .foregroundColor(star <= rating ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
+                    .foregroundColor(star <= rating ? DesignSystem.Colors.champagne : Color.primary.opacity(0.2))
                     .onTapGesture {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             rating = star

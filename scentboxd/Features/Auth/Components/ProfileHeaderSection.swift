@@ -38,7 +38,7 @@ struct ProfileHeaderSection: View {
                                 
                                 Image(systemName: "person.fill")
                                     .font(.system(size: 48))
-                                    .foregroundColor(.white.opacity(0.6))
+                                    .foregroundColor(Color.primary.opacity(0.4))
                             }
                             .clipShape(Circle())
                         )
@@ -59,7 +59,7 @@ struct ProfileHeaderSection: View {
                         }
                         .overlay(
                             Circle()
-                                .stroke(DesignSystem.Colors.bgDark, lineWidth: 4)
+                                .stroke(DesignSystem.Colors.appBackground, lineWidth: 4)
                         )
                     }
                     .offset(x: 2, y: -2)
@@ -71,7 +71,7 @@ struct ProfileHeaderSection: View {
                 VStack(spacing: 6) {
                     Text(authManager.username ?? String(localized: "Scentboxd Benutzer"))
                         .font(DesignSystem.Fonts.serif(size: 28, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                         .tracking(-0.3)
                     
                     Text("SCENT CONNOISSEUR")

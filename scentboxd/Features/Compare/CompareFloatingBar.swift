@@ -19,7 +19,7 @@ struct CompareFloatingBar: View {
             
             Text("ausgewählt — Vergleichen")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
             
             Spacer()
             
@@ -31,14 +31,14 @@ struct CompareFloatingBar: View {
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 22))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(Color.primary.opacity(0.5))
             }
             .accessibilityLabel("Auswahl löschen")
             .accessibilityHint("Entfernt alle Parfums aus dem Vergleich")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(DesignSystem.Colors.surfaceDark)
+        .background(DesignSystem.Colors.appSurface)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(DesignSystem.Colors.champagne.opacity(0.3), lineWidth: 1)

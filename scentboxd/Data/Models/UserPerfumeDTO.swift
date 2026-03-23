@@ -12,7 +12,7 @@ struct UserPerfumeDTO: Codable {
     let perfumeId: UUID
     let isFavorite: Bool
     let isOwned: Bool
-    let isEmpty: Bool
+    let isWantToTry: Bool
     let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
@@ -20,7 +20,7 @@ struct UserPerfumeDTO: Codable {
         case perfumeId = "perfume_id"
         case isFavorite = "is_favorite"
         case isOwned = "is_owned"
-        case isEmpty = "is_empty"
+        case isWantToTry = "is_want_to_try"
         case createdAt = "created_at"
     }
 }

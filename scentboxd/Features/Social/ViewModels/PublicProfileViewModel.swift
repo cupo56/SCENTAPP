@@ -16,11 +16,11 @@ class PublicProfileViewModel {
     var errorMessage: String?
     var hasMorePages = true
 
-    private let dataSource: PublicProfileDataSource
+    private let dataSource: any PublicProfileDataSourceProtocol
     private let pageSize = AppConfig.Pagination.perfumePageSize
     private var currentPage = 0
 
-    init(dataSource: PublicProfileDataSource) {
+    init(dataSource: any PublicProfileDataSourceProtocol) {
         self.dataSource = dataSource
     }
 

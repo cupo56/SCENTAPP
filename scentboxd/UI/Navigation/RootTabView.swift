@@ -33,10 +33,14 @@ struct RootTabView: View {
     }
 
     init() {
-        // Dark Tab Bar Appearance
+        // Adaptive Tab Bar Appearance
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color(hex: "#341826"))
+        appearance.backgroundColor = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0x34/255, green: 0x18/255, blue: 0x26/255, alpha: 1) // #341826
+                : UIColor.systemBackground
+        }
         
         // Inactive tabs
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color(hex: "#cb90ad"))
@@ -172,7 +176,7 @@ private struct CompareDeepLinkContainer: View {
         Group {
             if isLoading {
                 ZStack {
-                    DesignSystem.Colors.bgDark.ignoresSafeArea()
+                    DesignSystem.Colors.appBackground.ignoresSafeArea()
                     ProgressView("Vergleich wird geladen...")
                         .tint(DesignSystem.Colors.primary)
                 }
@@ -185,7 +189,7 @@ private struct CompareDeepLinkContainer: View {
                     description: Text(errorMessage ?? "Mindestens zwei gueltige Parfums werden fuer einen Vergleich benoetigt.")
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(DesignSystem.Colors.bgDark)
+                .background(DesignSystem.Colors.appBackground)
             }
         }
         .task(id: perfumeIds) {

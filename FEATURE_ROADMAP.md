@@ -1,133 +1,92 @@
 # Scentboxd — Feature-Roadmap & Detaillierte Todos
 
-> Erstellt am 12.03.2026 | Basierend auf Codebase-Analyse
-> Priorisierung: Phase 1 (Sofort) → Phase 2 (Nächste Wochen) → Phase 3 (Langfristig)
+> Zuletzt aktualisiert: 23.03.2026 | Basierend auf Codebase-Analyse
+> Priorisierung: Phase 0 (Bugfixes) → Phase 1 (Quick Wins) → Phase 2 (Mittelfristig) → Phase 3 (Langfristig)
 
 ---
 
 ## PHASE 0 — Bugfixes & Technische Schulden (VOR neuen Features)
 
-### 0.7 Accessibility Labels hinzufügen
-**Priorität:** Mittel | **Aufwand:** 2-3 Std
+### ~~0.1 `UserPersonalData.isEmpty` umbenennen~~ ✅ ERLEDIGT
+> Bereits im aktuellen Code behoben: `isWantToTry` als stored property, `hasNoStatus` als computed property, kein `isEmpty` mehr vorhanden.
 
-- [ ] `PerfumeCardView.swift`:
-  - [ ] `.accessibilityLabel("\(perfume.name) von \(perfume.brand?.name ?? "Unbekannt")")` auf Card
-  - [ ] `.accessibilityHint("Doppeltippen für Details")`
-  - [ ] Favorite-Heart: `.accessibilityLabel(isFavorite ? "Favorit entfernen" : "Als Favorit markieren")`
-- [ ] `PerfumeActionsSection.swift`:
-  - [ ] Jeder Button: `.accessibilityLabel()` mit aktuellem Status
-- [ ] `ReviewFormView.swift`:
-  - [ ] Star-Rating: `.accessibilityValue("\(rating) von 5 Sternen")`
-  - [ ] `.accessibilityAdjustableAction` für Stern-Auswahl per Swipe
-- [ ] `PerfumeListView.swift`:
-  - [ ] Filter-Chips: `.accessibilityLabel("Filter: \(filterName) aktiv")`
-  - [ ] Sort-Button: `.accessibilityLabel("Sortierung: \(sortOption.displayName)")`
-- [ ] `RootTabView.swift`:
-  - [ ] Tab-Badge für Anzahl Favoriten/Owned (optional)
-- [ ] VoiceOver-Test auf echtem Gerät durchführen
+---
+
+### ~~0.2 `PublicPerfumeCard` — fehlender NavigationLink~~ ✅ ERLEDIGT
+> Bereits im aktuellen Code behoben: `PublicPerfumeCard` ist in `NavigationLink(destination: PerfumeDetailView(perfumeId: item.id))` eingewickelt (Zeile 210). `PublicCollectionItemDTO` hat `id: UUID`.
 
 ---
 
 ## PHASE 1 — Quick Wins (1-2 Tage pro Feature)
 
-## PHASE 2 — Mittelfristige Features (3-7 Tage pro Feature)
+### ~~1.1 Review-Likes / "Hilfreich markieren"~~ ✅ ERLEDIGT
+**Priorität:** Mittel | **Aufwand:** 1-2 Tage | **User-Value:** Hoch
 
-### 2.1 Social Features: User-Profile ansehen
-**Priorität:** Hoch | **Aufwand:** 3-5 Tage | **User-Value:** Sehr Hoch
+**Warum:** Engagement-Loop wie bei Letterboxd. Gute Reviews werden sichtbarer, Nutzer kommen öfter zurück.
 
-**Warum:** Community ist das Herz einer App wie Letterboxd. User wollen sehen, was andere sammeln.
-
-#### Backend (Supabase)
-- [ ] `profiles`-Tabelle erweitern (falls nötig):
-  - [ ] `is_public BOOLEAN DEFAULT true`
-  - [ ] `bio TEXT`
-  - [ ] `avatar_url TEXT`
-- [ ] Row Level Security:
-  - [ ] Public Profiles: `SELECT` für alle authentifizierten User
-  - [ ] Private Profiles: Nur eigenes Profil
-- [ ] RPC `get_public_user_profile(target_user_id UUID)`:
-  - [ ] Gibt Profil + Stats (owned_count, review_count, favorite_count) zurück
-- [ ] RPC `get_public_user_collection(target_user_id UUID, page INT, page_size INT)`:
-  - [ ] Gibt öffentliche Sammlung zurück
+#### Backend
+- [x] `review_likes`-Tabelle (`supabase/migrations/20260323_review_likes.sql`)
+- [x] RLS: Jeder eingeloggte User kann liken, nur eigene Likes löschen
+- [x] RPC `toggle_review_like(p_review_id UUID)` → gibt `{liked, like_count}` zurück
+- [x] RPC `get_review_likes_batch(p_review_ids UUID[])` → Batch-Abfrage für Like-Status
 
 #### Data Layer
-- [ ] `Data/Models/PublicProfileDTO.swift`:
-  ```swift
-  struct PublicProfileDTO: Codable, Identifiable {
-      let id: UUID
-      let username: String
-      let bio: String?
-      let avatarUrl: String?
-      let isPublic: Bool
-      let ownedCount: Int
-      let reviewCount: Int
-      let favoriteCount: Int
-      let memberSince: Date
-  }
-  ```
-- [ ] `Data/Persistence/PublicProfileDataSource.swift`:
-  - [ ] `fetchPublicProfile(userId: UUID) async throws -> PublicProfileDTO`
-  - [ ] `fetchPublicCollection(userId: UUID, page: Int, pageSize: Int) async throws -> [PerfumeDTO]`
-  - [ ] `searchUsers(query: String) async throws -> [PublicProfileDTO]`
+- [x] `Data/Persistence/ReviewDataSourceProtocol.swift`:
+  - [x] `func toggleLike(reviewId: UUID) async throws -> ReviewLikeResult`
+  - [x] `func fetchLikeStatus(reviewIds: [UUID]) async throws -> [UUID: ReviewLikeInfo]`
+- [x] `Data/Persistence/ReviewRemoteDataSource.swift`: Implementierung mit Supabase RPCs
+- [x] `Data/Models/ReviewDTO.swift`: `ReviewLikeResult` und `ReviewLikeInfo` DTOs
 
-#### Feature Layer
-- [ ] `Features/Social/` Ordner erstellen
-- [ ] `Features/Social/ViewModels/PublicProfileViewModel.swift`:
-  ```swift
-  @Observable @MainActor
-  class PublicProfileViewModel {
-      var profile: PublicProfileDTO?
-      var collection: [Perfume] = []
-      var isLoading = false
-      var errorMessage: String?
+#### Service Layer
+- [x] `ReviewManagementService`: Like-State (`likeCounts`, `likedByCurrentUser`) verwaltet
+- [x] Optimistic Update mit Server-Reconciliation bei Toggle
+- [x] Like-Status wird automatisch mit Reviews geladen (inkl. Pagination)
 
-      func loadProfile(userId: UUID) async { ... }
-      func loadCollection(userId: UUID, page: Int) async { ... }
-  }
-  ```
-- [ ] `Features/Social/Views/PublicProfileView.swift`:
-  - [ ] Header: Avatar, Username, Bio, Member Since
-  - [ ] Stats-Grid: Owned, Reviews, Favorites
-  - [ ] Sammlung als Grid (PerfumeCardView wiederverwenden)
-  - [ ] Reviews-Tab (UserReviewsView-Stil)
-  - [ ] "Privates Profil"-Hinweis wenn `!isPublic`
-- [ ] `Features/Social/Views/UserSearchView.swift`:
-  - [ ] Suchfeld für Usernamen
-  - [ ] Ergebnisliste mit Avatar + Username + Stats
-  - [ ] Navigation zu PublicProfileView
-
-#### Integration
-- [ ] `ReviewCard.swift`:
-  - [ ] Tap auf Author-Name → Navigation zu PublicProfileView
-- [ ] `ProfileView.swift`:
-  - [ ] Toggle: "Profil öffentlich" (Supabase Update)
-  - [ ] Bio-Textfeld hinzufügen
-- [ ] `RootTabView.swift`:
-  - [ ] Optional: "Community"-Tab oder in Katalog integrieren
+#### UI
+- [x] `Features/Reviews/Views/ReviewCard.swift`:
+  - [x] Like-Button (Herz) unten rechts mit Anzahl
+  - [x] Optimistic Update: sofort toggeln, bei Fehler zurücksetzen
+  - [x] Nur für eingeloggte User aktiv (sonst Login-Alert)
+  - [x] Animation beim Liken (Spring-Effekt)
+- [x] `ReviewsSection.swift`: Like-Daten und Auth-Check verdrahtet
 
 #### Tests
-- [ ] `PublicProfileViewModelTests.swift`
-- [ ] `UserSearchTests.swift`
-- [ ] RLS-Tests: Sicherstellen dass private Profile nicht lesbar sind
+- [x] `MockReviewDataSource`: `toggleLike` und `fetchLikeStatus` Mock-Implementierungen
 
 ---
 
-### 2.2 Duftrad / Scent Wheel Visualisierung
+## PHASE 2 — Mittelfristige Features (3-7 Tage pro Feature)
+
+### ~~2.1 Soziale Profile — Ausstehende Tests~~ ✅ ERLEDIGT
+**Priorität:** Mittel | **Aufwand:** 1 Tag
+
+Die Feature-Implementierung (PublicProfileView, UserSearchView, ReviewCard-Navigation, Community-Tab) ist vollständig.
+
+**Architektur-Fix:** `PublicProfileDataSourceProtocol` extrahiert (analog zu `ReviewDataSourceProtocol`), da `PublicProfileDataSource` als `final class` nicht mock-bar war. `PublicProfileViewModel` und `DependencyContainer` nutzen nun das Protocol.
+
+- [x] `scentboxdTests/PublicProfileViewModelTests.swift`: 17 Tests (loadProfile Success/Error/Private/Retry, loadCollection Pagination/Empty/Error/Guard, resetCollection)
+- [x] `scentboxdTests/UserSearchTests.swift`: 14 Tests (searchUsers Results/Empty/MultipleResults/Error, fetchProfile Private/Public/Missing, fetchCollection, updateVisibility/Bio)
+- [x] RLS-Contract-Tests: `testLoadProfilePrivate_isPublicFalse`, `testPrivateProfileStatsAreZero`, `testFetchPrivateProfile_returnsIsPublicFalse`
+- [x] `MockPublicProfileDataSource` konform zu `PublicProfileDataSourceProtocol` (kein Subclassing von `final class` mehr)
+
+---
+
+### ~~2.2 Duftrad / Scent Wheel Visualisierung~~ ✅ ERLEDIGT
 **Priorität:** Mittel | **Aufwand:** 3-4 Tage | **User-Value:** Hoch
 
 **Warum:** Einzigartiges Feature, das die App visuell von der Konkurrenz abhebt.
 
 #### Backend
-- [ ] Duftfamilien-Kategorisierung in `notes`-Tabelle (falls nicht vorhanden):
-  - [ ] `family TEXT` (z.B. "Floral", "Woody", "Oriental", "Fresh", "Citrus", "Gourmand", "Aquatic", "Green", "Spicy", "Musky")
-- [ ] RPC `get_user_scent_wheel(user_id UUID)`:
+- [x] Duftfamilien-Kategorisierung in `notes`-Tabelle (falls nicht vorhanden):
+  - [x] `family TEXT` (z.B. "Floral", "Woody", "Oriental", "Fresh", "Citrus", "Gourmand", "Aquatic", "Green", "Spicy", "Musky")
+- [x] RPC `get_user_scent_wheel(user_id UUID)` (`supabase/migrations/20260324_scent_wheel.sql`):
   ```sql
-  RETURNS TABLE(family TEXT, count INT, percentage FLOAT)
+  RETURNS TABLE(family TEXT, count BIGINT, percentage FLOAT)
   -- Zählt alle Noten-Familien der owned/favorisierten Parfums
   ```
 
 #### Data Layer
-- [ ] `Data/Models/ScentWheelDTO.swift`:
+- [x] `Data/Models/ScentWheelDTO.swift`:
   ```swift
   struct ScentWheelSegment: Codable, Identifiable {
       let family: String
@@ -136,47 +95,26 @@
       var id: String { family }
   }
   ```
-- [ ] Repository-Erweiterung: `fetchScentWheel(userId: UUID) async throws -> [ScentWheelSegment]`
 
 #### Feature Layer
-- [ ] `Features/Profile/Services/ScentWheelService.swift`:
-  - [ ] Daten laden + cachen (ändert sich selten)
-  - [ ] Fallback: Lokal berechnen aus SwiftData wenn offline
-- [ ] `Features/Profile/Views/ScentWheelView.swift`:
-  - [ ] **Kreisdiagramm** mit Swift Charts:
-    ```swift
-    Chart(segments) { segment in
-        SectorMark(
-            angle: .value("Anteil", segment.percentage),
-            innerRadius: .ratio(0.5),
-            angularInset: 2
-        )
-        .foregroundStyle(colorForFamily(segment.family))
-        .annotation(position: .overlay) {
-            Text(segment.family)
-        }
-    }
-    ```
-  - [ ] Tap auf Segment → Liste der Parfums mit dieser Duftfamilie
-  - [ ] Legende unter dem Chart
-  - [ ] Animation: Segmente wachsen ein bei onAppear
-- [ ] `Features/Profile/Views/FragranceProfileView.swift`:
-  - [ ] `ScentWheelView` als erste Section einbinden
-  - [ ] "Dein Duftprofil basiert auf X Düften"
+- [x] `Features/Profile/Services/ScentWheelService.swift`:
+  - [x] Daten laden + In-Memory-Cache (nur einmal laden)
+  - [x] `reload()` für Pull-to-Refresh
+- [x] `Features/Profile/Views/ScentWheelView.swift`:
+  - [x] Kreisdiagramm (Donut) mit Swift Charts `SectorMark`
+  - [x] Tap auf Segment → Hervorhebung + Label in der Mitte
+  - [x] Legende als LazyVGrid unter dem Chart
+  - [x] Animation: Segmente wachsen ein bei onAppear
+- [x] `Features/Profile/FragranceProfileView.swift`:
+  - [x] `ScentWheelView` als erste Section eingebunden
+  - [x] Paralleler Datenabruf (async let) mit Profil-Daten
+- [x] `DependencyContainer`: `makeScentWheelService()` Factory-Methode
 
 #### Design
-- [ ] Farbpalette für Familien definieren:
-  - [ ] Floral: Rosa (#FFB6C1)
-  - [ ] Woody: Braun (#8B7355)
-  - [ ] Oriental: Gold (#DAA520)
-  - [ ] Fresh: Mint (#98FB98)
-  - [ ] Citrus: Gelb (#FFD700)
-  - [ ] Gourmand: Schokolade (#D2691E)
-  - [ ] Aquatic: Blau (#87CEEB)
-  - [ ] Green: Grün (#3CB371)
-  - [ ] Spicy: Rot (#CD5C5C)
-  - [ ] Musky: Grau (#C0C0C0)
-- [ ] In `DesignSystem.swift` als `scentFamilyColors` Dictionary
+- [x] Farbpalette für Familien in `DesignSystem.swift` als `scentFamilyColors` Dictionary:
+  - [x] Floral: Rosa (#FFB6C1), Woody: Braun (#8B7355), Oriental: Gold (#DAA520)
+  - [x] Fresh: Mint (#98FB98), Citrus: Gelb (#FFD700), Gourmand: Schokolade (#D2691E)
+  - [x] Aquatic: Blau (#87CEEB), Green: Grün (#3CB371), Spicy: Rot (#CD5C5C), Musky: Grau (#C0C0C0)
 
 ---
 
@@ -273,91 +211,125 @@
 
 ---
 
-### 2.4 Benachrichtigungen (Push Notifications)
+### ~~2.4 Benachrichtigungen (Push Notifications)~~ ✅ ERLEDIGT
 **Priorität:** Niedrig-Mittel | **Aufwand:** 5-7 Tage | **User-Value:** Mittel
 
 **Warum:** Engagement-Feature. Bringt User zurück in die App.
 
 #### Backend (Supabase Edge Functions)
-- [ ] `supabase/functions/send-notification/` erstellen
-- [ ] APNs Integration über Supabase (oder Firebase Cloud Messaging)
-- [ ] `device_tokens`-Tabelle:
-  ```sql
-  CREATE TABLE device_tokens (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID REFERENCES auth.users(id),
-      token TEXT NOT NULL,
-      platform TEXT DEFAULT 'ios',
-      created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-  ```
-- [ ] Trigger-Funktionen:
-  - [ ] `on_new_review`: Wenn jemand ein Parfum aus deiner Sammlung bewertet
-  - [ ] `on_similar_added`: Wenn ein ähnliches Parfum hinzugefügt wird (optional)
+- [x] `supabase/functions/send-notification/index.ts` erstellen
+- [x] APNs Integration über JWT (ES256) — keine Firebase-Abhängigkeit
+- [x] `device_tokens`-Tabelle + RLS (`supabase/migrations/20260325_notifications.sql`)
+- [x] `notification_preferences`-Tabelle + RLS
+- [x] RPCs: `upsert_device_token`, `delete_device_token` (SECURITY DEFINER)
+- [x] Trigger `on_new_review`: Wenn jemand ein Parfum aus deiner Sammlung bewertet
+- [x] Trigger `on_review_like`: Wenn jemand deine Review liked
 
 #### iOS Implementation
-- [ ] `App/NotificationManager.swift`:
-  ```swift
-  @Observable @MainActor
-  class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
-      var isPermissionGranted = false
+- [x] `App/AppDelegate.swift`: `UIApplicationDelegate` für Push Token Registration
+- [x] `App/NotificationManager.swift`:
+  - [x] `@Observable @MainActor final class NotificationManager` (Singleton)
+  - [x] `requestPermission()`, `registerDeviceToken()`, `unregisterCurrentToken()`
+  - [x] `loadPreferences()` / `savePreferences()` ↔ Supabase
+  - [x] `UNUserNotificationCenterDelegate`: Foreground-Anzeige + Tap-Handling
+- [x] `scentboxdApp.swift`:
+  - [x] `@UIApplicationDelegateAdaptor(AppDelegate.self)`
+  - [x] `notificationManager` als `@State` + `.environment()` propagation
+  - [x] Deep Link aus Notification-Tap via `NotificationCenter` → `DeepLinkHandler`
+- [x] `Features/Profile/Views/NotificationSettingsView.swift`:
+  - [x] Permission-Flow: Noch nicht gefragt / Abgelehnt / Aktiviert
+  - [x] Toggle: "Neue Reviews zu meinen Düften"
+  - [x] Toggle: "Likes auf meine Reviews"
+  - [x] Toggle: "Ähnliche Düfte"
+  - [x] Toggle: "Community-Updates"
+  - [x] Debounced Auto-Save (600 ms)
+- [x] `Features/Auth/SettingsView.swift`: "BENACHRICHTIGUNGEN"-Section mit NavigationLink
+- [x] `AppLogger.notifications` Kategorie hinzugefügt
 
-      func requestPermission() async -> Bool { ... }
-      func registerDeviceToken(_ token: Data) async { ... }
-      func handleNotification(_ response: UNNotificationResponse) { ... }
-  }
-  ```
-- [ ] `scentboxdApp.swift`:
-  - [ ] `UIApplicationDelegateAdaptor` für Push Token Registration
-  - [ ] `application(_:didRegisterForRemoteNotificationsWithDeviceToken:)`
-- [ ] `Features/Profile/Views/NotificationSettingsView.swift`:
-  - [ ] Toggle: "Neue Reviews zu meinen Düften"
-  - [ ] Toggle: "Ähnliche Düfte"
-  - [ ] Toggle: "Community-Updates"
-  - [ ] Jeder Toggle → Supabase `notification_preferences` Update
-- [ ] Deep Link Handling für Notification-Taps → Detail-View
+#### Setup nach Migration (einmalig im Supabase SQL-Editor):
+```sql
+ALTER DATABASE postgres SET app.supabase_url = 'https://DEIN-PROJEKT.supabase.co';
+ALTER DATABASE postgres SET app.service_role_key = 'DEIN-SERVICE-ROLE-KEY';
+```
+#### Supabase Edge Function Secrets (Dashboard → Edge Functions → Secrets):
+- `APNS_TEAM_ID`, `APNS_KEY_ID`, `APNS_PRIVATE_KEY` (.p8 Inhalt), `APNS_BUNDLE_ID`, `APNS_PRODUCTION`
 
-#### Tests
-- [ ] `NotificationManagerTests.swift`
-- [ ] Integration Test: Review erstellen → Notification an Parfum-Owner
+#### Xcode-Einstellung erforderlich:
+- Target → Signing & Capabilities → **Push Notifications** Capability hinzufügen
+- Target → Signing & Capabilities → **Background Modes** → Remote notifications aktivieren
 
 ---
 
-### 2.5 Dark/Light Mode Toggle
+### ~~2.5 Dark/Light Mode Toggle~~ ✅ ERLEDIGT
 **Priorität:** Niedrig | **Aufwand:** 1-2 Tage | **User-Value:** Mittel
 
 **Warum:** Manche User bevorzugen Light Mode. Aktuell ist nur Dark Mode.
 
-- [ ] `App/ThemeManager.swift` erstellen:
-  ```swift
-  @Observable
-  class ThemeManager {
-      @AppStorage("colorScheme") var selectedScheme: String = "dark"
+- [x] `App/ThemeManager.swift`: `@Observable ThemeManager` mit `UserDefaults`-Persistenz, `selectedScheme` ("dark"/"light"/"system"), `colorScheme: ColorScheme?`
+- [x] `DesignSystem.swift`: Adaptive Tokens `appBackground` (dark `#221019`, light `#FFF5F9`), `appSurface` (dark `#2E1A24`, light `#FDE8F0`), `appText = Color(UIColor.label)`, `appTextSecondary = Color(UIColor.secondaryLabel)` via `UIColor` dynamic provider. `GlassPanelModifier` auf `appSurface` umgestellt.
+- [x] `SettingsView.swift`: Section "ERSCHEINUNGSBILD" mit einer Zeile **Dunkelmodus** + Toggle (kein Drei-Wege-Picker mehr)
+- [x] `scentboxdApp.swift`: `ThemeManager` als `@State`, `.environment()`, `.preferredColorScheme(themeManager.colorScheme)`
+- [x] Alle 27+ Views: `bgDark` → `appBackground`, `surfaceDark` → `appSurface`, `.foregroundColor(.white)` in Textkontexten → `.foregroundStyle(Color.primary)`, `.toolbarColorScheme(.dark)` entfernt, Tab Bar adaptiv gemacht
 
-      var colorScheme: ColorScheme? {
-          switch selectedScheme {
-          case "light": return .light
-          case "dark": return .dark
-          default: return nil  // System
-          }
-      }
-  }
+---
+
+### 2.6 Eigene Listen / Curated Collections
+**Priorität:** Mittel | **Aufwand:** 4-5 Tage | **User-Value:** Hoch
+
+**Warum:** Nutzer wollen Parfums thematisch gruppieren: "Meine Sommersprays", "Für den Büroalltag", "Geschenkideen". Geht über die binäre Owned/Favorit-Logik hinaus.
+
+#### Backend
+- [ ] `lists`-Tabelle:
+  ```sql
+  CREATE TABLE lists (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID REFERENCES auth.users(id),
+      name TEXT NOT NULL,
+      description TEXT,
+      is_public BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE TABLE list_items (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      list_id UUID REFERENCES lists(id) ON DELETE CASCADE,
+      perfume_id UUID REFERENCES perfumes(id),
+      added_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(list_id, perfume_id)
+  );
   ```
-- [ ] `DesignSystem.swift`:
-  - [ ] Alle hardcoded Dark-Mode Farben durch `Color(light:dark:)` oder Asset-Catalog-Farben ersetzen
-  - [ ] Backgrounds: Dark = `#341826` → Light = `#FFF5F9`
-  - [ ] Text: Invertieren oder adaptiv
-  - [ ] GlassPanel: Transparenz anpassen
-- [ ] `SettingsView.swift`:
-  - [ ] Neue Section "Erscheinungsbild":
-    - [ ] Picker: "Dunkel" / "Hell" / "System"
-    - [ ] Live-Preview (kleiner Mock-Screen)
-- [ ] `scentboxdApp.swift`:
-  - [ ] `.preferredColorScheme(themeManager.colorScheme)`
-- [ ] Alle Views durchgehen:
-  - [ ] `.background(Color.black)` → `.background(Color.appBackground)` etc.
-  - [ ] Hardcoded Farben durch Design Tokens ersetzen
-- [ ] Testen: Alle Screens in Light Mode Screenshots machen
+- [ ] RLS: Eigene Listen lesen/schreiben, öffentliche Listen lesen
+
+#### Data Layer
+- [ ] `Data/Models/PerfumeListDTO.swift` (Name vermeiden mit Swift's `Array` — besser `CuratedListDTO`)
+- [ ] `Data/Persistence/CuratedListDataSource.swift`:
+  - [ ] `fetchLists(userId: UUID) async throws -> [CuratedListDTO]`
+  - [ ] `createList(name: String, description: String?) async throws -> CuratedListDTO`
+  - [ ] `addPerfume(listId: UUID, perfumeId: UUID) async throws`
+  - [ ] `removePerfume(listId: UUID, perfumeId: UUID) async throws`
+  - [ ] `deleteList(listId: UUID) async throws`
+
+#### Feature Layer
+- [ ] `Features/Lists/Views/ListsView.swift`:
+  - [ ] Alle eigenen Listen als Karten
+  - [ ] "Neue Liste erstellen" Button
+  - [ ] Swipe-to-Delete für Listen
+- [ ] `Features/Lists/Views/ListDetailView.swift`:
+  - [ ] Parfum-Grid der Liste
+  - [ ] Liste bearbeiten (Name, Beschreibung, öffentlich/privat)
+- [ ] `Features/Lists/Views/AddToListSheet.swift`:
+  - [ ] Sheet das beim Hinzufügen zu einer Liste erscheint
+  - [ ] Alle eigenen Listen mit Checkbox
+  - [ ] "Neue Liste" Option
+
+#### Integration
+- [ ] `PerfumeActionsSection.swift`:
+  - [ ] Neuer Button "Liste" (bookmark.fill Icon)
+  - [ ] Öffnet `AddToListSheet`
+- [ ] `ProfileView.swift`:
+  - [ ] Neues Stats-Card: "Listen"
+  - [ ] NavigationLink zu `ListsView`
+- [ ] `PublicProfileView.swift`:
+  - [ ] Dritter Tab "Listen" (wenn Profil öffentlich + Listen öffentlich)
 
 ---
 
@@ -510,9 +482,9 @@
       let monthlyAdditions: [(month: Date, count: Int)]
       let averageRating: Double
       let totalReviews: Int
-      let longevityDistribution: [Int: Int]   // Bucket → Count
+      let longevityDistribution: [Int: Int]
       let sillageDistribution: [Int: Int]
-      let estimatedValue: Double?  // Optional: Geschätzter Sammlungswert
+      let estimatedValue: Double?
   }
   ```
 - [ ] Lokale Berechnung aus SwiftData (kein Server nötig):
@@ -527,24 +499,12 @@
 - [ ] `Features/Profile/Views/CollectionAnalyticsView.swift`:
   - [ ] **Header**: "Deine Sammlung in Zahlen"
   - [ ] **Stat Cards** (Grid):
-    - [ ] Gesamtzahl Parfums (großer Zahlenwert)
-    - [ ] Verschiedene Marken
-    - [ ] Durchschnittsbewertung
-    - [ ] Geschriebene Reviews
-  - [ ] **Top 5 Marken** (Balkendiagramm, Swift Charts):
-    ```swift
-    Chart(topBrands) { brand in
-        BarMark(x: .value("Anzahl", brand.count), y: .value("Marke", brand.brand))
-    }
-    ```
+    - [ ] Gesamtzahl Parfums, Verschiedene Marken, Durchschnittsbewertung, Geschriebene Reviews
+  - [ ] **Top 5 Marken** (Balkendiagramm, Swift Charts)
   - [ ] **Top 10 Noten** (Bubble Chart oder Word Cloud)
-  - [ ] **Konzentrations-Verteilung** (Donut Chart):
-    - [ ] EDP vs EDT vs Parfum vs EDC
-  - [ ] **Timeline** (Linien-Chart):
-    - [ ] Monatliche Neuzugänge über die Zeit
-  - [ ] **Performance-Verteilung**:
-    - [ ] Longevity-Histogram
-    - [ ] Sillage-Histogram
+  - [ ] **Konzentrations-Verteilung** (Donut Chart): EDP vs EDT vs Parfum vs EDC
+  - [ ] **Timeline** (Linien-Chart): Monatliche Neuzugänge
+  - [ ] **Performance-Verteilung**: Longevity- und Sillage-Histogramm
 - [ ] `Features/Profile/Views/AnalyticsWidgets/`:
   - [ ] `TopBrandsChart.swift`
   - [ ] `ConcentrationDonut.swift`
@@ -593,7 +553,7 @@
       let id: UUID
       let userId: UUID
       let username: String
-      let actionType: String     // "added_to_collection", "reviewed", "favorited"
+      let actionType: String     // "added_to_collection", "reviewed", "favorited", "liked_review"
       let perfumeId: UUID
       let perfumeName: String
       let timestamp: Date
@@ -609,17 +569,13 @@
   - [ ] Pending Requests Section (mit Accept/Reject)
   - [ ] "Freund hinzufügen" Button → UserSearchView
 - [ ] `Features/Social/Views/ActivityFeedView.swift`:
-  - [ ] Chronologischer Feed:
-    - [ ] "[User] hat [Parfum] zur Sammlung hinzugefügt"
-    - [ ] "[User] hat [Parfum] mit X Sternen bewertet"
-    - [ ] "[User] hat [Parfum] als Favorit markiert"
+  - [ ] Chronologischer Feed: "hat [Parfum] zur Sammlung hinzugefügt", "hat [Parfum] mit X Sternen bewertet", etc.
   - [ ] Tap → Navigation zu Parfum oder Profil
-  - [ ] Pull-to-Refresh
-  - [ ] Infinite Scroll
+  - [ ] Pull-to-Refresh + Infinite Scroll
 
 #### Navigation
 - [ ] `RootTabView.swift`:
-  - [ ] "Community"-Tab mit ActivityFeedView als Root
+  - [ ] "Community"-Tab mit ActivityFeedView als Root (aktuell: UserSearchView)
   - [ ] Tab-Reihenfolge überdenken: Katalog | Community | Meine | Wunschliste | Profil
 
 ---
@@ -656,13 +612,14 @@
 ## Empfohlene Reihenfolge
 
 ```
-Woche 1:    0.7 (Accessibility Restarbeiten) + 2.1 (Social Profiles)
-Woche 2:    2.2 (Scent Wheel) + 2.5 (Dark/Light Mode)
-Woche 3-4:  2.3 (Barcode Scanner)
-Woche 5:    3.3 (Collection Analytics)
-Woche 6-8:  3.1 (ML Empfehlungen)
-Woche 9-10: 3.2 (Daily Pick / Seasonal Planner)
-Woche 11+:  3.4 (Social Graph) + 3.5 (Multi-Language)
+Woche 1:    1.1 (Review-Likes) + 2.1 (Ausstehende Tests)
+Woche 3:    2.2 (Scent Wheel) + 2.5 (Dark/Light Mode)
+Woche 4-5:  2.3 (Barcode Scanner)
+Woche 6:    2.6 (Eigene Listen)
+Woche 7:    3.3 (Collection Analytics)
+Woche 8-10: 3.1 (ML Empfehlungen)
+Woche 11-12: 3.2 (Daily Pick / Seasonal Planner)
+Woche 13+:  3.4 (Social Graph) + 3.5 (Multi-Language)
 ```
 
 ---

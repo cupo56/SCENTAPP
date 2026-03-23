@@ -90,7 +90,7 @@ final class FragranceProfileDTOTests: XCTestCase {
             "perfume_id": "22222222-2222-2222-2222-222222222222",
             "is_favorite": true,
             "is_owned": false,
-            "is_empty": false,
+            "is_want_to_try": false,
             "created_at": null
         }
         """.data(using: .utf8)!
@@ -98,7 +98,7 @@ final class FragranceProfileDTOTests: XCTestCase {
         let dto = try JSONDecoder().decode(UserPerfumeDTO.self, from: json)
         XCTAssertTrue(dto.isFavorite)
         XCTAssertFalse(dto.isOwned)
-        XCTAssertFalse(dto.isEmpty)
+        XCTAssertFalse(dto.isWantToTry)
         XCTAssertEqual(dto.perfumeId, UUID(uuidString: "22222222-2222-2222-2222-222222222222"))
     }
 

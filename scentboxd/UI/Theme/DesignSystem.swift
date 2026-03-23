@@ -1,16 +1,55 @@
 import SwiftUI
+import UIKit
 
 enum DesignSystem {
     // MARK: - Colors
     enum Colors {
         static let primary = Color(hex: "#C20A66")        // Magenta
-        static let champagne = Color(hex: "#F7E7CE")      // Champagne Gold
+        static let champagne = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0xF7/255, green: 0xE7/255, blue: 0xCE/255, alpha: 1) // #F7E7CE warm cream
+                : UIColor(red: 0x92/255, green: 0x5C/255, blue: 0x1E/255, alpha: 1) // #925C1E deep amber
+        })
         static let charcoal = Color(hex: "#36454F")       // Charcoal
-        
+
         static let bgLight = Color(hex: "#F8F5F7")        // Light Background
         static let bgDark = Color(hex: "#221019")         // Dark Background
         static let surfaceDark = Color(hex: "#2E1A24")    // Dark Surface Menu/Cards
+
+        // Adaptive tokens — respond to the system color scheme
+        static let appBackground = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0x22/255, green: 0x10/255, blue: 0x19/255, alpha: 1) // #221019
+                : UIColor(red: 0xFF/255, green: 0xF5/255, blue: 0xF9/255, alpha: 1) // #FFF5F9
+        })
+
+        static let appSurface = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0x2E/255, green: 0x1A/255, blue: 0x24/255, alpha: 1) // #2E1A24
+                : UIColor(red: 0xFD/255, green: 0xE8/255, blue: 0xF0/255, alpha: 1) // #FDE8F0
+        })
+
+        static let appText = Color(UIColor.label)
+        static let appTextSecondary = Color(UIColor.secondaryLabel)
         
+        // Scent Family Colors
+        static let scentFamilyColors: [String: Color] = [
+            "Floral":    Color(hex: "#FFB6C1"),
+            "Woody":     Color(hex: "#8B7355"),
+            "Oriental":  Color(hex: "#DAA520"),
+            "Fresh":     Color(hex: "#98FB98"),
+            "Citrus":    Color(hex: "#FFD700"),
+            "Gourmand":  Color(hex: "#D2691E"),
+            "Aquatic":   Color(hex: "#87CEEB"),
+            "Green":     Color(hex: "#3CB371"),
+            "Spicy":     Color(hex: "#CD5C5C"),
+            "Musky":     Color(hex: "#C0C0C0")
+        ]
+
+        static func scentFamily(_ family: String) -> Color {
+            scentFamilyColors[family] ?? Color(hex: "#94A3B8")
+        }
+
         // Gradient
         static let textGradientGold = LinearGradient(
             colors: [Color(hex: "#F7E7CE"), Color(hex: "#CBBCA5")],
@@ -38,11 +77,11 @@ enum DesignSystem {
 struct GlassPanelModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .background(DesignSystem.Colors.surfaceDark.opacity(0.6))
+            .background(DesignSystem.Colors.appSurface.opacity(0.6))
             .background(.ultraThinMaterial)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }

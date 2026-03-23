@@ -93,7 +93,8 @@ class ReviewRemoteDataSource: ReviewDataSourceProtocol {
             text: review.text,
             rating: review.rating,
             longevity: review.longevity,
-            sillage: review.sillage
+            sillage: review.sillage,
+            occasions: review.occasions.isEmpty ? nil : review.occasions
         )
         
         try await withRetry {
@@ -134,6 +135,7 @@ class ReviewRemoteDataSource: ReviewDataSourceProtocol {
                 rating: rating,
                 longevity: dto.longevity,
                 sillage: dto.sillage,
+                occasions: dto.occasions ?? [],
                 createdAt: dto.createdAt,
                 authorName: dto.authorName,
                 userId: dto.userId
@@ -163,15 +165,18 @@ class ReviewRemoteDataSource: ReviewDataSourceProtocol {
         }
     }
     
-    /// Lädt alle Reviews eines bestimmten Users (für öffentliche Profile).
-    func fetchReviewsByUser(userId: UUID) async throws -> [ReviewDTO] {
+    /// Lädt paginierte Reviews eines bestimmten Users (für öffentliche Profile).
+    func fetchReviewsByUser(userId: UUID, page: Int, pageSize: Int) async throws -> [ReviewDTO] {
+        let from = page * pageSize
+        let end = from + pageSize - 1
+
         let dtos: [ReviewDTO] = try await withRetry {
             try await self.client
                 .from("reviews")
                 .select("*")
                 .eq("user_id", value: userId)
                 .order("created_at", ascending: false)
-                .limit(50)
+                .range(from: from, to: end)
                 .execute()
                 .value
         }
@@ -203,6 +208,7 @@ class ReviewRemoteDataSource: ReviewDataSourceProtocol {
             rating: review.rating,
             longevity: review.longevity,
             sillage: review.sillage,
+            occasions: review.occasions.isEmpty ? nil : review.occasions,
             authorName: authorName
         )
 
@@ -226,5 +232,35 @@ class ReviewRemoteDataSource: ReviewDataSourceProtocol {
                 .eq("id", value: id)
                 .execute()
         }
+    }
+
+    // MARK: - Likes
+
+    func toggleLike(reviewId: UUID) async throws -> ReviewLikeResult {
+        try checkRateLimit()
+        let result: ReviewLikeResult = try await withRetry {
+            try await self.client
+                .rpc("toggle_review_like", params: ["p_review_id": reviewId])
+                .execute()
+                .value
+        }
+        return result
+    }
+
+    func fetchLikeStatus(reviewIds: [UUID]) async throws -> [UUID: ReviewLikeInfo] {
+        guard !reviewIds.isEmpty else { return [:] }
+
+        let infos: [ReviewLikeInfo] = try await withRetry {
+            try await self.client
+                .rpc("get_review_likes_batch", params: ["p_review_ids": reviewIds])
+                .execute()
+                .value
+        }
+
+        var result: [UUID: ReviewLikeInfo] = [:]
+        for info in infos {
+            result[info.reviewId] = info
+        }
+        return result
     }
 }

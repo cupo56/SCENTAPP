@@ -10,8 +10,11 @@ import SwiftData
 
 @main
 struct ScentBoxApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     let modelContainer: ModelContainer
     @State private var deepLinkHandler = DeepLinkHandler()
+    @State private var notificationManager = NotificationManager.shared
+    @State private var themeManager = ThemeManager()
 
     init() {
         ImagePipelineConfig.configure()
@@ -47,8 +50,18 @@ struct ScentBoxApp: App {
         WindowGroup {
             ContentView()
                 .environment(deepLinkHandler)
+                .environment(notificationManager)
+                .environment(themeManager)
+                .preferredColorScheme(themeManager.colorScheme)
                 .onOpenURL { url in
                     deepLinkHandler.handle(url: url)
+                }
+                .onReceive(
+                    NotificationCenter.default.publisher(for: .notificationDeepLink)
+                ) { notification in
+                    if let url = notification.userInfo?["url"] as? URL {
+                        deepLinkHandler.handle(url: url)
+                    }
                 }
         }
         .modelContainer(modelContainer)

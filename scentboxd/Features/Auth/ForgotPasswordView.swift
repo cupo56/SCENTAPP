@@ -22,7 +22,7 @@ struct ForgotPasswordView: View {
         NavigationStack {
             ZStack {
                 // Background
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
 
                 // Subtle glow
                 Circle()
@@ -47,7 +47,7 @@ struct ForgotPasswordView: View {
 
                             Text("Passwort zurücksetzen")
                                 .font(DesignSystem.Fonts.serif(size: 28, weight: .bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.primary)
 
                             Text("Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.")
                                 .font(DesignSystem.Fonts.display(size: 14))
@@ -106,7 +106,7 @@ struct ForgotPasswordView: View {
                             sendResetEmail()
                         }
                     }
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
                     .accessibilityLabel("E-Mail-Adresse")
                     .accessibilityHint("E-Mail für den Passwort-Reset-Link")
             }
@@ -159,7 +159,7 @@ struct ForgotPasswordView: View {
 
             Text("E-Mail gesendet!")
                 .font(DesignSystem.Fonts.display(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.primary)
 
             Text("Falls ein Konto mit dieser E-Mail existiert, erhältst du in Kürze einen Link zum Zurücksetzen deines Passworts.")
                 .font(DesignSystem.Fonts.display(size: 14))

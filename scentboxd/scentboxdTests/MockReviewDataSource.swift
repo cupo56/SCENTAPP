@@ -75,9 +75,12 @@ final class MockReviewDataSource: ReviewDataSourceProtocol {
         return userReviewsToReturn
     }
     
-    func fetchReviewsByUser(userId: UUID) async throws -> [ReviewDTO] {
+    func fetchReviewsByUser(userId: UUID, page: Int, pageSize: Int) async throws -> [ReviewDTO] {
         if let error = errorToThrow { throw error }
-        return userReviewsToReturn
+        let from = page * pageSize
+        let end = min(from + pageSize, userReviewsToReturn.count)
+        guard from < userReviewsToReturn.count else { return [] }
+        return Array(userReviewsToReturn[from..<end])
     }
 
     func fetchReviewCount(for userId: String) async throws -> Int {
@@ -90,5 +93,26 @@ final class MockReviewDataSource: ReviewDataSourceProtocol {
         fetchBatchRatingStatsCalled += 1
         if let error = errorToThrow { throw error }
         return batchRatingStatsToReturn
+    }
+
+    // MARK: - Likes
+
+    var toggleLikeResult = ReviewLikeResult(liked: true, likeCount: 1)
+    var likeStatusToReturn: [UUID: ReviewLikeInfo] = [:]
+    private(set) var toggleLikeCalled = 0
+    private(set) var lastToggledReviewId: UUID?
+    private(set) var fetchLikeStatusCalled = 0
+
+    func toggleLike(reviewId: UUID) async throws -> ReviewLikeResult {
+        toggleLikeCalled += 1
+        lastToggledReviewId = reviewId
+        if let error = errorToThrow { throw error }
+        return toggleLikeResult
+    }
+
+    func fetchLikeStatus(reviewIds: [UUID]) async throws -> [UUID: ReviewLikeInfo] {
+        fetchLikeStatusCalled += 1
+        if let error = errorToThrow { throw error }
+        return likeStatusToReturn
     }
 }

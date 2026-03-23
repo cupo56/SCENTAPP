@@ -45,7 +45,7 @@ struct PerfumeCollectionView<FilterContent: View>: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
 
                 collectionScrollView
 
@@ -60,7 +60,6 @@ struct PerfumeCollectionView<FilterContent: View>: View {
             }
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
 

@@ -7,7 +7,7 @@ struct PerfumePerformanceSection: View {
         VStack(alignment: .leading, spacing: 18) {
             Text("Performance")
                 .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundStyle(Color.primary)
             
             VStack(spacing: 16) {
                 // Longevity
@@ -34,7 +34,7 @@ struct PerfumePerformanceSection: View {
             HStack {
                 Text(label)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundStyle(Color.primary.opacity(0.7))
                 Spacer()
                 Text(value.isEmpty ? "–" : value)
                     .font(.system(size: 12, weight: .bold))
@@ -44,7 +44,7 @@ struct PerfumePerformanceSection: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color.white.opacity(0.1))
+                        .fill(Color.primary.opacity(0.1))
                         .frame(height: 6)
                     Capsule()
                         .fill(DesignSystem.Colors.primary)

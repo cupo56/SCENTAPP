@@ -28,7 +28,7 @@ class UserPerfumeSyncService {
         // 3. Map für schnellen Zugriff erstellen
         let remoteMap = Dictionary(
             uniqueKeysWithValues: remotePerfumes.map {
-                ($0.perfumeId, (isFavorite: $0.isFavorite, isOwned: $0.isOwned, isEmpty: $0.isEmpty))
+                ($0.perfumeId, (isFavorite: $0.isFavorite, isOwned: $0.isOwned, isWantToTry: $0.isWantToTry))
             }
         )
 
@@ -51,12 +51,12 @@ class UserPerfumeSyncService {
             if let metadata = perfume.userMetadata {
                 metadata.isFavorite = flags.isFavorite
                 metadata.isOwned = flags.isOwned
-                metadata.isEmpty = flags.isEmpty
+                metadata.isWantToTry = flags.isWantToTry
             } else {
                 let newMeta = UserPersonalData(
                     isFavorite: flags.isFavorite,
                     isOwned: flags.isOwned,
-                    isEmpty: flags.isEmpty
+                    isWantToTry: flags.isWantToTry
                 )
                 perfume.userMetadata = newMeta
             }
@@ -89,7 +89,7 @@ class UserPerfumeSyncService {
                         perfumeId: perfume.id,
                         isFavorite: metadata.isFavorite,
                         isOwned: metadata.isOwned,
-                        isEmpty: metadata.isEmpty
+                        isWantToTry: metadata.isWantToTry
                     )
                 }
                 // Upload erfolgreich → Pending-Flag löschen

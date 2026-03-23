@@ -20,6 +20,7 @@ struct ReviewFormView: View {
     @State private var text: String = ""
     @State private var longevity: Double = AppConfig.ReviewDefaults.longevity
     @State private var sillage: Double = AppConfig.ReviewDefaults.sillage
+    @State private var selectedOccasions: [String] = []
     @State private var isSaving: Bool = false
     
     private var isEditing: Bool { existingReview != nil }
@@ -50,12 +51,13 @@ struct ReviewFormView: View {
             _text = State(initialValue: review.text)
             if let l = review.longevity { _longevity = State(initialValue: Double(l)) }
             if let s = review.sillage { _sillage = State(initialValue: Double(s)) }
+            _selectedOccasions = State(initialValue: review.occasions)
         }
     }
     
     var body: some View {
         ZStack {
-            DesignSystem.Colors.bgDark
+            DesignSystem.Colors.appBackground
                 .ignoresSafeArea()
                 .onTapGesture {
                     focusedField = nil
@@ -69,9 +71,9 @@ struct ReviewFormView: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
                             .frame(width: 40, height: 40)
-                            .background(Color.white.opacity(0.05))
+                            .background(Color.primary.opacity(0.05))
                             .clipShape(Circle())
                     }
                     .accessibilityLabel("Schließen")
@@ -93,7 +95,7 @@ struct ReviewFormView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(DesignSystem.Colors.bgDark.opacity(0.8))
+                .background(DesignSystem.Colors.appBackground.opacity(0.8))
                 .background(.ultraThinMaterial)
                 .zIndex(10)
                 
@@ -104,7 +106,7 @@ struct ReviewFormView: View {
                         VStack(spacing: 8) {
                             Text("Teile dein Erlebnis")
                                 .font(DesignSystem.Fonts.serif(size: 32, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                                 .multilineTextAlignment(.center)
                             
                             Text("Erfasse die Essenz des Moments")
@@ -120,11 +122,17 @@ struct ReviewFormView: View {
                         // Title Field
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text("ÜBERSCHRIFT")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .tracking(1)
-                                    .foregroundColor(Color(hex: "#94A3B8"))
-                                    .padding(.leading, 4)
+                                HStack(spacing: 6) {
+                                    Text("ÜBERSCHRIFT")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .tracking(1)
+                                        .foregroundColor(Color(hex: "#94A3B8"))
+                                    Text("(OPTIONAL)")
+                                        .font(.system(size: 10, weight: .medium))
+                                        .tracking(0.5)
+                                        .foregroundColor(Color(hex: "#64748B"))
+                                }
+                                .padding(.leading, 4)
 
                                 Spacer()
 
@@ -141,15 +149,26 @@ struct ReviewFormView: View {
                                 .focused($focusedField, equals: .title)
                                 .submitLabel(.next)
                                 .onSubmit { focusedField = .text }
-                                .accessibilityLabel("Überschrift der Bewertung")
+                                .accessibilityLabel("Überschrift der Bewertung, optional")
                                 .onChange(of: title) { _, newValue in
                                     if newValue.count > AppConfig.ReviewDefaults.maxTitleLength {
                                         title = String(newValue.prefix(AppConfig.ReviewDefaults.maxTitleLength))
                                     }
                                 }
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                                 .padding(16)
                                 .glassPanel()
+
+                            if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "info.circle")
+                                        .font(.system(size: 11))
+                                    Text("Ohne Überschrift wird automatisch „Bewertung für \(perfume.name)“ verwendet.")
+                                        .font(.system(size: 12))
+                                }
+                                .foregroundColor(Color(hex: "#64748B"))
+                                .padding(.leading, 4)
+                            }
                         }
                         
                         // Text Area
@@ -175,7 +194,7 @@ struct ReviewFormView: View {
                             ZStack(alignment: .bottomTrailing) {
                                 TextEditor(text: $text)
                                     .focused($focusedField, equals: .text)
-                                    .foregroundColor(.white)
+                                    .foregroundStyle(Color.primary)
                                     .scrollContentBackground(.hidden)
                                     .frame(minHeight: 180)
                                     .padding(16)
@@ -198,7 +217,10 @@ struct ReviewFormView: View {
                         
                         // Sliders Section
                         ReviewPerformanceSliders(longevity: $longevity, sillage: $sillage)
-                        
+
+                        // Occasion Section
+                        ReviewOccasionSection(selectedOccasions: $selectedOccasions)
+
                         Spacer(minLength: 120)
                     }
                     .padding(.horizontal, 24)
@@ -235,7 +257,7 @@ struct ReviewFormView: View {
                 .padding(.bottom, 24)
                 .background(
                     LinearGradient(
-                        colors: [DesignSystem.Colors.bgDark, DesignSystem.Colors.bgDark.opacity(0.9), .clear],
+                        colors: [DesignSystem.Colors.appBackground, DesignSystem.Colors.appBackground.opacity(0.9), .clear],
                         startPoint: .bottom,
                         endPoint: .top
                     )
@@ -250,7 +272,7 @@ struct ReviewFormView: View {
                     Color.black.opacity(0.3)
                         .ignoresSafeArea()
                     ProgressView("Wird gespeichert…")
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                         .padding(24)
                         .glassPanel()
                 }
@@ -284,6 +306,7 @@ struct ReviewFormView: View {
             existing.rating = rating
             existing.longevity = Int(longevity)
             existing.sillage = Int(sillage)
+            existing.occasions = selectedOccasions
             review = existing
         } else {
             review = Review(
@@ -292,6 +315,7 @@ struct ReviewFormView: View {
                 rating: rating,
                 longevity: Int(longevity),
                 sillage: Int(sillage),
+                occasions: selectedOccasions,
                 createdAt: Date()
             )
         }

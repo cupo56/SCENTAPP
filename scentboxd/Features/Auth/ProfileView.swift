@@ -70,7 +70,7 @@ struct ProfileView: View {
     
     private var authenticatedView: some View {
         ZStack {
-            DesignSystem.Colors.bgDark.ignoresSafeArea()
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
@@ -80,8 +80,14 @@ struct ProfileView: View {
                     )
                     statsGrid
 
+                    PendingSyncBanner()
+                        .padding(.horizontal, 16)
+
                     // Duftprofil Link
-                    NavigationLink(destination: FragranceProfileView(service: dependencies.makeFragranceProfileService())) {
+                    NavigationLink(destination: FragranceProfileView(
+                        service: dependencies.makeFragranceProfileService(),
+                        scentWheelService: dependencies.makeScentWheelService()
+                    )) {
                         HStack(spacing: 12) {
                             Image(systemName: "chart.bar.xaxis")
                                 .font(.system(size: 18))
@@ -92,7 +98,7 @@ struct ProfileView: View {
 
                             Text("Mein Duftprofil")
                                 .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.primary)
 
                             Spacer()
 
@@ -120,7 +126,7 @@ struct ProfileView: View {
 
                             Text("Profil öffentlich")
                                 .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.primary)
 
                             Spacer()
 
@@ -151,7 +157,7 @@ struct ProfileView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Bio bearbeiten")
                                         .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.primary)
                                     if !bioText.isEmpty {
                                         Text(bioText)
                                             .font(.caption)
@@ -191,19 +197,18 @@ struct ProfileView: View {
                     NavigationLink(destination: SettingsView()) {
                         Image(systemName: "gearshape")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(Color.primary.opacity(0.7))
                             .frame(width: 36, height: 36)
-                            .background(Color.white.opacity(0.05))
+                            .background(Color.primary.opacity(0.05))
                             .clipShape(Circle())
                             .overlay(
-                                Circle().stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                Circle().stroke(Color.primary.opacity(0.08), lineWidth: 1)
                             )
                     }
                     .accessibilityLabel("Einstellungen")
                 }
             }
-            .toolbarColorScheme(.dark, for: .navigationBar)
-        }
+                    }
         .onAppear {
             reviewCountTask?.cancel()
             reviewCountTask = Task {
@@ -320,7 +325,7 @@ struct ProfileView: View {
     private var usernameEditSheet: some View {
         NavigationStack {
             ZStack {
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
                 
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -339,7 +344,7 @@ struct ProfileView: View {
                                 .autocorrectionDisabled()
                                 .submitLabel(.done)
                                 .onSubmit { saveUsername() }
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                                 .accessibilityLabel("Benutzername")
                         }
                         .padding(16)
@@ -367,8 +372,7 @@ struct ProfileView: View {
             }
             .navigationTitle("Profil bearbeiten")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbar {
+                        .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") {
                         editState = .idle
@@ -398,7 +402,7 @@ struct ProfileView: View {
 
                 Text("Sammlung teilen")
                     .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.primary)
 
                 Spacer()
 
@@ -444,7 +448,7 @@ struct ProfileView: View {
     private var bioEditSheet: some View {
         NavigationStack {
             ZStack {
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
 
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -455,7 +459,7 @@ struct ProfileView: View {
 
                         TextEditor(text: $bioText)
                             .scrollContentBackground(.hidden)
-                            .foregroundColor(.white)
+                            .foregroundStyle(Color.primary)
                             .frame(minHeight: 100, maxHeight: 200)
                             .padding(12)
                             .glassPanel()
@@ -487,8 +491,7 @@ struct ProfileView: View {
             }
             .navigationTitle("Bio bearbeiten")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbar {
+                        .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") {
                         showBioSheet = false

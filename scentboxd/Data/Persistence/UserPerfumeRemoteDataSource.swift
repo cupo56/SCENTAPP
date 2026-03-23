@@ -13,7 +13,7 @@ class UserPerfumeRemoteDataSource: UserPerfumeDataSourceProtocol {
     private let client = AppConfig.client
 
     /// Speichert oder aktualisiert den Status eines Parfums für den aktuellen User
-    func saveUserPerfume(perfumeId: UUID, isFavorite: Bool, isOwned: Bool, isEmpty: Bool) async throws {
+    func saveUserPerfume(perfumeId: UUID, isFavorite: Bool, isOwned: Bool, isWantToTry: Bool) async throws {
         let userId = try await AuthSessionCache.shared.getUserId()
 
         let dto = UserPerfumeDTO(
@@ -21,7 +21,7 @@ class UserPerfumeRemoteDataSource: UserPerfumeDataSourceProtocol {
             perfumeId: perfumeId,
             isFavorite: isFavorite,
             isOwned: isOwned,
-            isEmpty: isEmpty,
+            isWantToTry: isWantToTry,
             createdAt: Date()
         )
 

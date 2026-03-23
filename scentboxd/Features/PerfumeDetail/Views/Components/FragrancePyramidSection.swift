@@ -8,7 +8,7 @@ struct FragrancePyramidSection: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text("Duftpyramide")
                     .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
 
                 VStack(spacing: 10) {
                     if !perfume.topNotes.isEmpty {
@@ -41,21 +41,21 @@ struct FragrancePyramidSection: View {
         HStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.08))
+                    .fill(Color.primary.opacity(0.08))
                     .frame(width: 40, height: 40)
                 Image(systemName: icon)
                     .font(.system(size: 16))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundStyle(Color.primary.opacity(0.7))
             }
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(label.uppercased())
                     .font(.system(size: 10, weight: .medium))
                     .tracking(1.5)
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundStyle(Color.primary.opacity(0.4))
                 Text(notes)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
             }
 
             Spacer()
