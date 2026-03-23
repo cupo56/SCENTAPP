@@ -47,6 +47,7 @@ struct LoginView: View {
                                 .frame(width: 100, height: 100)
                                 .clipShape(RoundedRectangle(cornerRadius: 22))
                                 .shadow(color: DesignSystem.Colors.primary.opacity(0.4), radius: 20, x: 0, y: 10)
+                                .accessibilityLabel("ScentBox Logo")
                             
                             Text("ScentBox")
                                 .font(DesignSystem.Fonts.serif(size: 32, weight: .bold))
@@ -81,6 +82,7 @@ struct LoginView: View {
                                     .submitLabel(.next)
                                     .onSubmit { focusedField = .password }
                                     .foregroundColor(.white)
+                                    .accessibilityLabel("E-Mail-Adresse")
                             }
                             .padding(16)
                             .glassPanel()
@@ -100,6 +102,7 @@ struct LoginView: View {
                                         }
                                     }
                                     .foregroundColor(.white)
+                                    .accessibilityLabel("Passwort")
                             }
                             .padding(16)
                             .glassPanel()
@@ -135,6 +138,8 @@ struct LoginView: View {
                         .buttonStyle(PrimaryButtonStyle())
                         .disabled(!isFormValid || authManager.isLoading)
                         .padding(.horizontal)
+                        .accessibilityLabel("Anmelden")
+                        .accessibilityHint("Doppeltippen, um dich mit E-Mail und Passwort anzumelden")
 
                         // Forgot Password
                         Button {
@@ -144,6 +149,7 @@ struct LoginView: View {
                                 .font(.footnote)
                                 .foregroundColor(DesignSystem.Colors.champagne)
                         }
+                        .accessibilityHint("Öffnet die Seite zum Zurücksetzen des Passworts")
 
                         // Divider
                         HStack {
@@ -167,6 +173,7 @@ struct LoginView: View {
                                 .fontWeight(.medium)
                                 .foregroundColor(DesignSystem.Colors.champagne)
                         }
+                        .accessibilityHint("Öffnet das Registrierungsformular")
                         
                         Spacer()
                     }
@@ -185,5 +192,5 @@ struct LoginView: View {
 
 #Preview {
     LoginView()
-        .environment(AuthManager())
+        .environment(AuthManager(profileService: ProfileService()))
 }

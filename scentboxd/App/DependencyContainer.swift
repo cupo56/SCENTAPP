@@ -18,16 +18,20 @@ final class DependencyContainer {
     let userPerfumeDataSource: any UserPerfumeDataSourceProtocol
     let networkMonitor: NetworkMonitor
     let cacheService: PerfumeCacheService
-    
+    let profileService: ProfileService
+    let publicProfileDataSource: PublicProfileDataSource
+
     // MARK: - Production Init
-    
+
     /// Erstellt den Container mit den produktiven Implementierungen.
     init() {
         self.perfumeRepository = PerfumeRemoteDataSource()
-        self.reviewDataSource = ReviewRemoteDataSource()
+        self.profileService = ProfileService()
+        self.reviewDataSource = ReviewRemoteDataSource(profileService: self.profileService)
         self.userPerfumeDataSource = UserPerfumeRemoteDataSource()
         self.networkMonitor = NetworkMonitor.shared
         self.cacheService = PerfumeCacheService()
+        self.publicProfileDataSource = PublicProfileDataSource()
     }
     
     // MARK: - Test / Custom Init
@@ -38,13 +42,17 @@ final class DependencyContainer {
         reviewDataSource: any ReviewDataSourceProtocol,
         userPerfumeDataSource: any UserPerfumeDataSourceProtocol,
         networkMonitor: NetworkMonitor,
-        cacheService: PerfumeCacheService
+        cacheService: PerfumeCacheService,
+        profileService: ProfileService,
+        publicProfileDataSource: PublicProfileDataSource
     ) {
         self.perfumeRepository = perfumeRepository
         self.reviewDataSource = reviewDataSource
         self.userPerfumeDataSource = userPerfumeDataSource
         self.networkMonitor = networkMonitor
         self.cacheService = cacheService
+        self.profileService = profileService
+        self.publicProfileDataSource = publicProfileDataSource
     }
     
     // MARK: - Factory Methods
@@ -62,11 +70,16 @@ final class DependencyContainer {
         )
     }
 
+    func makeSearchSuggestionService() -> SearchSuggestionService {
+        SearchSuggestionService(repository: perfumeRepository)
+    }
+
     func makePerfumeListViewModel(filterVM: PerfumeFilterViewModel) -> PerfumeListViewModel {
         PerfumeListViewModel(
             dataLoader: makePerfumeDataLoader(),
             networkMonitor: networkMonitor,
-            filterVM: filterVM
+            filterVM: filterVM,
+            searchSuggestionService: makeSearchSuggestionService()
         )
     }
 
@@ -79,6 +92,9 @@ final class DependencyContainer {
             ),
             statusService: PerfumeStatusService(
                 userPerfumeDataSource: userPerfumeDataSource
+            ),
+            similarService: SimilarPerfumesService(
+                repository: perfumeRepository
             )
         )
     }
@@ -87,8 +103,24 @@ final class DependencyContainer {
         UserPerfumeSyncService(remoteDataSource: userPerfumeDataSource)
     }
 
+    func makePerfumeResolver() -> PerfumeResolver {
+        PerfumeResolver(repository: perfumeRepository)
+    }
+
     func makeReviewSyncService() -> ReviewSyncService {
         ReviewSyncService(reviewDataSource: reviewDataSource)
+    }
+
+    func makeFragranceProfileService() -> FragranceProfileService {
+        FragranceProfileService()
+    }
+    
+    func makePublicProfileViewModel() -> PublicProfileViewModel {
+        PublicProfileViewModel(dataSource: publicProfileDataSource)
+    }
+
+    func makeAuthManager() -> AuthManager {
+        AuthManager(profileService: profileService)
     }
 }
 

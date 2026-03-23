@@ -13,11 +13,12 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var filterVM: PerfumeFilterViewModel
     @State private var viewModel: PerfumeListViewModel
-    @State private var authManager = AuthManager()
+    @State private var authManager: AuthManager
     @State private var isLoading = true
     @State private var showSplash = true
-    @State private var syncErrorMessage: String? = nil
+    @State private var syncErrorMessage: String?
     @State private var showSyncErrorAlert = false
+    @State private var compareManager = CompareSelectionManager()
 
     private let container: DependencyContainer
     private let syncService: UserPerfumeSyncService
@@ -30,6 +31,7 @@ struct ContentView: View {
         let filterVM = container.makePerfumeFilterViewModel()
         self._filterVM = State(initialValue: filterVM)
         self._viewModel = State(initialValue: container.makePerfumeListViewModel(filterVM: filterVM))
+        self._authManager = State(initialValue: container.makeAuthManager())
         self.syncService = container.makeSyncService()
         self.reviewSyncService = container.makeReviewSyncService()
     }
@@ -40,6 +42,7 @@ struct ContentView: View {
         let filterVM = container.makePerfumeFilterViewModel()
         self._filterVM = State(initialValue: filterVM)
         self._viewModel = State(initialValue: container.makePerfumeListViewModel(filterVM: filterVM))
+        self._authManager = State(initialValue: container.makeAuthManager())
         self.syncService = container.makeSyncService()
         self.reviewSyncService = container.makeReviewSyncService()
     }
@@ -53,6 +56,7 @@ struct ContentView: View {
                 .environment(viewModel)
                 .environment(filterVM)
                 .environment(authManager)
+                .environment(compareManager)
                 .environment(\.dependencies, container)
                 .opacity(showSplash ? 0 : 1)
             
@@ -160,4 +164,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(DeepLinkHandler())
 }

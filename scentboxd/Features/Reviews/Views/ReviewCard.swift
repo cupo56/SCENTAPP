@@ -10,8 +10,8 @@ import SwiftUI
 struct ReviewCard: View {
     let review: Review
     let isOwn: Bool
-    var onEdit: (() -> Void)? = nil
-    var onDelete: (() -> Void)? = nil
+    var onEdit: (() -> Void)?
+    var onDelete: (() -> Void)?
     
     @State private var showDeleteConfirmation = false
     
@@ -19,14 +19,28 @@ struct ReviewCard: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header: Autor + Datum
             HStack {
-                HStack(spacing: 6) {
-                    Image(systemName: "person.circle.fill")
-                        .foregroundColor(DesignSystem.Colors.primary)
-                    Text(review.authorName ?? String(localized: "Anonym"))
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
+                if let authorUserId = review.userId, !isOwn {
+                    NavigationLink(destination: PublicProfileView(userId: authorUserId)) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "person.circle.fill")
+                                .foregroundColor(DesignSystem.Colors.primary)
+                            Text(review.authorName ?? String(localized: "Anonym"))
+                                .fontWeight(.medium)
+                                .foregroundColor(.white)
+                        }
+                        .font(.subheadline)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.circle.fill")
+                            .foregroundColor(DesignSystem.Colors.primary)
+                        Text(review.authorName ?? String(localized: "Anonym"))
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                    }
+                    .font(.subheadline)
                 }
-                .font(.subheadline)
                 
                 Spacer()
                 
@@ -146,15 +160,23 @@ struct ReviewCard: View {
     }
     
     private func longevityText(for value: Int) -> String {
-        if value < 33 { return String(localized: "Flüchtig") }
-        else if value < 66 { return String(localized: "Moderat") }
-        else { return String(localized: "Ewig") }
+        if value < 33 {
+            return String(localized: "Flüchtig")
+        } else if value < 66 {
+            return String(localized: "Moderat")
+        } else {
+            return String(localized: "Ewig")
+        }
     }
-    
+
     private func sillageText(for value: Int) -> String {
-        if value < 33 { return String(localized: "Hautnah") }
-        else if value < 66 { return String(localized: "Moderat") }
-        else { return String(localized: "Raumfüllend") }
+        if value < 33 {
+            return String(localized: "Hautnah")
+        } else if value < 66 {
+            return String(localized: "Moderat")
+        } else {
+            return String(localized: "Raumfüllend")
+        }
     }
 }
 

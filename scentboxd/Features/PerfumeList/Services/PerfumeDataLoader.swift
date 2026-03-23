@@ -15,10 +15,10 @@ final class PerfumeDataLoader {
     var perfumes: [Perfume] = []
     var isLoading = false
     var isLoadingMore = false
-    var errorMessage: String? = nil
+    var errorMessage: String?
     var isOffline = false
-    var lastSyncedAt: Date? = nil
-    var totalCount: Int? = nil
+    var lastSyncedAt: Date?
+    var totalCount: Int?
     var ratingStatsMap: [UUID: RatingStats] = [:]
 
     // MARK: - Pagination
@@ -66,7 +66,7 @@ final class PerfumeDataLoader {
         lastSyncedAt = cacheService.lastSyncedAt
 
         // In-Memory-Cache prüfen
-        if !forceRefresh, let cached = searchCache.results(for: cacheKey) {
+        if !forceRefresh, !cacheService.needsRefresh, let cached = searchCache.results(for: cacheKey) {
             self.perfumes = cached
             self.hasMorePages = cached.count >= pageSize
             self.errorMessage = nil
@@ -76,26 +76,20 @@ final class PerfumeDataLoader {
         // SwiftData-Cache laden
         var cacheLoaded = false
         if let ctx = modelContext {
-            do {
-                let cached: [Perfume]
-                if searchText.isEmpty {
-                    cached = try cacheService.loadCachedPerfumes(modelContext: ctx, page: 0, pageSize: pageSize, filter: filter, sort: sort)
-                } else {
-                    cached = try cacheService.searchCachedPerfumes(modelContext: ctx, query: searchText, page: 0, pageSize: pageSize, filter: filter, sort: sort)
-                }
-                if !cached.isEmpty {
-                    self.perfumes = cached
-                    self.hasMorePages = cached.count >= pageSize
-                    cacheLoaded = true
-                }
-            } catch {
-                AppLogger.cache.error("Cache-Laden fehlgeschlagen: \(error.localizedDescription)")
+            if let cached = fetchFromCache(searchText: searchText, page: 0, filter: filter, sort: sort, modelContext: ctx),
+               !cached.isEmpty {
+                self.perfumes = cached
+                self.hasMorePages = cached.count >= pageSize
+                cacheLoaded = true
             }
         }
 
         guard networkMonitor.isConnected else {
-            if perfumes.isEmpty {
-                self.errorMessage = "Keine Internetverbindung und kein lokaler Cache vorhanden."
+            if !cacheLoaded {
+                self.perfumes = []
+                self.errorMessage = searchText.isEmpty
+                    ? "Keine Internetverbindung und kein lokaler Cache vorhanden."
+                    : "Keine Internetverbindung. Offline-Suche ergab keine Treffer."
             }
             return
         }
@@ -105,43 +99,41 @@ final class PerfumeDataLoader {
             return
         }
 
-        // Von Supabase laden
+        // Von Supabase laden — totalCount parallel zur Hauptabfrage
         do {
-            let results: [Perfume] = try await withRetry {
-                if searchText.isEmpty {
-                    return try await self.repository.fetchPerfumes(page: 0, pageSize: self.pageSize, filter: filter, sort: sort)
-                } else {
-                    return try await self.repository.searchPerfumes(query: searchText, page: 0, pageSize: self.pageSize, filter: filter, sort: sort)
-                }
+            async let countTask: Int? = {
+                try? await self.repository.fetchTotalCount(searchQuery: searchText.isEmpty ? nil : searchText, filter: filter)
+            }()
+
+            let results = try await fetchFromRemote(searchText: searchText, page: 0, filter: filter, sort: sort)
+
+            // Rating Stats parallel starten (braucht nur IDs aus results)
+            async let statsTask = fetchRatingStats(for: results)
+
+            if let count = await countTask {
+                self.totalCount = count
             }
 
             searchCache.store(results, for: cacheKey)
 
-            if let ctx = modelContext, searchText.isEmpty && filter.isEmpty {
-                do {
-                    try cacheService.cachePerfumes(results, modelContext: ctx)
-                    lastSyncedAt = cacheService.lastSyncedAt
-                    let managed = try cacheService.loadCachedPerfumes(modelContext: ctx, page: 0, pageSize: pageSize, filter: filter, sort: sort)
-                    self.perfumes = managed
-                } catch {
-                    AppLogger.cache.error("Cache-Speichern fehlgeschlagen: \(error.localizedDescription)")
-                    self.perfumes = results
-                }
-            } else {
-                self.perfumes = results
-            }
+            self.perfumes = cacheAndResolveManagedResults(
+                results,
+                searchText: searchText,
+                page: 0,
+                filter: filter,
+                sort: sort,
+                modelContext: modelContext,
+                updateLastSynced: true
+            )
 
             self.hasMorePages = results.count >= pageSize
             self.errorMessage = nil
             self.isOffline = false
 
-            Task {
-                if let count = try? await self.repository.fetchTotalCount(searchQuery: searchText.isEmpty ? nil : searchText, filter: filter) {
-                    self.totalCount = count
+            if let stats = await statsTask {
+                for (key, value) in stats {
+                    self.ratingStatsMap[key] = value
                 }
-            }
-            Task {
-                await self.loadRatingStats(for: results)
             }
         } catch {
             let message = NetworkError.handle(error, logger: AppLogger.perfumes, context: "Parfums laden")
@@ -160,8 +152,9 @@ final class PerfumeDataLoader {
         sort: PerfumeSortOption,
         modelContext: ModelContext?
     ) async {
-        guard let lastItem = perfumes.last,
-              lastItem.id == currentItem.id,
+        let thresholdIndex = max(perfumes.count - 5, 0)
+        guard let currentIndex = perfumes.firstIndex(where: { $0.id == currentItem.id }),
+              currentIndex >= thresholdIndex,
               hasMorePages,
               !isLoading,
               !isLoadingMore else { return }
@@ -169,70 +162,120 @@ final class PerfumeDataLoader {
         isLoadingMore = true
         defer { isLoadingMore = false }
 
-        let nextPage = currentPage + 1
+        let previousPage = currentPage
+        currentPage += 1
 
         // Offline → aus Cache nachladen
         if !networkMonitor.isConnected {
-            if let ctx = modelContext {
-                do {
-                    let cached: [Perfume]
-                    if searchText.isEmpty {
-                        cached = try cacheService.loadCachedPerfumes(modelContext: ctx, page: nextPage, pageSize: pageSize, filter: filter, sort: sort)
-                    } else {
-                        cached = try cacheService.searchCachedPerfumes(modelContext: ctx, query: searchText, page: nextPage, pageSize: pageSize, filter: filter, sort: sort)
-                    }
-                    self.perfumes.append(contentsOf: cached)
-                    self.currentPage = nextPage
-                    self.hasMorePages = cached.count >= pageSize
-                } catch {
-                    AppLogger.cache.error("Cache-Nachladen fehlgeschlagen: \(error.localizedDescription)")
-                }
+            if let ctx = modelContext,
+               let cached = fetchFromCache(searchText: searchText, page: currentPage, filter: filter, sort: sort, modelContext: ctx) {
+                self.perfumes.append(contentsOf: cached)
+                self.hasMorePages = cached.count >= pageSize
+            } else {
+                currentPage = previousPage
             }
             return
         }
 
         // Online → von Supabase nachladen
         do {
-            let results: [Perfume] = try await withRetry {
-                if searchText.isEmpty {
-                    return try await self.repository.fetchPerfumes(page: nextPage, pageSize: self.pageSize, filter: filter, sort: sort)
-                } else {
-                    return try await self.repository.searchPerfumes(query: searchText, page: nextPage, pageSize: self.pageSize, filter: filter, sort: sort)
-                }
-            }
+            let results = try await fetchFromRemote(searchText: searchText, page: currentPage, filter: filter, sort: sort)
 
-            if let ctx = modelContext, searchText.isEmpty && filter.isEmpty {
-                do {
-                    try cacheService.cachePerfumes(results, modelContext: ctx)
-                    let managed = try cacheService.loadCachedPerfumes(modelContext: ctx, page: nextPage, pageSize: pageSize, filter: filter, sort: sort)
-                    self.perfumes.append(contentsOf: managed)
-                } catch {
-                    AppLogger.cache.error("Cache-Speichern fehlgeschlagen (loadMore): \(error.localizedDescription)")
-                    self.perfumes.append(contentsOf: results)
-                }
-            } else {
-                self.perfumes.append(contentsOf: results)
-            }
-
-            self.currentPage = nextPage
+            let managed = cacheAndResolveManagedResults(
+                results,
+                searchText: searchText,
+                page: currentPage,
+                filter: filter,
+                sort: sort,
+                modelContext: modelContext
+            )
+            self.perfumes.append(contentsOf: managed)
             self.hasMorePages = results.count >= pageSize
         } catch {
+            currentPage = previousPage
             self.errorMessage = NetworkError.handle(error, logger: AppLogger.perfumes, context: "Parfums nachladen")
+        }
+    }
+
+    // MARK: - Shared Fetch Helpers
+
+    /// Loads perfumes from SwiftData cache, branching on search vs browse.
+    private func fetchFromCache(
+        searchText: String,
+        page: Int,
+        filter: PerfumeFilter,
+        sort: PerfumeSortOption,
+        modelContext: ModelContext
+    ) -> [Perfume]? {
+        do {
+            if searchText.isEmpty {
+                return try cacheService.loadCachedPerfumes(modelContext: modelContext, page: page, pageSize: pageSize, filter: filter, sort: sort)
+            } else {
+                return try cacheService.searchCachedPerfumes(modelContext: modelContext, query: searchText, page: page, pageSize: pageSize, filter: filter, sort: sort)
+            }
+        } catch {
+            AppLogger.cache.error("Cache-Laden fehlgeschlagen: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    /// Fetches perfumes from repository with retry, branching on search vs browse.
+    private func fetchFromRemote(
+        searchText: String,
+        page: Int,
+        filter: PerfumeFilter,
+        sort: PerfumeSortOption
+    ) async throws -> [Perfume] {
+        try await withRetry {
+            if searchText.isEmpty {
+                return try await self.repository.fetchPerfumes(page: page, pageSize: self.pageSize, filter: filter, sort: sort)
+            } else {
+                return try await self.repository.searchPerfumes(query: searchText, page: page, pageSize: self.pageSize, filter: filter, sort: sort)
+            }
+        }
+    }
+
+    /// Persists results to SwiftData cache (if applicable) and returns managed objects.
+    private func cacheAndResolveManagedResults(
+        _ results: [Perfume],
+        searchText: String,
+        page: Int,
+        filter: PerfumeFilter,
+        sort: PerfumeSortOption,
+        modelContext: ModelContext?,
+        updateLastSynced: Bool = false
+    ) -> [Perfume] {
+        guard let ctx = modelContext, searchText.isEmpty && filter.isEmpty else {
+            return results
+        }
+        do {
+            try cacheService.cachePerfumes(results, modelContext: ctx)
+            if updateLastSynced { lastSyncedAt = cacheService.lastSyncedAt }
+            return try cacheService.loadCachedPerfumes(modelContext: ctx, page: page, pageSize: pageSize, filter: filter, sort: sort)
+        } catch {
+            AppLogger.cache.error("Cache-Speichern fehlgeschlagen: \(error.localizedDescription)")
+            return results
         }
     }
 
     // MARK: - Rating Stats
 
     func loadRatingStats(for perfumes: [Perfume]) async {
-        guard networkMonitor.isConnected, !perfumes.isEmpty else { return }
-        let ids = perfumes.map(\.id)
-        do {
-            let stats = try await reviewDataSource.fetchRatingStatsForPerfumes(ids)
+        if let stats = await fetchRatingStats(for: perfumes) {
             for (key, value) in stats {
                 self.ratingStatsMap[key] = value
             }
+        }
+    }
+
+    private func fetchRatingStats(for perfumes: [Perfume]) async -> [UUID: RatingStats]? {
+        guard networkMonitor.isConnected, !perfumes.isEmpty else { return nil }
+        let ids = perfumes.map(\.id)
+        do {
+            return try await reviewDataSource.fetchRatingStatsForPerfumes(ids)
         } catch {
             AppLogger.perfumes.error("Rating-Stats laden fehlgeschlagen: \(error.localizedDescription)")
+            return nil
         }
     }
 

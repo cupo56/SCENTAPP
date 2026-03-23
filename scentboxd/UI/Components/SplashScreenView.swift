@@ -129,20 +129,20 @@ struct BlobShape: Shape {
         let points = 8
         let angleStep = (2 * .pi) / Double(points)
         
-        for i in 0..<points {
-            let angle = Double(i) * angleStep
+        for idx in 0..<points {
+            let angle = Double(idx) * angleStep
             let radiusVariation = radius * (0.8 + 0.2 * sin(angle * 3 + Double(offset) * 0.1))
-            let x = centerX + CGFloat(cos(angle)) * radiusVariation
-            let y = centerY + CGFloat(sin(angle)) * radiusVariation
-            
-            if i == 0 {
-                path.move(to: CGPoint(x: x, y: y))
+            let ptX = centerX + CGFloat(cos(angle)) * radiusVariation
+            let ptY = centerY + CGFloat(sin(angle)) * radiusVariation
+
+            if idx == 0 {
+                path.move(to: CGPoint(x: ptX, y: ptY))
             } else {
-                let prevAngle = Double(i - 1) * angleStep
+                let prevAngle = Double(idx - 1) * angleStep
                 let controlRadius = radius * (0.9 + 0.1 * sin(prevAngle * 2))
                 let controlX = centerX + CGFloat(cos(prevAngle + angleStep / 2)) * controlRadius
                 let controlY = centerY + CGFloat(sin(prevAngle + angleStep / 2)) * controlRadius
-                path.addQuadCurve(to: CGPoint(x: x, y: y), control: CGPoint(x: controlX, y: controlY))
+                path.addQuadCurve(to: CGPoint(x: ptX, y: ptY), control: CGPoint(x: controlX, y: controlY))
             }
         }
         

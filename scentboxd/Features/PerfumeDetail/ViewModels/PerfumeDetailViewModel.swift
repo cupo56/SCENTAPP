@@ -17,13 +17,14 @@ class PerfumeDetailViewModel {
 
     var showReviewSheet = false
     var showLoginAlert = false
-    var editingReview: Review? = nil
-    var currentUserId: UUID? = nil
+    var editingReview: Review?
+    var currentUserId: UUID?
 
     // MARK: - Services
 
     let reviewService: ReviewManagementService
     let statusService: PerfumeStatusService
+    let similarService: SimilarPerfumesService
     let perfume: Perfume
 
     // MARK: - Init
@@ -31,11 +32,13 @@ class PerfumeDetailViewModel {
     init(
         perfume: Perfume,
         reviewService: ReviewManagementService,
-        statusService: PerfumeStatusService
+        statusService: PerfumeStatusService,
+        similarService: SimilarPerfumesService
     ) {
         self.perfume = perfume
         self.reviewService = reviewService
         self.statusService = statusService
+        self.similarService = similarService
     }
 
     // MARK: - Computed (forwarded)

@@ -26,6 +26,12 @@ protocol ReviewDataSourceProtocol {
     /// Fetches all reviews written by the current user.
     func fetchUserReviews() async throws -> [ReviewDTO]
     
+    /// Fetches all reviews written by a specific user (for public profiles).
+    func fetchReviewsByUser(userId: UUID) async throws -> [ReviewDTO]
+
+    /// Fetches the total count of reviews written by a specific user.
+    func fetchReviewCount(for userId: String) async throws -> Int
+    
     /// Fetches aggregated rating statistics for multiple perfumes (batch).
     func fetchRatingStatsForPerfumes(_ perfumeIds: [UUID]) async throws -> [UUID: RatingStats]
 }

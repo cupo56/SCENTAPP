@@ -20,6 +20,7 @@ final class MockReviewDataSource: ReviewDataSourceProtocol {
     var errorToThrow: Error?
     var userReviewsToReturn: [ReviewDTO] = []
     var batchRatingStatsToReturn: [UUID: RatingStats] = [:]
+    var reviewCountToReturn: Int = 0
     
     // MARK: - Call Tracking
     
@@ -33,6 +34,7 @@ final class MockReviewDataSource: ReviewDataSourceProtocol {
     private(set) var lastUpdatedReview: Review?
     private(set) var lastDeletedId: UUID?
     private(set) var fetchUserReviewsCalled = 0
+    private(set) var fetchReviewCountCalled = 0
     private(set) var fetchBatchRatingStatsCalled = 0
     
     // MARK: - ReviewDataSourceProtocol
@@ -73,6 +75,17 @@ final class MockReviewDataSource: ReviewDataSourceProtocol {
         return userReviewsToReturn
     }
     
+    func fetchReviewsByUser(userId: UUID) async throws -> [ReviewDTO] {
+        if let error = errorToThrow { throw error }
+        return userReviewsToReturn
+    }
+
+    func fetchReviewCount(for userId: String) async throws -> Int {
+        fetchReviewCountCalled += 1
+        if let error = errorToThrow { throw error }
+        return reviewCountToReturn
+    }
+
     func fetchRatingStatsForPerfumes(_ perfumeIds: [UUID]) async throws -> [UUID: RatingStats] {
         fetchBatchRatingStatsCalled += 1
         if let error = errorToThrow { throw error }

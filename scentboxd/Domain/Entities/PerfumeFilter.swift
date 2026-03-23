@@ -7,7 +7,7 @@ import Foundation
 
 // MARK: - Filter
 
-struct PerfumeFilter: Equatable, Hashable {
+struct PerfumeFilter: Equatable, Hashable, Sendable {
     var brandName: String?
     var concentration: String?
     var longevity: String?

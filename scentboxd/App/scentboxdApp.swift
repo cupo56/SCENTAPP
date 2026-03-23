@@ -11,6 +11,7 @@ import SwiftData
 @main
 struct ScentBoxApp: App {
     let modelContainer: ModelContainer
+    @State private var deepLinkHandler = DeepLinkHandler()
 
     init() {
         ImagePipelineConfig.configure()
@@ -45,8 +46,11 @@ struct ScentBoxApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(deepLinkHandler)
+                .onOpenURL { url in
+                    deepLinkHandler.handle(url: url)
+                }
         }
         .modelContainer(modelContainer)
     }
 }
-

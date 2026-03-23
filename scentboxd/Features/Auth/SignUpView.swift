@@ -122,6 +122,7 @@ struct SignUpView: View {
                                         .submitLabel(.next)
                                         .onSubmit { focusedField = .username }
                                         .foregroundColor(.white)
+                                        .accessibilityLabel("E-Mail-Adresse")
                                 }
                                 .padding(16)
                                 .glassPanel()
@@ -148,6 +149,8 @@ struct SignUpView: View {
                                         .submitLabel(.next)
                                         .onSubmit { focusedField = .password }
                                         .foregroundColor(.white)
+                                        .accessibilityLabel("Benutzername")
+                                        .accessibilityHint("3 bis 20 Zeichen, nur Buchstaben, Zahlen und Unterstriche")
                                         .onChange(of: username) { _, newValue in
                                             if newValue.count > 20 {
                                                 username = String(newValue.prefix(20))
@@ -177,6 +180,8 @@ struct SignUpView: View {
                                         .submitLabel(.next)
                                         .onSubmit { focusedField = .confirmPassword }
                                         .foregroundColor(.white)
+                                        .accessibilityLabel("Passwort")
+                                        .accessibilityHint("Mindestens 6 Zeichen")
                                 }
                                 .padding(16)
                                 .glassPanel()
@@ -205,6 +210,7 @@ struct SignUpView: View {
                                             }
                                         }
                                         .foregroundColor(.white)
+                                        .accessibilityLabel("Passwort bestätigen")
                                 }
                                 .padding(16)
                                 .glassPanel()
@@ -282,18 +288,22 @@ struct SignUpView: View {
                         .buttonStyle(PrimaryButtonStyle())
                         .disabled(!isFormValid || authManager.isLoading || registrationSuccess)
                         .padding(.horizontal)
+                        .accessibilityLabel("Registrieren")
+                        .accessibilityHint("Doppeltippen, um ein neues Konto zu erstellen")
                         
                         Spacer()
                     }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .interactiveDismissDisabled(authManager.isLoading || registrationSuccess)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") {
                         dismiss()
                     }
                     .foregroundColor(DesignSystem.Colors.champagne)
+                    .disabled(authManager.isLoading || registrationSuccess)
                 }
             }
         }
@@ -302,5 +312,5 @@ struct SignUpView: View {
 
 #Preview {
     SignUpView()
-        .environment(AuthManager())
+        .environment(AuthManager(profileService: ProfileService()))
 }

@@ -24,8 +24,15 @@ final class ProfileService {
         }
     }
 
+    /// Username: 3–20 Zeichen, nur Buchstaben, Zahlen und Unterstriche.
+    private static let usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
+
     /// Speichert (upsert) den Username für die angegebene User-ID.
     func saveProfile(userId: UUID, username: String) async throws {
+        guard username.wholeMatch(of: Self.usernameRegex) != nil else {
+            throw NetworkError.validationFailed("Benutzername muss 3–20 Zeichen lang sein (nur Buchstaben, Zahlen, _).")
+        }
+
         let dto = ProfileDTO(
             id: userId,
             username: username,

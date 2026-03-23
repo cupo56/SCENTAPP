@@ -12,6 +12,7 @@ final class PerfumeDetailViewModelTests: XCTestCase {
 
     private var mockReviewDS: MockReviewDataSource!
     private var mockUserPerfumeDS: MockUserPerfumeDataSource!
+    private var mockPerfumeRepo: MockPerfumeRepository!
     private var perfume: Perfume!
     private var sut: PerfumeDetailViewModel!
     private var container: ModelContainer!
@@ -19,6 +20,7 @@ final class PerfumeDetailViewModelTests: XCTestCase {
     override func setUpWithError() throws {
         mockReviewDS = MockReviewDataSource()
         mockUserPerfumeDS = MockUserPerfumeDataSource()
+        mockPerfumeRepo = MockPerfumeRepository()
 
         container = try TestFactory.makeModelContainer()
         perfume = TestFactory.makePerfume(name: "Bleu de Chanel")
@@ -31,11 +33,15 @@ final class PerfumeDetailViewModelTests: XCTestCase {
         let statusService = PerfumeStatusService(
             userPerfumeDataSource: mockUserPerfumeDS
         )
+        let similarService = SimilarPerfumesService(
+            repository: mockPerfumeRepo
+        )
 
         sut = PerfumeDetailViewModel(
             perfume: perfume,
             reviewService: reviewService,
-            statusService: statusService
+            statusService: statusService,
+            similarService: similarService
         )
     }
 
@@ -45,6 +51,7 @@ final class PerfumeDetailViewModelTests: XCTestCase {
         container = nil
         mockReviewDS = nil
         mockUserPerfumeDS = nil
+        mockPerfumeRepo = nil
         super.tearDown()
     }
 
