@@ -99,6 +99,7 @@ private struct PerfumeDetailContent: View {
     @State private var showPerfumeShareSheet = false
     @State private var perfumeShareImage: UIImage?
     @State private var loadTask: Task<Void, Never>?
+    @State private var showAddToListSheet = false
 
     init(viewModel: PerfumeDetailViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -125,7 +126,14 @@ private struct PerfumeDetailContent: View {
                             modelContext: modelContext,
                             compareManager: compareManager,
                             isRenderingShare: isRenderingShare,
-                            shareAction: { sharePerfume() }
+                            shareAction: { sharePerfume() },
+                            listAction: {
+                                if authManager.isAuthenticated {
+                                    showAddToListSheet = true
+                                } else {
+                                    viewModel.showLoginAlert = true
+                                }
+                            }
                         )
 
                         FragrancePyramidSection(perfume: perfume)
@@ -199,6 +207,9 @@ private struct PerfumeDetailContent: View {
             if let perfumeShareImage {
                 ShareSheet(items: [perfumeShareImage])
             }
+        }
+        .sheet(isPresented: $showAddToListSheet) {
+            AddToListSheet(perfume: perfume)
         }
     }
 

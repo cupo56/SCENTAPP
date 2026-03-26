@@ -20,6 +20,7 @@ final class DependencyContainer {
     let cacheService: PerfumeCacheService
     let profileService: ProfileService
     let publicProfileDataSource: any PublicProfileDataSourceProtocol
+    let curatedListDataSource: any CuratedListDataSourceProtocol
 
     // MARK: - Production Init
 
@@ -32,6 +33,7 @@ final class DependencyContainer {
         self.networkMonitor = NetworkMonitor.shared
         self.cacheService = PerfumeCacheService()
         self.publicProfileDataSource = PublicProfileDataSource()
+        self.curatedListDataSource = CuratedListRemoteDataSource()
     }
     
     // MARK: - Test / Custom Init
@@ -44,7 +46,8 @@ final class DependencyContainer {
         networkMonitor: NetworkMonitor,
         cacheService: PerfumeCacheService,
         profileService: ProfileService,
-        publicProfileDataSource: any PublicProfileDataSourceProtocol
+        publicProfileDataSource: any PublicProfileDataSourceProtocol,
+        curatedListDataSource: any CuratedListDataSourceProtocol
     ) {
         self.perfumeRepository = perfumeRepository
         self.reviewDataSource = reviewDataSource
@@ -53,6 +56,7 @@ final class DependencyContainer {
         self.cacheService = cacheService
         self.profileService = profileService
         self.publicProfileDataSource = publicProfileDataSource
+        self.curatedListDataSource = curatedListDataSource
     }
     
     // MARK: - Factory Methods
