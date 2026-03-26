@@ -17,6 +17,7 @@ struct PublicProfileView: View {
     enum ProfileTab: String, CaseIterable {
         case collection = "Sammlung"
         case reviews = "Bewertungen"
+        case lists = "Listen"
     }
 
     var body: some View {
@@ -64,8 +65,9 @@ struct PublicProfileView: View {
                 case .collection:
                     collectionGrid(vm: vm)
                 case .reviews:
-                    // Reviews werden über die ReviewCard-Logik geladen
                     PublicUserReviewsSection(userId: userId)
+                case .lists:
+                    PublicListsSection(userId: userId)
                 }
             }
             .padding(.bottom, 32)
@@ -328,6 +330,162 @@ private struct PublicPerfumeCard: View {
                 .stroke(DesignSystem.Colors.primary.opacity(0.1), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+// MARK: - Public Lists Section
+
+struct PublicListsSection: View {
+    let userId: UUID
+
+    @Environment(\.dependencies) private var dependencies
+    @State private var lists: [CuratedListDTO] = []
+    @State private var isLoading = true
+    @State private var errorMessage: String?
+
+    var body: some View {
+        Group {
+            if isLoading {
+                ProgressView()
+                    .tint(DesignSystem.Colors.primary)
+                    .padding(.top, 40)
+            } else if let error = errorMessage {
+                Text(error)
+                    .font(.subheadline)
+                    .foregroundColor(Color(hex: "#94A3B8"))
+                    .padding()
+            } else if lists.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "bookmark.slash")
+                        .font(.system(size: 36))
+                        .foregroundColor(DesignSystem.Colors.primary.opacity(0.4))
+                    Text("Keine öffentlichen Listen")
+                        .font(.subheadline)
+                        .foregroundColor(Color(hex: "#94A3B8"))
+                }
+                .padding(.top, 40)
+            } else {
+                LazyVStack(spacing: 10) {
+                    ForEach(lists) { list in
+                        NavigationLink(destination: PublicListDetailView(list: list)) {
+                            publicListRow(list: list)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .task {
+            await loadLists()
+        }
+    }
+
+    private func publicListRow(list: CuratedListDTO) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: "bookmark.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(DesignSystem.Colors.champagne)
+                .frame(width: 36, height: 36)
+                .background(DesignSystem.Colors.champagne.opacity(0.12))
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(list.name)
+                    .font(DesignSystem.Fonts.display(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.primary)
+                    .lineLimit(1)
+                Text("\(list.itemCount ?? 0) Parfums")
+                    .font(.caption)
+                    .foregroundColor(Color(hex: "#94A3B8"))
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(Color(hex: "#94A3B8"))
+        }
+        .padding(16)
+        .glassPanel()
+    }
+
+    private func loadLists() async {
+        isLoading = true
+        do {
+            lists = try await dependencies.curatedListDataSource.fetchPublicLists(userId: userId)
+        } catch {
+            errorMessage = NetworkError.handle(error, logger: AppLogger.lists, context: "fetchPublicLists")
+        }
+        isLoading = false
+    }
+}
+
+// MARK: - Public List Detail (read-only)
+
+struct PublicListDetailView: View {
+    let list: CuratedListDTO
+
+    @Environment(\.dependencies) private var dependencies
+    @State private var perfumes: [Perfume] = []
+    @State private var isLoading = true
+    @State private var errorMessage: String?
+
+    var body: some View {
+        ZStack {
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
+            if isLoading {
+                ProgressView().tint(DesignSystem.Colors.primary)
+            } else if let error = errorMessage {
+                Text(error).font(.subheadline).foregroundColor(Color(hex: "#94A3B8")).padding()
+            } else if perfumes.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "bookmark")
+                        .font(.system(size: 48))
+                        .foregroundColor(DesignSystem.Colors.primary.opacity(0.4))
+                    Text("Keine Parfums in dieser Liste")
+                        .font(.subheadline).foregroundColor(Color(hex: "#94A3B8"))
+                }
+            } else {
+                ScrollView(showsIndicators: false) {
+                    if let desc = list.description, !desc.isEmpty {
+                        Text(desc)
+                            .font(.subheadline)
+                            .foregroundColor(Color(hex: "#94A3B8"))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+                    }
+                    LazyVGrid(columns: [
+                        GridItem(.flexible(), spacing: 16),
+                        GridItem(.flexible(), spacing: 16)
+                    ], spacing: 16) {
+                        ForEach(perfumes) { perfume in
+                            NavigationLink(destination: PerfumeDetailView(perfume: perfume)) {
+                                PerfumeCardView(perfume: perfume)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+            }
+        }
+        .navigationTitle(list.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await loadPerfumes() }
+    }
+
+    private func loadPerfumes() async {
+        isLoading = true
+        do {
+            let ids = try await dependencies.curatedListDataSource.fetchListItems(listId: list.id)
+            perfumes = ids.isEmpty ? [] : try await dependencies.perfumeRepository.fetchPerfumesByIds(ids)
+        } catch {
+            errorMessage = NetworkError.handle(error, logger: AppLogger.lists, context: "PublicListDetailView")
+        }
+        isLoading = false
     }
 }
 

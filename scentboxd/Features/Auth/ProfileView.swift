@@ -44,6 +44,7 @@ struct ProfileView: View {
     @State private var usernameInput = ""
     @State private var reviewCount: Int = 0
     @State private var reviewCountError: String?
+    @State private var listCount: Int = 0
     @State private var isRenderingShareImage = false // Kept boolean for share flow since it belongs to a different action
     @State private var showShareSheet = false
     @State private var shareImage: UIImage?
@@ -214,6 +215,7 @@ struct ProfileView: View {
             reviewCountTask = Task {
                 await loadReviewCount()
                 await loadProfileSettings()
+                await loadListCount()
             }
         }
         .onDisappear {
@@ -251,20 +253,27 @@ struct ProfileView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Sammlung, \(ownedPerfumes.count) Parfums")
             .accessibilityHint("Öffnet deine Parfum-Sammlung")
-            
+
             NavigationLink(destination: UserReviewsView()) {
                 ProfileStatsCard(icon: "text.quote", value: reviewCountError != nil ? "–" : "\(reviewCount)", label: "Bewertungen")
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Bewertungen, \(reviewCount)")
             .accessibilityHint("Öffnet deine Bewertungen")
-            
+
             NavigationLink(destination: FavoritesView()) {
                 ProfileStatsCard(icon: "heart", value: "\(favoritePerfumes.count)", label: "Wunschliste")
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Wunschliste, \(favoritePerfumes.count) Parfums")
             .accessibilityHint("Öffnet deine Wunschliste")
+
+            NavigationLink(destination: ListsView()) {
+                ProfileStatsCard(icon: "bookmark", value: "\(listCount)", label: "Listen")
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Listen, \(listCount) Listen")
+            .accessibilityHint("Öffnet deine kuratierten Parfum-Listen")
         }
         .padding(.horizontal, 16)
     }
@@ -559,6 +568,14 @@ struct ProfileView: View {
             AppLogger.auth.error("Failed to save bio: \(error.localizedDescription)")
         }
         isSavingBio = false
+    }
+
+    private func loadListCount() async {
+        do {
+            listCount = try await dependencies.curatedListDataSource.fetchListCount()
+        } catch {
+            AppLogger.lists.debug("Could not load list count: \(error.localizedDescription)")
+        }
     }
 
     private func saveUsername() {
