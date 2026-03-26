@@ -46,16 +46,19 @@ struct PerfumeActionsSection: View {
                     viewModel.showLoginAlert = true
                 }
             } label: {
+                let isFavorite = viewModel.statusService.isFavorite(perfume)
                 VStack(spacing: 6) {
-                    Image(systemName: viewModel.statusService.isFavorite(perfume) ? "heart.fill" : "heart")
+                    Image(systemName: isFavorite ? "heart.fill" : "heart")
                         .font(.system(size: 14))
                     Text("Wunschliste")
                         .font(.system(size: 11, weight: .bold))
                 }
-                .foregroundColor(DesignSystem.Colors.appText)
+                .foregroundColor(isFavorite ? .white : DesignSystem.Colors.appText)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
+                .background(isFavorite ? DesignSystem.Colors.primary : Color.clear)
                 .glassPanel()
+                .shadow(color: isFavorite ? DesignSystem.Colors.primary.opacity(0.25) : Color.clear, radius: 10, x: 0, y: 4)
             }
             .accessibilityLabel(viewModel.statusService.isFavorite(perfume) ? "Von Wunschliste entfernen" : "Zur Wunschliste hinzufügen")
 
