@@ -273,7 +273,7 @@ ALTER DATABASE postgres SET app.service_role_key = 'DEIN-SERVICE-ROLE-KEY';
 
 ---
 
-### 2.6 Eigene Listen / Curated Collections
+### ~~2.6 Eigene Listen / Curated Collections~~ ✅ ERLEDIGT
 **Priorität:** Mittel | **Aufwand:** 4-5 Tage | **User-Value:** Hoch
 
 **Warum:** Nutzer wollen Parfums thematisch gruppieren: "Meine Sommersprays", "Für den Büroalltag", "Geschenkideen". Geht über die binäre Owned/Favorit-Logik hinaus.
