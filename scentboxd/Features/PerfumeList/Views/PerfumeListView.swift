@@ -13,6 +13,10 @@ struct PerfumeListView: View {
     @State private var filterTask: Task<Void, Never>?
     @State private var retryTask: Task<Void, Never>?
     @State private var selectedSuggestionPerfumeId: UUID?
+    @State private var showScanner = false
+    @State private var scannedPerfume: Perfume?
+
+    @Environment(\.dependencies) private var dependencies
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -115,6 +119,17 @@ struct PerfumeListView: View {
             }
             .navigationTitle("ScentBox")
             .toolbar {
+                // MARK: - Scanner Button
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showScanner = true
+                    } label: {
+                        Image(systemName: "barcode.viewfinder")
+                            .foregroundColor(DesignSystem.Colors.primary)
+                    }
+                    .accessibilityLabel("Barcode scannen")
+                }
+
                 // MARK: - Sort Menu
                 ToolbarItem(placement: .topBarLeading) {
                     Menu {
@@ -146,6 +161,17 @@ struct PerfumeListView: View {
                 if let selectedSuggestionPerfumeId {
                     PerfumeDetailView(perfumeId: selectedSuggestionPerfumeId)
                 }
+            }
+            .navigationDestination(item: $scannedPerfume) { perfume in
+                PerfumeDetailView(perfume: perfume)
+            }
+            .sheet(isPresented: $showScanner) {
+                BarcodeScannerView(
+                    viewModel: dependencies.makeBarcodeScannerViewModel()
+                ) { perfume in
+                    scannedPerfume = perfume
+                }
+                .ignoresSafeArea()
             }
             .onAppear {
                 filterTask?.cancel()
