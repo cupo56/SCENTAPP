@@ -16,4 +16,5 @@ protocol PerfumeRepository {
     func fetchAvailableConcentrations() async throws -> [String]
     func fetchPerfumesByIds(_ ids: [UUID]) async throws -> [Perfume]
     func fetchSimilarPerfumes(for perfumeId: UUID, limit: Int) async throws -> [Perfume]
+    func fetchPerfumeByBarcode(ean: String) async throws -> Perfume?
 }

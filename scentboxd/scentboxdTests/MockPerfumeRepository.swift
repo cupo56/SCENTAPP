@@ -10,8 +10,9 @@ import Foundation
 final class MockPerfumeRepository: PerfumeRepository {
     
     // MARK: - Configurable Responses
-    
+
     var perfumesToReturn: [Perfume] = []
+    var barcodeResultToReturn: Perfume?
     var searchResultsToReturn: [Perfume] = []
     var searchSuggestionsToReturn: [SearchSuggestionDTO] = []
     var totalCountToReturn: Int = 0
@@ -20,8 +21,10 @@ final class MockPerfumeRepository: PerfumeRepository {
     var errorToThrow: Error?
     
     // MARK: - Call Tracking
-    
+
     private(set) var fetchPerfumesCalled = 0
+    private(set) var fetchByBarcodeCalled = 0
+    private(set) var lastBarcode: String?
     private(set) var searchPerfumesCalled = 0
     private(set) var fetchSearchSuggestionsCalled = 0
     private(set) var fetchTotalCountCalled = 0
@@ -91,5 +94,12 @@ final class MockPerfumeRepository: PerfumeRepository {
     func fetchSimilarPerfumes(for perfumeId: UUID, limit: Int) async throws -> [Perfume] {
         if let error = errorToThrow { throw error }
         return perfumesToReturn.prefix(limit).map { $0 }
+    }
+
+    func fetchPerfumeByBarcode(ean: String) async throws -> Perfume? {
+        fetchByBarcodeCalled += 1
+        lastBarcode = ean
+        if let error = errorToThrow { throw error }
+        return barcodeResultToReturn
     }
 }

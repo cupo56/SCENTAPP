@@ -48,6 +48,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				scentboxdTests/BarcodeLookupTests.swift,
 				scentboxdTests/CompareSelectionManagerTests.swift,
 				scentboxdTests/DeepLinkHandlerTests.swift,
 				scentboxdTests/FragranceProfileDTOTests.swift,
@@ -79,6 +80,7 @@
 		BB46E1762F11B4F9005DAACA /* Exceptions for "scentboxd" folder in "scentboxdTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				scentboxdTests/BarcodeLookupTests.swift,
 				scentboxdTests/CompareSelectionManagerTests.swift,
 				scentboxdTests/DeepLinkHandlerTests.swift,
 				scentboxdTests/FragranceProfileDTOTests.swift,

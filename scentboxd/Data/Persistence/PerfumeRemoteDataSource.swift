@@ -322,6 +322,19 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         return dtos.map { mapDTO($0) }
     }
 
+    // MARK: - Barcode Lookup
+
+    func fetchPerfumeByBarcode(ean: String) async throws -> Perfume? {
+        let dtos: [PerfumeDTO] = try await client
+            .from("perfumes")
+            .select(selectQuery)
+            .eq("ean", value: ean)
+            .limit(1)
+            .execute()
+            .value
+        return dtos.first.map { mapDTO($0) }
+    }
+
     // MARK: - Similar Perfumes
 
     func fetchSimilarPerfumes(for perfumeId: UUID, limit: Int = 6) async throws -> [Perfume] {

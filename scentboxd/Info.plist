@@ -11,6 +11,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Scanne Parfum-Barcodes um sie schnell zu finden</string>
 	<key>SUPABASE_KEY</key>
 	<string>$(SUPABASE_KEY)</string>
 	<key>SUPABASE_URL</key>
