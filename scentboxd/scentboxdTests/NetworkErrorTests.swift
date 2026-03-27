@@ -4,6 +4,7 @@
 //
 
 import XCTest
+import os
 @testable import scentboxd
 
 final class NetworkErrorTests: XCTestCase {
@@ -146,6 +147,29 @@ final class NetworkErrorTests: XCTestCase {
         XCTAssertFalse(error.isTransient, "unknown sollte nicht transient sein.")
     }
     
+    // MARK: - NetworkError.handle(_:logger:context:)
+
+    func testHandleNoConnection() {
+        let logger = Logger(subsystem: "scentboxdTests", category: "NetworkErrorTests")
+        let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet, userInfo: nil)
+        let result = NetworkError.handle(error, logger: logger, context: "test")
+        XCTAssertEqual(result, NetworkError.noConnection.localizedDescription)
+    }
+
+    func testHandleTimeout() {
+        let logger = Logger(subsystem: "scentboxdTests", category: "NetworkErrorTests")
+        let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut, userInfo: nil)
+        let result = NetworkError.handle(error, logger: logger, context: "test")
+        XCTAssertEqual(result, NetworkError.timeout.localizedDescription)
+    }
+
+    func testHandleGenericError() {
+        let logger = Logger(subsystem: "scentboxdTests", category: "NetworkErrorTests")
+        let error = NSError(domain: "Custom", code: 42, userInfo: nil)
+        let result = NetworkError.handle(error, logger: logger, context: "test")
+        XCTAssertEqual(result, NetworkError.unknown(underlying: error).localizedDescription)
+    }
+
     // MARK: - errorDescription
     
     func testErrorDescriptionsNotNil() {
