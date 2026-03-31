@@ -508,6 +508,7 @@
 		};
 		BB248BE92F1071080092FCDD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB154E502F170900008C1593 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -542,6 +543,7 @@
 		};
 		BB248BEA2F1071080092FCDD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB154E502F170900008C1593 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -576,6 +578,7 @@
 		};
 		BB248BEC2F1071080092FCDD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB154E502F170900008C1593 /* Config.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -598,6 +601,7 @@
 		};
 		BB248BED2F1071080092FCDD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB154E502F170900008C1593 /* Config.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -620,6 +624,7 @@
 		};
 		BB248BEF2F1071080092FCDD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB154E502F170900008C1593 /* Config.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -640,6 +645,7 @@
 		};
 		BB248BF02F1071080092FCDD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB154E502F170900008C1593 /* Config.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
