@@ -94,7 +94,10 @@ final class PerfumeDataLoader {
             return
         }
 
-        if cacheLoaded && !forceRefresh && !cacheService.needsRefresh {
+        // Nur aus dem Cache zurückgeben, wenn kein Filter/Suche aktiv ist.
+        // Der lokale Cache enthält nur die erste Seite ungefilteter Daten und ist
+        // als vollständige Quelle für gefilterte Abfragen ungeeignet.
+        if cacheLoaded && !forceRefresh && !cacheService.needsRefresh && filter.isEmpty && searchText.isEmpty {
             self.errorMessage = nil
             return
         }
