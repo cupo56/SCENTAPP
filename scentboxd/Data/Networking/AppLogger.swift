@@ -16,4 +16,5 @@ enum AppLogger {
     static let cache = Logger(subsystem: Bundle.main.bundleIdentifier ?? "scentboxd", category: "Cache")
     static let notifications = Logger(subsystem: Bundle.main.bundleIdentifier ?? "scentboxd", category: "Notifications")
     static let lists = Logger(subsystem: Bundle.main.bundleIdentifier ?? "scentboxd", category: "Lists")
+    static let dailyPick = Logger(subsystem: Bundle.main.bundleIdentifier ?? "scentboxd", category: "DailyPick")
 }

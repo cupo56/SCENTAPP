@@ -32,15 +32,50 @@ struct OwnedPerfumesView: View {
             refreshAction: refreshOwnedPerfumes,
             isRefreshing: isRefreshing,
             headerContent: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Parfums gesamt: \(ownedPerfumes.count)")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(Color(hex: "#94A3B8"))
-                            .textCase(.uppercase)
-                            .tracking(1)
+                VStack(spacing: 10) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Parfums gesamt: \(ownedPerfumes.count)")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color(hex: "#94A3B8"))
+                                .textCase(.uppercase)
+                                .tracking(1)
+                        }
+                        Spacer()
                     }
-                    Spacer()
+
+                    NavigationLink(destination: RecommendationsView()) {
+                        HStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(DesignSystem.Colors.primary.opacity(0.12))
+                                    .frame(width: 40, height: 40)
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 17))
+                                    .foregroundStyle(DesignSystem.Colors.primary)
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Für dich empfohlen")
+                                    .font(DesignSystem.Fonts.display(size: 15, weight: .semibold))
+                                    .foregroundStyle(Color.primary)
+                                Text("Passende Düfte basierend auf deiner Sammlung")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(DesignSystem.Colors.appTextSecondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(Color(hex: "#94A3B8"))
+                        }
+                        .padding(14)
+                        .glassPanel()
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Für dich empfohlen")
+                    .accessibilityHint("Öffnet personalisierte Parfum-Empfehlungen")
                 }
             }
         )

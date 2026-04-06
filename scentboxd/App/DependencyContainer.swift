@@ -131,8 +131,20 @@ final class DependencyContainer {
         PublicProfileViewModel(dataSource: publicProfileDataSource)
     }
 
+    func makeRecommendationsViewModel() -> RecommendationsViewModel {
+        RecommendationsViewModel(repository: perfumeRepository)
+    }
+
     func makeAuthManager() -> AuthManager {
         AuthManager(profileService: profileService)
+    }
+
+    // MARK: - Daily Pick
+
+    private(set) lazy var weatherService = WeatherService()
+
+    func makeDailyPickViewModel() -> DailyPickViewModel {
+        DailyPickViewModel(weatherService: weatherService)
     }
 }
 

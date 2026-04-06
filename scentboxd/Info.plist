@@ -13,6 +13,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Scanne Parfum-Barcodes um sie schnell zu finden</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Dein Standort wird verwendet, um das aktuelle Wetter für Parfum-Empfehlungen abzurufen.</string>
 	<key>SUPABASE_KEY</key>
 	<string>$(SUPABASE_KEY)</string>
 	<key>SUPABASE_URL</key>

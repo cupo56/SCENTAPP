@@ -195,7 +195,7 @@ private struct PerfumeDetailContent: View {
         }
         .alert("Anmeldung erforderlich", isPresented: Bindable(viewModel).showLoginAlert) {
             Button("Abbrechen", role: .cancel) { }
-            Button("Zum Profil") { selectedTab.wrappedValue = 3 }
+            Button("Zum Profil") { selectedTab.wrappedValue = 5 }
         } message: {
             Text("Bitte melde dich an oder registriere dich, um diese Funktion zu nutzen.")
         }

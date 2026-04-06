@@ -2,10 +2,12 @@ import Foundation
 import Observation
 
 enum AppTab: Int {
-    case catalog = 0
-    case favorites = 1
-    case owned = 2
-    case profile = 3
+    case today = 0
+    case catalog = 1
+    case favorites = 2
+    case owned = 3
+    case community = 4
+    case profile = 5
 }
 
 enum DeepLinkRoute: Equatable {

@@ -58,22 +58,30 @@ struct RootTabView: View {
         UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 
+    @Environment(\.dependencies) private var dependencies
+
     var body: some View {
         TabView(selection: $selectedTab) {
-            PerfumeListView()
+            DailyPickView(weatherService: dependencies.weatherService)
                 .tag(0)
+                .tabItem {
+                    Label("Heute", systemImage: "sun.horizon.fill")
+                }
+
+            PerfumeListView()
+                .tag(1)
                 .tabItem {
                     Label("Katalog", systemImage: "book.fill")
                 }
 
             FavoritesView()
-                .tag(1)
+                .tag(2)
                 .tabItem {
                     Label("Favoriten", systemImage: "heart.fill")
                 }
 
             OwnedPerfumesView()
-                .tag(2)
+                .tag(3)
                 .tabItem {
                     Label("Meine", systemImage: "star.fill")
                 }
@@ -81,13 +89,13 @@ struct RootTabView: View {
             NavigationStack {
                 UserSearchView()
             }
-                .tag(3)
+                .tag(4)
                 .tabItem {
                     Label("Community", systemImage: "person.2.fill")
                 }
 
             ProfileView()
-                .tag(4)
+                .tag(5)
                 .tabItem {
                     Label("Profil", systemImage: "person.fill")
                 }
