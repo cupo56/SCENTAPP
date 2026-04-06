@@ -33,6 +33,11 @@ Run a single test class:
 xcodebuild test -project scentboxd/scentboxd.xcodeproj -scheme scentboxd -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:scentboxdTests/PerfumeDetailViewModelTests
 ```
 
+Lint (SwiftLint config is `.swiftlint.yml` — file length warning at 500 lines, `force_unwrapping` is opt-in enabled):
+```bash
+swiftlint lint scentboxd/
+```
+
 ## Architecture
 
 Clean Architecture + MVVM with four source layers:
@@ -41,10 +46,10 @@ Clean Architecture + MVVM with four source layers:
 
 **`Data/`**
 - `Models/` — DTOs (Codable structs) used for Supabase responses; converted to domain entities before reaching the UI.
-- `Persistence/` — Protocol-based data sources (`PerfumeRepository`, `ReviewDataSourceProtocol`, `UserPerfumeDataSourceProtocol`, `PublicProfileDataSourceProtocol`) with remote implementations backed by Supabase. `PerfumeCacheService` provides a SwiftData-backed local cache with a 5-minute TTL.
+- `Persistence/` — Protocol-based data sources (`PerfumeRepository`, `ReviewDataSourceProtocol`, `UserPerfumeDataSourceProtocol`, `PublicProfileDataSourceProtocol`, `CuratedListDataSourceProtocol`) with remote implementations backed by Supabase. `PerfumeCacheService` provides a SwiftData-backed local cache with a 5-minute TTL. `ReviewSyncService` and `UserPerfumeSyncService` handle deferred writes when offline.
 - `Networking/` — `NetworkError` (typed errors, German user messages), `NetworkMonitor` (NWPathMonitor), `NetworkRetry` (exponential backoff via `withRetry()`), `CertificatePinning`, `AppLogger`.
 
-**`Features/`** — MVVM feature modules. Each has `Views/`, `ViewModels/`, and optionally `Services/` and `Components/`. Current features: `Auth`, `Compare`, `Favorites`, `Owned`, `PerfumeDetail`, `PerfumeList`, `Profile`, `Reviews`, `Social`.
+**`Features/`** — MVVM feature modules. Each has `Views/`, `ViewModels/`, and optionally `Services/` and `Components/`. Current features: `Auth`, `Compare`, `Favorites`, `Lists`, `Owned`, `PerfumeDetail`, `PerfumeList`, `Profile`, `Reviews`, `Social`.
 
 **`UI/`** — Shared components (`UI/Components/`), navigation entry points (`ContentView`, `RootTabView`), and the design system (`UI/Theme/DesignSystem.swift`).
 
