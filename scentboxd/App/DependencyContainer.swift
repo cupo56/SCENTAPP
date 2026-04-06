@@ -123,6 +123,10 @@ final class DependencyContainer {
         ScentWheelService()
     }
     
+    func makeBarcodeScannerViewModel() -> BarcodeScannerViewModel {
+        BarcodeScannerViewModel(repository: perfumeRepository, networkMonitor: networkMonitor)
+    }
+
     func makePublicProfileViewModel() -> PublicProfileViewModel {
         PublicProfileViewModel(dataSource: publicProfileDataSource)
     }
