@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import os
 
 enum NetworkError: LocalizedError {
     case noConnection
@@ -11,22 +12,25 @@ enum NetworkError: LocalizedError {
     case serverError(statusCode: Int)
     case clientError(statusCode: Int)
     case notSupported(reason: String)
+    case validationFailed(String)
     case unknown(underlying: Error)
 
     var errorDescription: String? {
         switch self {
         case .noConnection:
-            return "Keine Internetverbindung. Bitte überprüfe deine Netzwerkeinstellungen."
+            return String(localized: "Keine Internetverbindung. Bitte überprüfe deine Netzwerkeinstellungen.")
         case .timeout:
-            return "Die Anfrage hat zu lange gedauert. Bitte versuche es erneut."
+            return String(localized: "Die Anfrage hat zu lange gedauert. Bitte versuche es erneut.")
         case .serverError(let statusCode):
-            return "Serverfehler (\(statusCode)). Bitte versuche es später erneut."
+            return String(localized: "Serverfehler (\(statusCode)). Bitte versuche es später erneut.")
         case .clientError(let statusCode):
-            return "Anfragefehler (\(statusCode)). Bitte prüfe deine Anmeldung."
+            return String(localized: "Anfragefehler (\(statusCode)). Bitte prüfe deine Anmeldung.")
         case .notSupported(let reason):
             return reason
+        case .validationFailed(let reason):
+            return reason
         case .unknown:
-            return "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut."
+            return String(localized: "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.")
         }
     }
 
@@ -38,9 +42,17 @@ enum NetworkError: LocalizedError {
         case .serverError(let statusCode):
             // Nur echte Server-Fehler (5xx) sind transient, nicht 501 Not Implemented
             return statusCode != 501
-        case .noConnection, .clientError, .unknown, .notSupported:
+        case .noConnection, .clientError, .unknown, .notSupported, .validationFailed:
             return false
         }
+    }
+
+    /// Wandelt einen Error in NetworkError um, loggt ihn und gibt die User-Message zurück.
+    @discardableResult
+    static func handle(_ error: Error, logger: Logger, context: String) -> String {
+        let networkError = Self.from(error)
+        logger.error("\(context): \(networkError.localizedDescription)")
+        return networkError.localizedDescription
     }
 
     /// Wandelt einen beliebigen Error in einen NetworkError um

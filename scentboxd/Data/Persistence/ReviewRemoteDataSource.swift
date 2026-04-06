@@ -7,25 +7,18 @@
 
 import Foundation
 import Supabase
+import os
 
 @MainActor
-class ReviewRemoteDataSource {
+class ReviewRemoteDataSource: ReviewDataSourceProtocol {
     private let client = AppConfig.client
-    
-    // MARK: - Rating Aggregation (Server-Side via RPC)
-    
-    struct RatingStats: Codable {
-        let perfumeId: UUID
-        let avgRating: Double
-        let reviewCount: Int
-        
-        enum CodingKeys: String, CodingKey {
-            case perfumeId = "perfume_id"
-            case avgRating = "avg_rating"
-            case reviewCount = "review_count"
-        }
+    private let profileService: ProfileService
+    private let rateLimiter = AuthRateLimiter(maxAttempts: 10, windowSeconds: 60)
+
+    init(profileService: ProfileService) {
+        self.profileService = profileService
     }
-    
+
     /// Aggregierte Rating-Daten für ein einzelnes Parfum (Supabase RPC)
     func fetchRatingStats(for perfumeId: UUID) async throws -> RatingStats {
         let results: [RatingStats] = try await withRetry {
@@ -57,36 +50,40 @@ class ReviewRemoteDataSource {
         return stats
     }
     
-    // MARK: - Autorname aus Profil oder E-Mail
-    
-    private func resolveAuthorName() async throws -> String {
-        let userId = try await AuthSessionCache.shared.getUserId()
-        
-        // Versuche Username aus Profil zu laden
-        if let profile: ProfileDTO = try? await withRetry(operation: {
-            try await self.client
-                .from("profiles")
-                .select("*")
-                .eq("id", value: userId)
-                .single()
-                .execute()
-                .value
-        }),
-           let username = profile.username, !username.isEmpty {
-            return username
+    // MARK: - Rate Limiting
+
+    private func checkRateLimit() throws {
+        if let cooldown = rateLimiter.recordAttempt() {
+            throw NetworkError.validationFailed("Zu viele Anfragen. Bitte warte \(cooldown) Sekunden.")
         }
-        
-        // Fallback: E-Mail-Prefix
-        let userEmail = try await AuthSessionCache.shared.getUserEmail() ?? "Unbekannt"
-        return userEmail.components(separatedBy: "@").first ?? "Unbekannt"
     }
-    
+
+    // MARK: - Validation
+
+    private func validateReview(_ review: Review) throws {
+        let trimmedText = review.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedText.count >= AppConfig.ReviewDefaults.minTextLength else {
+            throw NetworkError.validationFailed("Review-Text muss mindestens \(AppConfig.ReviewDefaults.minTextLength) Zeichen lang sein.")
+        }
+        guard review.text.count <= AppConfig.ReviewDefaults.maxTextLength else {
+            throw NetworkError.validationFailed("Review-Text darf maximal \(AppConfig.ReviewDefaults.maxTextLength) Zeichen lang sein.")
+        }
+        guard review.title.count <= AppConfig.ReviewDefaults.maxTitleLength else {
+            throw NetworkError.validationFailed("Titel darf maximal \(AppConfig.ReviewDefaults.maxTitleLength) Zeichen lang sein.")
+        }
+        guard (1...5).contains(review.rating) else {
+            throw NetworkError.validationFailed("Bewertung muss zwischen 1 und 5 liegen.")
+        }
+    }
+
     // MARK: - Create
-    
+
     func saveReview(_ review: Review, for perfumeId: UUID) async throws {
+        try checkRateLimit()
+        try validateReview(review)
         let userId = try await AuthSessionCache.shared.getUserId()
-        let authorName = try await resolveAuthorName()
-        
+        let authorName = try await profileService.resolveAuthorName()
+
         let dto = ReviewInsertDTO(
             id: review.id,
             perfumeId: perfumeId,
@@ -96,7 +93,8 @@ class ReviewRemoteDataSource {
             text: review.text,
             rating: review.rating,
             longevity: review.longevity,
-            sillage: review.sillage
+            sillage: review.sillage,
+            occasions: review.occasions.isEmpty ? nil : review.occasions
         )
         
         try await withRetry {
@@ -111,44 +109,38 @@ class ReviewRemoteDataSource {
     
     func fetchReviews(for perfumeId: UUID, page: Int, pageSize: Int) async throws -> [Review] {
         let from = page * pageSize
-        let to = from + pageSize - 1
-        
+        let end = from + pageSize - 1
+
         let dtos: [ReviewDTO] = try await withRetry {
             try await self.client
                 .from("reviews")
                 .select("*")
                 .eq("perfume_id", value: perfumeId)
                 .order("created_at", ascending: false)
-                .range(from: from, to: to)
+                .range(from: from, to: end)
                 .execute()
                 .value
         }
         
-        return dtos.map { dto in
-            Review(
+        return dtos.compactMap { dto in
+            guard let rating = dto.rating else {
+                AppLogger.reviews.error("Review \(dto.id) uebersprungen: rating fehlt")
+                return nil
+            }
+
+            return Review(
                 id: dto.id,
                 title: dto.title,
                 text: dto.text,
-                rating: dto.rating,
+                rating: rating,
                 longevity: dto.longevity,
                 sillage: dto.sillage,
+                occasions: dto.occasions ?? [],
                 createdAt: dto.createdAt,
                 authorName: dto.authorName,
                 userId: dto.userId
             )
         }
-    }
-    
-    /// Gesamtanzahl der Reviews für ein Parfum
-    func fetchReviewCount(for perfumeId: UUID) async throws -> Int {
-        let response = try await withRetry {
-            try await self.client
-                .from("reviews")
-                .select("id", head: true, count: .exact)
-                .eq("perfume_id", value: perfumeId)
-                .execute()
-        }
-        return response.count ?? 0
     }
     
     /// Lädt alle Reviews, die der aktuelle User geschrieben hat
@@ -164,55 +156,66 @@ class ReviewRemoteDataSource {
                 .execute()
                 .value
         }
-        return dtos
+        return dtos.filter { dto in
+            guard dto.perfumeId != nil, dto.rating != nil else {
+                AppLogger.reviews.error("User-Review \(dto.id) uebersprungen: Pflichtfelder fehlen")
+                return false
+            }
+            return true
+        }
     }
     
-    /// Prüft ob der aktuelle Nutzer bereits eine Review für dieses Parfum geschrieben hat
-    func fetchExistingReview(for perfumeId: UUID) async throws -> Review? {
-        let userId = try await AuthSessionCache.shared.getUserId()
-        
+    /// Lädt paginierte Reviews eines bestimmten Users (für öffentliche Profile).
+    func fetchReviewsByUser(userId: UUID, page: Int, pageSize: Int) async throws -> [ReviewDTO] {
+        let from = page * pageSize
+        let end = from + pageSize - 1
+
         let dtos: [ReviewDTO] = try await withRetry {
             try await self.client
                 .from("reviews")
                 .select("*")
-                .eq("perfume_id", value: perfumeId)
                 .eq("user_id", value: userId)
-                .limit(1)
+                .order("created_at", ascending: false)
+                .range(from: from, to: end)
                 .execute()
                 .value
         }
-        
-        guard let dto = dtos.first else { return nil }
-        
-        return Review(
-            id: dto.id,
-            title: dto.title,
-            text: dto.text,
-            rating: dto.rating,
-            longevity: dto.longevity,
-            sillage: dto.sillage,
-            createdAt: dto.createdAt,
-            authorName: dto.authorName,
-            userId: dto.userId
-        )
+        return dtos.filter { $0.perfumeId != nil && $0.rating != nil }
+    }
+
+    /// Lädt die Anzahl der Reviews für einen bestimmten User
+    func fetchReviewCount(for userId: String) async throws -> Int {
+        let response = try await withRetry {
+            try await self.client
+                .from("reviews")
+                .select("id", head: true, count: .exact)
+                .eq("user_id", value: userId)
+                .execute()
+        }
+        return response.count ?? 0
     }
     
     // MARK: - Update
     
     func updateReview(_ review: Review, for perfumeId: UUID) async throws {
-        let authorName = try await resolveAuthorName()
-        
+        try checkRateLimit()
+        try validateReview(review)
+        let authorName = try await profileService.resolveAuthorName()
+
+        let dto = ReviewUpdateDTO(
+            title: review.title,
+            text: review.text,
+            rating: review.rating,
+            longevity: review.longevity,
+            sillage: review.sillage,
+            occasions: review.occasions.isEmpty ? nil : review.occasions,
+            authorName: authorName
+        )
+
         try await withRetry {
             try await self.client
                 .from("reviews")
-                .update([
-                    "title": review.title,
-                    "text": review.text,
-                    "rating": String(review.rating),
-                    "longevity": review.longevity != nil ? String(review.longevity!) : nil,
-                    "sillage": review.sillage != nil ? String(review.sillage!) : nil,
-                    "author_name": authorName
-                ] as [String : String?])
+                .update(dto)
                 .eq("id", value: review.id)
                 .execute()
         }
@@ -221,6 +224,7 @@ class ReviewRemoteDataSource {
     // MARK: - Delete
     
     func deleteReview(id: UUID) async throws {
+        try checkRateLimit()
         try await withRetry {
             try await self.client
                 .from("reviews")
@@ -229,39 +233,34 @@ class ReviewRemoteDataSource {
                 .execute()
         }
     }
-    
-    // MARK: - Profil
-    
-    func fetchProfile() async throws -> ProfileDTO? {
-        let userId = try await AuthSessionCache.shared.getUserId()
-        
-        let profile: ProfileDTO? = try? await withRetry {
+
+    // MARK: - Likes
+
+    func toggleLike(reviewId: UUID) async throws -> ReviewLikeResult {
+        try checkRateLimit()
+        let result: ReviewLikeResult = try await withRetry {
             try await self.client
-                .from("profiles")
-                .select("*")
-                .eq("id", value: userId)
-                .single()
+                .rpc("toggle_review_like", params: ["p_review_id": reviewId])
                 .execute()
                 .value
         }
-        
-        return profile
+        return result
     }
-    
-    func saveProfile(username: String) async throws {
-        let userId = try await AuthSessionCache.shared.getUserId()
-        
-        let dto = ProfileDTO(
-            id: userId,
-            username: username,
-            updatedAt: Date()
-        )
-        
-        try await withRetry {
+
+    func fetchLikeStatus(reviewIds: [UUID]) async throws -> [UUID: ReviewLikeInfo] {
+        guard !reviewIds.isEmpty else { return [:] }
+
+        let infos: [ReviewLikeInfo] = try await withRetry {
             try await self.client
-                .from("profiles")
-                .upsert(dto)
+                .rpc("get_review_likes_batch", params: ["p_review_ids": reviewIds])
                 .execute()
+                .value
         }
+
+        var result: [UUID: ReviewLikeInfo] = [:]
+        for info in infos {
+            result[info.reviewId] = info
+        }
+        return result
     }
 }

@@ -8,30 +8,52 @@
 import SwiftUI
 import SwiftData
 import Auth
+import os
 import Supabase
 #if canImport(PostgREST)
 import PostgREST
 #endif
 
+enum ProfileEditState {
+    case idle
+    case editing
+    case saving
+    case success
+}
+
 struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
+    @Environment(\.dependencies) private var dependencies
     
-    // MARK: - Data Queries
+    // MARK: - Data Queries (single query, split via computed properties)
     @Query(filter: #Predicate<Perfume> { perfume in
-        perfume.userMetadata?.statusRaw == "Sammlung"
+        perfume.userMetadata?.isOwned == true || perfume.userMetadata?.isFavorite == true
     }, sort: \Perfume.name)
-    var ownedPerfumes: [Perfume]
-    
-    @Query(filter: #Predicate<Perfume> { perfume in
-        perfume.userMetadata?.statusRaw == "Wunschliste"
-    }, sort: \Perfume.name)
-    var favoritePerfumes: [Perfume]
+    private var userPerfumes: [Perfume]
+
+    var ownedPerfumes: [Perfume] {
+        userPerfumes.filter { $0.userMetadata?.isOwned == true }
+    }
+
+    var favoritePerfumes: [Perfume] {
+        userPerfumes.filter { $0.userMetadata?.isFavorite == true }
+    }
     
     // MARK: - State
-    @State private var isEditingUsername = false
+    @State private var editState: ProfileEditState = .idle
     @State private var usernameInput = ""
-    @State private var showUsernameSaved = false
     @State private var reviewCount: Int = 0
+    @State private var reviewCountError: String?
+    @State private var listCount: Int = 0
+    @State private var isRenderingShareImage = false // Kept boolean for share flow since it belongs to a different action
+    @State private var showShareSheet = false
+    @State private var shareImage: UIImage?
+    @State private var reviewCountTask: Task<Void, Never>?
+    @State private var usernameSaveTask: Task<Void, Never>?
+    @State private var isProfilePublic = true
+    @State private var bioText = ""
+    @State private var isSavingBio = false
+    @State private var showBioSheet = false
     
     var body: some View {
         NavigationStack {
@@ -49,13 +71,122 @@ struct ProfileView: View {
     
     private var authenticatedView: some View {
         ZStack {
-            DesignSystem.Colors.bgDark.ignoresSafeArea()
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
-                    profileHeader
+                    ProfileHeaderSection(
+                        editState: $editState,
+                        usernameInput: $usernameInput
+                    )
                     statsGrid
-                    recentlyAddedSection
+
+                    PendingSyncBanner()
+                        .padding(.horizontal, 16)
+
+                    // Duftprofil Link
+                    NavigationLink(destination: FragranceProfileView(
+                        service: dependencies.makeFragranceProfileService(),
+                        scentWheelService: dependencies.makeScentWheelService()
+                    )) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "chart.bar.xaxis")
+                                .font(.system(size: 18))
+                                .foregroundStyle(DesignSystem.Colors.champagne)
+                                .frame(width: 36, height: 36)
+                                .background(DesignSystem.Colors.champagne.opacity(0.12))
+                                .clipShape(Circle())
+
+                            Text("Mein Duftprofil")
+                                .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
+                                .foregroundStyle(Color.primary)
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(Color(hex: "#94A3B8"))
+                        }
+                        .padding(16)
+                        .glassPanel()
+                    }
+                    .padding(.horizontal)
+                    .accessibilityLabel("Mein Duftprofil")
+                    .accessibilityHint("Öffnet dein persönliches Duftprofil")
+
+                    // Profil-Sichtbarkeit & Bio
+                    VStack(spacing: 12) {
+                        // Public Toggle
+                        HStack(spacing: 12) {
+                            Image(systemName: isProfilePublic ? "eye" : "eye.slash")
+                                .font(.system(size: 18))
+                                .foregroundStyle(DesignSystem.Colors.champagne)
+                                .frame(width: 36, height: 36)
+                                .background(DesignSystem.Colors.champagne.opacity(0.12))
+                                .clipShape(Circle())
+
+                            Text("Profil öffentlich")
+                                .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
+                                .foregroundStyle(Color.primary)
+
+                            Spacer()
+
+                            Toggle("", isOn: $isProfilePublic)
+                                .tint(DesignSystem.Colors.primary)
+                                .labelsHidden()
+                        }
+                        .padding(16)
+                        .glassPanel()
+                        .onChange(of: isProfilePublic) { _, newValue in
+                            Task { await updateProfileVisibility(isPublic: newValue) }
+                        }
+                        .accessibilityLabel("Profil öffentlich sichtbar")
+                        .accessibilityHint("Andere Benutzer können dein Profil und deine Sammlung sehen")
+
+                        // Bio bearbeiten
+                        Button {
+                            showBioSheet = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "text.quote")
+                                    .font(.system(size: 18))
+                                    .foregroundStyle(DesignSystem.Colors.champagne)
+                                    .frame(width: 36, height: 36)
+                                    .background(DesignSystem.Colors.champagne.opacity(0.12))
+                                    .clipShape(Circle())
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Bio bearbeiten")
+                                        .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
+                                        .foregroundStyle(Color.primary)
+                                    if !bioText.isEmpty {
+                                        Text(bioText)
+                                            .font(.caption)
+                                            .foregroundStyle(Color(hex: "#94A3B8"))
+                                            .lineLimit(1)
+                                    }
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(Color(hex: "#94A3B8"))
+                            }
+                            .padding(16)
+                            .glassPanel()
+                        }
+                        .accessibilityLabel("Bio bearbeiten")
+                    }
+                    .padding(.horizontal)
+
+                    // Sammlung teilen
+                    if !ownedPerfumes.isEmpty {
+                        shareCollectionButton
+                            .padding(.horizontal)
+                    }
+
+                    RecentPerfumesSection(ownedPerfumes: ownedPerfumes)
                     signOutButton
                     appInfoRow
                 }
@@ -64,132 +195,51 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        // Settings action placeholder
-                    } label: {
+                    NavigationLink(destination: SettingsView()) {
                         Image(systemName: "gearshape")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(Color.primary.opacity(0.7))
                             .frame(width: 36, height: 36)
-                            .background(Color.white.opacity(0.05))
+                            .background(Color.primary.opacity(0.05))
                             .clipShape(Circle())
                             .overlay(
-                                Circle().stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                Circle().stroke(Color.primary.opacity(0.08), lineWidth: 1)
                             )
                     }
+                    .accessibilityLabel("Einstellungen")
                 }
             }
-            .toolbarColorScheme(.dark, for: .navigationBar)
+                    }
+        .onAppear {
+            reviewCountTask?.cancel()
+            reviewCountTask = Task {
+                await loadReviewCount()
+                await loadProfileSettings()
+                await loadListCount()
+            }
         }
-        .task {
-            await loadReviewCount()
+        .onDisappear {
+            reviewCountTask?.cancel()
+            usernameSaveTask?.cancel()
         }
-        .sheet(isPresented: $isEditingUsername) {
+        .sheet(isPresented: Binding(
+            get: { editState == .editing || editState == .saving },
+            set: { isPresented in
+                if !isPresented { editState = .idle }
+            }
+        )) {
             usernameEditSheet
         }
-    }
-    
-    // MARK: - Profile Header
-    
-    private var profileHeader: some View {
-        ZStack {
-            // Background Glow
-            Circle()
-                .fill(DesignSystem.Colors.primary.opacity(0.2))
-                .blur(radius: 80)
-                .frame(width: 260, height: 260)
-                .offset(y: -20)
-            
-            VStack(spacing: 16) {
-                // Avatar with edit button
-                ZStack(alignment: .bottomTrailing) {
-                    Circle()
-                        .stroke(DesignSystem.Colors.primary.opacity(0.3), lineWidth: 2)
-                        .shadow(color: DesignSystem.Colors.primary.opacity(0.2), radius: 15)
-                        .frame(width: 128, height: 128)
-                        .overlay(
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                DesignSystem.Colors.primary.opacity(0.3),
-                                                Color.purple.opacity(0.2)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                
-                                Image(systemName: "person.fill")
-                                    .font(.system(size: 48))
-                                    .foregroundColor(.white.opacity(0.6))
-                            }
-                            .clipShape(Circle())
-                        )
-                    
-                    // Edit button
-                    Button {
-                        usernameInput = authManager.username ?? ""
-                        isEditingUsername = true
-                    } label: {
-                        ZStack {
-                            Circle()
-                                .fill(DesignSystem.Colors.primary)
-                                .frame(width: 32, height: 32)
-                            
-                            Image(systemName: "pencil")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.white)
-                        }
-                        .overlay(
-                            Circle()
-                                .stroke(DesignSystem.Colors.bgDark, lineWidth: 4)
-                        )
-                    }
-                    .offset(x: 2, y: -2)
-                }
-                
-                // Name & subtitle
-                VStack(spacing: 6) {
-                    Text(authManager.username ?? "Scentboxd Benutzer")
-                        .font(DesignSystem.Fonts.serif(size: 28, weight: .bold))
-                        .foregroundColor(.white)
-                        .tracking(-0.3)
-                    
-                    Text("SCENT CONNOISSEUR")
-                        .font(DesignSystem.Fonts.display(size: 11, weight: .semibold))
-                        .tracking(3)
-                        .foregroundColor(DesignSystem.Colors.primary)
-                    
-                    Text(authManager.currentUser?.email ?? "")
-                        .font(DesignSystem.Fonts.display(size: 13))
-                        .foregroundColor(Color(hex: "#94A3B8"))
-                        .padding(.top, 2)
-                    
-                    if showUsernameSaved {
-                        HStack(spacing: 4) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.caption2)
-                            Text("Benutzername gespeichert")
-                                .font(.caption2)
-                        }
-                        .foregroundStyle(.green)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-                    
-                    if let error = authManager.errorMessage {
-                        Text(error)
-                            .font(.caption2)
-                            .foregroundStyle(.red)
-                    }
-                }
+        .sheet(isPresented: $showShareSheet) {
+            if let shareImage {
+                ShareSheet(items: [shareImage])
             }
         }
-        .padding(.top, 16)
-        .padding(.bottom, 8)
+        .sheet(isPresented: $showBioSheet) {
+            bioEditSheet
+        }
     }
-    
+
     // MARK: - Stats Grid
     
     private var statsGrid: some View {
@@ -198,142 +248,36 @@ struct ProfileView: View {
             GridItem(.flexible(), spacing: 12)
         ], spacing: 12) {
             NavigationLink(destination: OwnedPerfumesView()) {
-                statsCard(icon: "archivebox", value: "\(ownedPerfumes.count)", label: "Sammlung")
+                ProfileStatsCard(icon: "archivebox", value: "\(ownedPerfumes.count)", label: "Sammlung")
             }
             .buttonStyle(.plain)
-            
+            .accessibilityLabel("Sammlung, \(ownedPerfumes.count) Parfums")
+            .accessibilityHint("Öffnet deine Parfum-Sammlung")
+
             NavigationLink(destination: UserReviewsView()) {
-                statsCard(icon: "text.quote", value: "\(reviewCount)", label: "Bewertungen")
+                ProfileStatsCard(icon: "text.quote", value: reviewCountError != nil ? "–" : "\(reviewCount)", label: "Bewertungen")
             }
             .buttonStyle(.plain)
-            
+            .accessibilityLabel("Bewertungen, \(reviewCount)")
+            .accessibilityHint("Öffnet deine Bewertungen")
+
             NavigationLink(destination: FavoritesView()) {
-                statsCard(icon: "heart", value: "\(favoritePerfumes.count)", label: "Wunschliste")
+                ProfileStatsCard(icon: "heart", value: "\(favoritePerfumes.count)", label: "Wunschliste")
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Wunschliste, \(favoritePerfumes.count) Parfums")
+            .accessibilityHint("Öffnet deine Wunschliste")
+
+            NavigationLink(destination: ListsView()) {
+                ProfileStatsCard(icon: "bookmark", value: "\(listCount)", label: "Listen")
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Listen, \(listCount) Listen")
+            .accessibilityHint("Öffnet deine kuratierten Parfum-Listen")
         }
         .padding(.horizontal, 16)
     }
-    
-    private func statsCard(icon: String, value: String, label: String, showGradientOverlay: Bool = false) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundColor(DesignSystem.Colors.primary.opacity(0.8))
-                Spacer()
-                Image(systemName: "arrow.up.right")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(Color(hex: "#475569"))
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(value)
-                    .font(DesignSystem.Fonts.serif(size: 28, weight: .bold))
-                    .foregroundColor(DesignSystem.Colors.champagne)
-                    .shadow(color: DesignSystem.Colors.primary.opacity(0.3), radius: 10, x: 0, y: 0)
-                
-                Text(label.uppercased())
-                    .font(.system(size: 10, weight: .medium))
-                    .tracking(1.5)
-                    .foregroundColor(Color(hex: "#94A3B8"))
-            }
-        }
-        .padding(20)
-        .background {
-            if showGradientOverlay {
-                LinearGradient(
-                    colors: [DesignSystem.Colors.primary.opacity(0.08), .clear],
-                    startPoint: .bottomLeading,
-                    endPoint: .topTrailing
-                )
-            }
-        }
-        .glassPanel()
-    }
-    
-    // MARK: - Recently Added
-    
-    private var recentlyAddedSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Zuletzt hinzugefügt")
-                    .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                Spacer()
-                NavigationLink(destination: OwnedPerfumesView()) {
-                    Text("ALLE ANSEHEN")
-                        .font(.system(size: 11, weight: .bold))
-                        .tracking(1)
-                        .foregroundColor(DesignSystem.Colors.primary)
-                }
-            }
-            .padding(.horizontal, 16)
-            
-            if ownedPerfumes.isEmpty {
-                Text("Keine Parfums in deiner Sammlung.")
-                    .font(.system(size: 14))
-                    .foregroundColor(Color(hex: "#94A3B8"))
-                    .padding(.horizontal, 16)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 14) {
-                        ForEach(ownedPerfumes.prefix(10)) { perfume in
-                            NavigationLink(destination: PerfumeDetailView(perfume: perfume)) {
-                                recentPerfumeCard(perfume: perfume)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                }
-            }
-        }
-    }
-    
-    private func recentPerfumeCard(perfume: Perfume) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Image Area
-            Color.clear
-                .aspectRatio(3/4, contentMode: .fit)
-                .overlay {
-                    if let url = perfume.imageUrl {
-                        AsyncImage(url: url) { image in
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        } placeholder: {
-                            DesignSystem.Colors.surfaceDark
-                        }
-                    } else {
-                        ZStack {
-                            DesignSystem.Colors.surfaceDark
-                            Image(systemName: "flame.circle.fill")
-                                .resizable()
-                                .frame(width: 28, height: 28)
-                                .foregroundColor(DesignSystem.Colors.primary.opacity(0.3))
-                        }
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(perfume.name)
-                    .font(DesignSystem.Fonts.serif(size: 13))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                
-                Text(perfume.brand?.name ?? "Unbekannte Marke")
-                    .font(.system(size: 11))
-                    .foregroundColor(Color(hex: "#64748B"))
-                    .lineLimit(1)
-            }
-        }
-        .frame(width: 140)
-        .padding(10)
-        .glassPanel()
-    }
-    
+
     // MARK: - Sign Out
     
     private var signOutButton: some View {
@@ -366,6 +310,8 @@ struct ProfileView: View {
         .disabled(authManager.isLoading)
         .padding(.horizontal, 16)
         .padding(.top, 8)
+        .accessibilityLabel("Abmelden")
+        .accessibilityHint("Doppeltippen, um dich abzumelden")
     }
     
     // MARK: - App Info
@@ -376,7 +322,7 @@ struct ProfileView: View {
                 .foregroundColor(Color(hex: "#94A3B8"))
             Spacer()
             Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "–")
-                .foregroundColor(Color(hex: "#64748B"))
+                .foregroundColor(Color(hex: "#94A3B8"))
         }
         .font(.caption)
         .padding(.horizontal, 20)
@@ -388,7 +334,7 @@ struct ProfileView: View {
     private var usernameEditSheet: some View {
         NavigationStack {
             ZStack {
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
                 
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -407,7 +353,8 @@ struct ProfileView: View {
                                 .autocorrectionDisabled()
                                 .submitLabel(.done)
                                 .onSubmit { saveUsername() }
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
+                                .accessibilityLabel("Benutzername")
                         }
                         .padding(16)
                         .glassPanel()
@@ -416,11 +363,17 @@ struct ProfileView: View {
                     Button {
                         saveUsername()
                     } label: {
-                        Text("Speichern")
-                            .frame(maxWidth: .infinity)
+                        if editState == .saving {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Speichern")
+                                .frame(maxWidth: .infinity)
+                        }
                     }
                     .buttonStyle(PrimaryButtonStyle())
-                    .disabled(usernameInput.trimmingCharacters(in: .whitespaces).isEmpty || authManager.isLoading)
+                    .disabled(usernameInput.trimmingCharacters(in: .whitespaces).isEmpty || editState == .saving || authManager.isLoading)
                     
                     Spacer()
                 }
@@ -428,13 +381,13 @@ struct ProfileView: View {
             }
             .navigationTitle("Profil bearbeiten")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbar {
+                        .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") {
-                        isEditingUsername = false
+                        editState = .idle
                     }
                     .foregroundColor(Color(hex: "#94A3B8"))
+                    .disabled(editState == .saving)
                 }
             }
         }
@@ -442,8 +395,127 @@ struct ProfileView: View {
         .presentationDragIndicator(.visible)
     }
     
+    // MARK: - Share Collection
+
+    private var shareCollectionButton: some View {
+        Button {
+            renderAndShare()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 18))
+                    .foregroundStyle(DesignSystem.Colors.champagne)
+                    .frame(width: 36, height: 36)
+                    .background(DesignSystem.Colors.champagne.opacity(0.12))
+                    .clipShape(Circle())
+
+                Text("Sammlung teilen")
+                    .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
+                    .foregroundStyle(Color.primary)
+
+                Spacer()
+
+                if isRenderingShareImage {
+                    ProgressView()
+                        .tint(Color(hex: "#94A3B8"))
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#94A3B8"))
+                }
+            }
+            .padding(16)
+            .glassPanel()
+        }
+        .disabled(isRenderingShareImage)
+        .accessibilityLabel("Sammlung teilen")
+        .accessibilityHint("Erstellt ein Bild deiner Sammlung zum Teilen")
+    }
+
+    private func renderAndShare() {
+        isRenderingShareImage = true
+        let perfumes = ownedPerfumes
+        let username = authManager.username ?? "scentboxd"
+        let favCount = favoritePerfumes.count
+
+        Task {
+            let image = await CollectionExportService.renderCollectionImage(
+                perfumes: perfumes,
+                username: username,
+                favoriteCount: favCount
+            )
+            shareImage = image
+            isRenderingShareImage = false
+            if image != nil {
+                showShareSheet = true
+            }
+        }
+    }
+
+    // MARK: - Bio Edit Sheet
+
+    private var bioEditSheet: some View {
+        NavigationStack {
+            ZStack {
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
+
+                VStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("BIO")
+                            .font(.system(size: 10, weight: .bold))
+                            .tracking(2)
+                            .foregroundColor(DesignSystem.Colors.primary)
+
+                        TextEditor(text: $bioText)
+                            .scrollContentBackground(.hidden)
+                            .foregroundStyle(Color.primary)
+                            .frame(minHeight: 100, maxHeight: 200)
+                            .padding(12)
+                            .glassPanel()
+
+                        Text("\(bioText.count)/200")
+                            .font(.caption2)
+                            .foregroundColor(Color(hex: "#94A3B8"))
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
+
+                    Button {
+                        Task { await saveBio() }
+                    } label: {
+                        if isSavingBio {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Speichern")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .disabled(isSavingBio || bioText.count > 200)
+
+                    Spacer()
+                }
+                .padding(20)
+            }
+            .navigationTitle("Bio bearbeiten")
+            .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Abbrechen") {
+                        showBioSheet = false
+                    }
+                    .foregroundColor(Color(hex: "#94A3B8"))
+                    .disabled(isSavingBio)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+
     // MARK: - Helpers
-    
+
     private var memberSinceText: String {
         if let createdAt = authManager.currentUser?.createdAt {
             return createdAt.formatted(date: .abbreviated, time: .omitted)
@@ -455,43 +527,97 @@ struct ProfileView: View {
     
     private func loadReviewCount() async {
         guard let currentUserIdString = authManager.currentUser?.id.uuidString else { return }
+        reviewCountError = nil
         
-        // Use SwiftData approach or raw count from Supabase
-        // Easiest is to query via ReviewRemoteDataSource if possible, or load via Supabase directly
         do {
-            let configClient = AppConfig.client
-            let response = try await configClient
-                .from("reviews")
-                .select("id", head: true, count: .exact)
-                .eq("user_id", value: currentUserIdString)
-                .execute()
-            
-            if let count = response.count {
-                reviewCount = count
-            }
+            reviewCount = try await dependencies.reviewDataSource.fetchReviewCount(for: currentUserIdString)
         } catch {
-            print("Failed to load review count: \(error.localizedDescription)")
+            reviewCountError = "Bewertungen konnten nicht geladen werden."
+            AppLogger.reviews.error("Failed to load review count: \(error.localizedDescription)")
         }
     }
     
+    private func loadProfileSettings() async {
+        guard let userId = authManager.currentUser?.id else { return }
+        do {
+            let profile = try await dependencies.publicProfileDataSource.fetchPublicProfile(userId: userId)
+            isProfilePublic = profile.isPublic
+            bioText = profile.bio ?? ""
+        } catch {
+            // Silently fail — use defaults
+            AppLogger.auth.debug("Could not load profile settings: \(error.localizedDescription)")
+        }
+    }
+
+    private func updateProfileVisibility(isPublic: Bool) async {
+        guard let userId = authManager.currentUser?.id else { return }
+        do {
+            try await dependencies.publicProfileDataSource.updateProfileVisibility(userId: userId, isPublic: isPublic)
+        } catch {
+            AppLogger.auth.error("Failed to update profile visibility: \(error.localizedDescription)")
+        }
+    }
+
+    private func saveBio() async {
+        guard let userId = authManager.currentUser?.id else { return }
+        isSavingBio = true
+        do {
+            try await dependencies.publicProfileDataSource.updateBio(userId: userId, bio: bioText)
+            showBioSheet = false
+        } catch {
+            AppLogger.auth.error("Failed to save bio: \(error.localizedDescription)")
+        }
+        isSavingBio = false
+    }
+
+    private func loadListCount() async {
+        do {
+            listCount = try await dependencies.curatedListDataSource.fetchListCount()
+        } catch {
+            AppLogger.lists.debug("Could not load list count: \(error.localizedDescription)")
+        }
+    }
+
     private func saveUsername() {
         let trimmed = usernameInput.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
-        Task {
+        editState = .saving
+        usernameSaveTask?.cancel()
+        
+        usernameSaveTask = Task {
             let success = await authManager.saveUsername(trimmed)
             if success {
-                isEditingUsername = false
-                showUsernameSaved = true
-                Task {
-                    try? await Task.sleep(for: .seconds(2))
-                    showUsernameSaved = false
+                editState = .success
+                
+                // Keep the sleep in the same task
+                try? await Task.sleep(for: .seconds(2))
+                
+                // Only reset if we are still in success state
+                if !Task.isCancelled && editState == .success {
+                    editState = .idle
+                }
+            } else {
+                if !Task.isCancelled {
+                    editState = .editing
                 }
             }
         }
     }
 }
 
+// MARK: - UIActivityViewController Wrapper
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
 #Preview("Logged In") {
     ProfileView()
-        .environment(AuthManager())
+        .environment(AuthManager(profileService: ProfileService()))
 }

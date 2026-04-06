@@ -10,8 +10,10 @@ import os
 /// Cached den aktuellen User-ID, um wiederholte `client.auth.session`-Aufrufe zu vermeiden.
 /// Jede Remote-Operation braucht die User-ID — ohne Cache wird bei jedem Aufruf
 /// ein neuer Session-Fetch ausgelöst.
-@MainActor
-final class AuthSessionCache {
+///
+/// Uses `actor` isolation so that cache reads (value + validity) are atomic —
+/// no interleaving between the two checks is possible.
+actor AuthSessionCache {
     
     static let shared = AuthSessionCache()
     
@@ -20,9 +22,7 @@ final class AuthSessionCache {
     private var cachedEmail: String?
     private var lastFetchedAt: Date?
     
-    /// Maximale Gültigkeit des Cache (5 Minuten).
-    /// Danach wird die Session beim nächsten Zugriff neu gefetcht.
-    private let cacheTTL: TimeInterval = 300
+    private let cacheTTL: TimeInterval = AppConfig.Cache.authSessionTTL
     
     private init() {}
     

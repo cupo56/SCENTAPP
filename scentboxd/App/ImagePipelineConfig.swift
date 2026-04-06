@@ -6,21 +6,21 @@ import Nuke
 enum ImagePipelineConfig {
 
     static func configure() {
-        // 1. Persistenter Disk-Cache (150 MB) – überlebt App-Neustarts
         let dataCache = try? DataCache(name: "de.scentboxd.images")
         dataCache?.sizeLimit = 150 * 1024 * 1024 // 150 MB
 
-        // 2. Pipeline zusammenbauen
-        let pipeline = ImagePipeline {
-            // Disk-Cache für fertig geladene Bilder
-            $0.dataCache = dataCache
+        let imageCache = ImageCache()
+        imageCache.costLimit = 50 * 1024 * 1024   // 50 MB decoded images in memory
+        imageCache.countLimit = 100                 // max 100 images in memory
 
-            // URLSession-Cache deaktivieren, da DataCache übernimmt
+        let pipeline = ImagePipeline {
+            $0.dataCache = dataCache
+            $0.imageCache = imageCache
+
             let config = URLSessionConfiguration.default
-            config.urlCache = nil               // kein doppelter Cache
+            config.urlCache = nil
             $0.dataLoader = DataLoader(configuration: config)
 
-            // Bilder aggressiv aus dem Cache laden, wenn vorhanden
             $0.dataCachePolicy = .automatic
         }
 

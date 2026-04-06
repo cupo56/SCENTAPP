@@ -12,6 +12,7 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var showSignUp = false
+    @State private var showForgotPassword = false
     @FocusState private var focusedField: Field?
     
     private enum Field: Hashable {
@@ -27,7 +28,7 @@ struct LoginView: View {
         NavigationStack {
             ZStack {
                 // Background
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
                 
                 // Subtle glow
                 Circle()
@@ -46,6 +47,7 @@ struct LoginView: View {
                                 .frame(width: 100, height: 100)
                                 .clipShape(RoundedRectangle(cornerRadius: 22))
                                 .shadow(color: DesignSystem.Colors.primary.opacity(0.4), radius: 20, x: 0, y: 10)
+                                .accessibilityLabel("ScentBox Logo")
                             
                             Text("ScentBox")
                                 .font(DesignSystem.Fonts.serif(size: 32, weight: .bold))
@@ -79,7 +81,8 @@ struct LoginView: View {
                                     .focused($focusedField, equals: .email)
                                     .submitLabel(.next)
                                     .onSubmit { focusedField = .password }
-                                    .foregroundColor(.white)
+                                    .foregroundStyle(Color.primary)
+                                    .accessibilityLabel("E-Mail-Adresse")
                             }
                             .padding(16)
                             .glassPanel()
@@ -98,7 +101,8 @@ struct LoginView: View {
                                             Task { await authManager.signIn(email: email, password: password) }
                                         }
                                     }
-                                    .foregroundColor(.white)
+                                    .foregroundStyle(Color.primary)
+                                    .accessibilityLabel("Passwort")
                             }
                             .padding(16)
                             .glassPanel()
@@ -134,18 +138,30 @@ struct LoginView: View {
                         .buttonStyle(PrimaryButtonStyle())
                         .disabled(!isFormValid || authManager.isLoading)
                         .padding(.horizontal)
-                        
+                        .accessibilityLabel("Anmelden")
+                        .accessibilityHint("Doppeltippen, um dich mit E-Mail und Passwort anzumelden")
+
+                        // Forgot Password
+                        Button {
+                            showForgotPassword = true
+                        } label: {
+                            Text("Passwort vergessen?")
+                                .font(.footnote)
+                                .foregroundColor(DesignSystem.Colors.champagne)
+                        }
+                        .accessibilityHint("Öffnet die Seite zum Zurücksetzen des Passworts")
+
                         // Divider
                         HStack {
                             Rectangle()
                                 .frame(height: 1)
-                                .foregroundStyle(Color.white.opacity(0.1))
+                                .foregroundStyle(Color.primary.opacity(0.1))
                             Text("oder")
                                 .font(.footnote)
                                 .foregroundStyle(Color(hex: "#94A3B8"))
                             Rectangle()
                                 .frame(height: 1)
-                                .foregroundStyle(Color.white.opacity(0.1))
+                                .foregroundStyle(Color.primary.opacity(0.1))
                         }
                         .padding(.horizontal)
                         
@@ -157,6 +173,7 @@ struct LoginView: View {
                                 .fontWeight(.medium)
                                 .foregroundColor(DesignSystem.Colors.champagne)
                         }
+                        .accessibilityHint("Öffnet das Registrierungsformular")
                         
                         Spacer()
                     }
@@ -166,11 +183,14 @@ struct LoginView: View {
             .sheet(isPresented: $showSignUp) {
                 SignUpView()
             }
+            .sheet(isPresented: $showForgotPassword) {
+                ForgotPasswordView()
+            }
         }
     }
 }
 
 #Preview {
     LoginView()
-        .environment(AuthManager())
+        .environment(AuthManager(profileService: ProfileService()))
 }

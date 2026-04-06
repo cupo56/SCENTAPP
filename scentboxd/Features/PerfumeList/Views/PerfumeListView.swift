@@ -5,23 +5,35 @@ import NukeUI
 
 struct PerfumeListView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismissSearch) private var dismissSearch
     
-    @EnvironmentObject var viewModel: PerfumeListViewModel
+    @Environment(PerfumeListViewModel.self) var viewModel
+    @Environment(PerfumeFilterViewModel.self) var filterVM
     
+    @State private var filterTask: Task<Void, Never>?
+    @State private var retryTask: Task<Void, Never>?
+    @State private var selectedSuggestionPerfumeId: UUID?
+    @State private var showScanner = false
+    @State private var scannedPerfume: Perfume?
+
+    @Environment(\.dependencies) private var dependencies
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
     
     var body: some View {
+        @Bindable var viewModel = viewModel
+        @Bindable var filterVM = filterVM
         NavigationStack {
             ZStack {
-                DesignSystem.Colors.bgDark.ignoresSafeArea()
+                DesignSystem.Colors.appBackground.ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 0) {
                         // Offline-Banner
-                        if viewModel.isOffline && !viewModel.perfumes.isEmpty {
+                        if viewModel.dataLoader.isOffline && !viewModel.dataLoader.perfumes.isEmpty {
                             offlineBanner
                                 .padding(.horizontal, 16)
                                 .padding(.top, 8)
@@ -33,20 +45,20 @@ struct PerfumeListView: View {
                             .padding(.bottom, 8)
                         
                         // Result Count
-                        if let total = viewModel.totalCount, !viewModel.isLoading {
+                        if let total = viewModel.dataLoader.totalCount, !viewModel.dataLoader.isLoading {
                             resultCountRow(total: total)
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 8)
                         }
                         
                         // Error
-                        if let errorMessage = viewModel.errorMessage {
+                        if let errorMessage = viewModel.dataLoader.errorMessage {
                             errorView(message: errorMessage)
                                 .padding(.horizontal, 16)
                         }
                         
                         // Loading Skeletons
-                        if viewModel.isLoading {
+                        if viewModel.dataLoader.isLoading {
                             LazyVGrid(columns: columns, spacing: 12) {
                                 ForEach(0..<4, id: \.self) { _ in
                                     skeletonCard
@@ -57,11 +69,12 @@ struct PerfumeListView: View {
                         
                         // Perfume Grid
                         LazyVGrid(columns: columns, spacing: 12) {
-                            ForEach(viewModel.perfumes) { perfume in
+                            ForEach(viewModel.dataLoader.perfumes) { perfume in
                                 NavigationLink(destination: PerfumeDetailView(perfume: perfume)) {
                                     PerfumeCardView(
                                         perfume: perfume,
-                                        ratingStats: viewModel.ratingStatsMap[perfume.id]
+                                        ratingStats: viewModel.dataLoader.ratingStatsMap[perfume.id],
+                                        showTopNotes: true
                                     )
                                 }
                                 .buttonStyle(.plain)
@@ -75,7 +88,7 @@ struct PerfumeListView: View {
                         .padding(.horizontal, 16)
                         
                         // Load More Indicator
-                        if viewModel.isLoadingMore {
+                        if viewModel.dataLoader.isLoadingMore {
                             HStack {
                                 Spacer()
                                 ProgressView()
@@ -93,20 +106,41 @@ struct PerfumeListView: View {
                 }
             }
             .searchable(text: $viewModel.searchText, prompt: "Suche Parfum...")
+            .searchSuggestions {
+                if viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 {
+                    SearchSuggestionsOverlay(
+                        suggestions: viewModel.searchSuggestionService.suggestions,
+                        isLoading: viewModel.searchSuggestionService.isLoading,
+                        onBrandTap: applyBrandSuggestion,
+                        onNoteTap: applyNoteSuggestion,
+                        onPerfumeTap: openPerfumeSuggestion
+                    )
+                }
+            }
             .navigationTitle("ScentBox")
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
+                // MARK: - Scanner Button
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showScanner = true
+                    } label: {
+                        Image(systemName: "barcode.viewfinder")
+                            .foregroundColor(DesignSystem.Colors.primary)
+                    }
+                    .accessibilityLabel("Barcode scannen")
+                }
+
                 // MARK: - Sort Menu
                 ToolbarItem(placement: .topBarLeading) {
                     Menu {
                         ForEach(PerfumeSortOption.allCases) { option in
                             Button {
-                                viewModel.sortOption = option
+                                filterVM.sortOption = option
                             } label: {
                                 Label {
-                                    Text(option.rawValue)
+                                    Text(option.localizedName)
                                 } icon: {
-                                    if viewModel.sortOption == option {
+                                    if filterVM.sortOption == option {
                                         Image(systemName: "checkmark")
                                     }
                                 }
@@ -116,16 +150,39 @@ struct PerfumeListView: View {
                         Label("Sortieren", systemImage: "arrow.up.arrow.down")
                             .foregroundColor(DesignSystem.Colors.primary)
                     }
+                    .accessibilityLabel(String(localized: "Sortierung: \(filterVM.sortOption.localizedName)"))
                 }
-                
-
             }
-            .sheet(isPresented: $viewModel.isFilterSheetPresented) {
-                FilterSheetView(filter: viewModel.activeFilter, sort: viewModel.sortOption)
-                    .environmentObject(viewModel)
+            .sheet(isPresented: $filterVM.isFilterSheetPresented) {
+                FilterSheetView(filter: filterVM.activeFilter, sort: filterVM.sortOption)
+                    .environment(filterVM)
             }
-            .task {
-                await viewModel.loadAvailableFilterOptions()
+            .navigationDestination(isPresented: suggestedPerfumeNavigationBinding) {
+                if let selectedSuggestionPerfumeId {
+                    PerfumeDetailView(perfumeId: selectedSuggestionPerfumeId)
+                }
+            }
+            .navigationDestination(item: $scannedPerfume) { perfume in
+                PerfumeDetailView(perfume: perfume)
+            }
+            .sheet(isPresented: $showScanner) {
+                BarcodeScannerView(
+                    viewModel: dependencies.makeBarcodeScannerViewModel()
+                ) { perfume in
+                    scannedPerfume = perfume
+                }
+                .ignoresSafeArea()
+            }
+            .onAppear {
+                filterTask?.cancel()
+                filterTask = Task {
+                    await filterVM.loadAvailableFilterOptions()
+                }
+            }
+            .onDisappear {
+                filterTask?.cancel()
+                retryTask?.cancel()
+                viewModel.clearSuggestions()
             }
         }
     }
@@ -137,7 +194,7 @@ struct PerfumeListView: View {
             HStack(spacing: 10) {
                 // Primary Filter Button
                 Button {
-                    viewModel.isFilterSheetPresented = true
+                    filterVM.isFilterSheetPresented = true
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "slider.horizontal.3")
@@ -152,51 +209,53 @@ struct PerfumeListView: View {
                     .clipShape(Capsule())
                     .shadow(color: DesignSystem.Colors.primary.opacity(0.3), radius: 6, x: 0, y: 3)
                 }
-                
+                .accessibilityLabel("Filter")
+                .accessibilityHint("Öffnet die Filteroptionen")
+
                 // Active filter chips
-                if let brand = viewModel.activeFilter.brandName {
+                if let brand = filterVM.activeFilter.brandName {
                     activeChip(text: "Marke: \(brand)") {
-                        viewModel.activeFilter.brandName = nil
+                        filterVM.activeFilter.brandName = nil
                     }
                 }
-                if let conc = viewModel.activeFilter.concentration {
+                if let conc = filterVM.activeFilter.concentration {
                     activeChip(text: conc.uppercased()) {
-                        viewModel.activeFilter.concentration = nil
+                        filterVM.activeFilter.concentration = nil
                     }
                 }
-                if let longevity = viewModel.activeFilter.longevity {
+                if let longevity = filterVM.activeFilter.longevity {
                     activeChip(text: "Longevity: \(longevity)") {
-                        viewModel.activeFilter.longevity = nil
+                        filterVM.activeFilter.longevity = nil
                     }
                 }
-                if let sillage = viewModel.activeFilter.sillage {
+                if let sillage = filterVM.activeFilter.sillage {
                     activeChip(text: "Sillage: \(sillage)") {
-                        viewModel.activeFilter.sillage = nil
+                        filterVM.activeFilter.sillage = nil
                     }
                 }
-                ForEach(viewModel.activeFilter.noteNames, id: \.self) { note in
+                ForEach(filterVM.activeFilter.noteNames, id: \.self) { note in
                     activeChip(text: "🌿 \(note)") {
-                        viewModel.activeFilter.noteNames.removeAll { $0 == note }
+                        filterVM.activeFilter.noteNames.removeAll { $0 == note }
                     }
                 }
-                ForEach(viewModel.activeFilter.occasions, id: \.self) { occasion in
+                ForEach(filterVM.activeFilter.occasions, id: \.self) { occasion in
                     activeChip(text: "📅 \(occasion)") {
-                        viewModel.activeFilter.occasions.removeAll { $0 == occasion }
+                        filterVM.activeFilter.occasions.removeAll { $0 == occasion }
                     }
                 }
-                if viewModel.activeFilter.minRating != nil || viewModel.activeFilter.maxRating != nil {
-                    let min = viewModel.activeFilter.minRating ?? 0
-                    let max = viewModel.activeFilter.maxRating ?? 5
+                if filterVM.activeFilter.minRating != nil || filterVM.activeFilter.maxRating != nil {
+                    let min = filterVM.activeFilter.minRating ?? 0
+                    let max = filterVM.activeFilter.maxRating ?? 5
                     activeChip(text: "⭐ \(String(format: "%.1f", min))–\(String(format: "%.1f", max))") {
-                        viewModel.activeFilter.minRating = nil
-                        viewModel.activeFilter.maxRating = nil
+                        filterVM.activeFilter.minRating = nil
+                        filterVM.activeFilter.maxRating = nil
                     }
                 }
-                
+
                 // Clear all
-                if !viewModel.activeFilter.isEmpty {
+                if !filterVM.activeFilter.isEmpty {
                     Button {
-                        viewModel.activeFilter = PerfumeFilter()
+                        filterVM.activeFilter = PerfumeFilter()
                     } label: {
                         Text("Alle löschen")
                             .font(.system(size: 12, weight: .medium))
@@ -204,6 +263,7 @@ struct PerfumeListView: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                     }
+                    .accessibilityLabel("Alle Filter löschen")
                 }
             }
             .padding(.horizontal, 16)
@@ -218,13 +278,15 @@ struct PerfumeListView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 8, weight: .bold))
             }
-            .foregroundColor(.white.opacity(0.85))
+            .foregroundColor(Color.primary.opacity(0.85))
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(DesignSystem.Colors.surfaceDark)
+            .background(DesignSystem.Colors.appSurface)
             .overlay(Capsule().stroke(DesignSystem.Colors.primary.opacity(0.2), lineWidth: 1))
             .clipShape(Capsule())
         }
+        .accessibilityLabel("Filter entfernen: \(text)")
+        .accessibilityHint("Doppeltippen, um diesen Filter zu entfernen")
     }
     
     // MARK: - Subviews
@@ -234,12 +296,12 @@ struct PerfumeListView: View {
             Image(systemName: "wifi.slash")
                 .foregroundColor(.orange)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Offline-Modus — Daten eventuell nicht aktuell")
+                Text(String(localized: "Offline-Modus — Daten eventuell nicht aktuell"))
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundColor(.white)
-                if let lastSync = viewModel.lastSyncedAt {
-                    Text("Zuletzt synchronisiert: \(lastSync, style: .relative)")
+                    .foregroundStyle(Color.primary)
+                if let lastSync = viewModel.dataLoader.lastSyncedAt {
+                    Text("Zuletzt synchronisiert: ") + Text(lastSync, style: .relative)
                         .font(.caption2)
                         .foregroundColor(Color(hex: "#94A3B8"))
                 }
@@ -255,10 +317,10 @@ struct PerfumeListView: View {
         HStack {
             Image(systemName: "number")
                 .foregroundColor(Color(hex: "#94A3B8"))
-            if viewModel.searchText.isEmpty && viewModel.activeFilter.isEmpty {
-                Text("\(total) Parfums im Katalog")
+            if viewModel.searchText.isEmpty && filterVM.activeFilter.isEmpty {
+                Text(String(localized: "\(total) Parfums im Katalog"))
             } else {
-                Text("\(total) Ergebnis\(total == 1 ? "" : "se")")
+                Text(String(localized: "\(total) Ergebnis\(total == 1 ? "" : "se")"))
             }
             Spacer()
         }
@@ -276,13 +338,16 @@ struct PerfumeListView: View {
                 .foregroundColor(Color(hex: "#94A3B8"))
                 .multilineTextAlignment(.center)
             Button {
-                Task { await viewModel.loadData() }
+                retryTask?.cancel()
+                retryTask = Task { await viewModel.loadData() }
             } label: {
                 Label("Erneut versuchen", systemImage: "arrow.clockwise")
                     .font(.subheadline)
                     .fontWeight(.medium)
             }
             .buttonStyle(PrimaryButtonStyle())
+            .accessibilityLabel("Erneut versuchen")
+            .accessibilityHint("Doppeltippen, um die Daten erneut zu laden")
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
@@ -293,17 +358,17 @@ struct PerfumeListView: View {
     private var skeletonCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             RoundedRectangle(cornerRadius: 0)
-                .fill(DesignSystem.Colors.surfaceDark)
+                .fill(DesignSystem.Colors.appSurface)
                 .aspectRatio(3/4, contentMode: .fit)
                 .shimmer()
             
             VStack(alignment: .leading, spacing: 6) {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color.primary.opacity(0.1))
                     .frame(height: 12)
                     .frame(maxWidth: 80)
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.primary.opacity(0.06))
                     .frame(height: 10)
                     .frame(maxWidth: 60)
             }
@@ -311,104 +376,38 @@ struct PerfumeListView: View {
         }
         .glassPanel()
     }
-}
 
-// MARK: - Perfume Card View (Grid Item)
-
-struct PerfumeCardView: View {
-    let perfume: Perfume
-    var ratingStats: ReviewRemoteDataSource.RatingStats? = nil
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Image Section
-            Color.clear
-                .aspectRatio(3/4, contentMode: .fit)
-                .overlay {
-                    if let url = perfume.imageUrl {
-                        let request = ImageRequest(
-                            url: url,
-                            processors: [.resize(size: CGSize(width: 300, height: 400), contentMode: .aspectFill)],
-                            priority: .high
-                        )
-                        LazyImage(request: request) { state in
-                            if let image = state.image {
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                            } else {
-                                DesignSystem.Colors.surfaceDark
-                            }
-                        }
-                        .transition(.opacity)
-                    } else {
-                        ZStack {
-                            DesignSystem.Colors.surfaceDark
-                            Image(systemName: "flame.circle.fill")
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .foregroundColor(DesignSystem.Colors.primary.opacity(0.3))
-                        }
-                    }
-                }
-                .clipped()
-            
-            // Info Section
-            VStack(alignment: .leading, spacing: 4) {
-                // Rating
-                if let stats = ratingStats, stats.reviewCount > 0 {
-                    HStack(spacing: 3) {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(DesignSystem.Colors.primary)
-                        Text(String(format: "%.1f", stats.avgRating))
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(DesignSystem.Colors.primary)
-                    }
-                }
-                
-                // Name
-                Text(perfume.name)
-                    .font(DesignSystem.Fonts.serif(size: 15, weight: .bold))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                
-                // Brand
-                Text(perfume.brand?.name ?? "Unbekannte Marke")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(DesignSystem.Colors.primary.opacity(0.8))
-                    .lineLimit(1)
-                
-                // Top Notes Preview
-                if !perfume.topNotes.isEmpty {
-                    Text(perfume.topNotes.map(\.name).joined(separator: ", "))
-                        .font(.system(size: 9))
-                        .foregroundColor(Color(hex: "#94A3B8"))
-                        .lineLimit(1)
-                        .padding(.top, 1)
-                }
-                
-                // Concentration Badge
-                if let concentration = perfume.concentration, !concentration.isEmpty {
-                    Text(concentration.uppercased())
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(DesignSystem.Colors.primary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(DesignSystem.Colors.primary.opacity(0.1))
-                        .cornerRadius(4)
-                        .padding(.top, 4)
+    private var suggestedPerfumeNavigationBinding: Binding<Bool> {
+        Binding(
+            get: { selectedSuggestionPerfumeId != nil },
+            set: { isPresented in
+                if !isPresented {
+                    selectedSuggestionPerfumeId = nil
                 }
             }
-            .padding(10)
-        }
-        .background(DesignSystem.Colors.surfaceDark.opacity(0.6))
-        .background(.ultraThinMaterial)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(DesignSystem.Colors.primary.opacity(0.1), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func applyBrandSuggestion(_ brand: String) {
+        filterVM.activeFilter.brandName = brand
+        viewModel.searchText = ""
+        viewModel.clearSuggestions()
+        dismissSearch()
+    }
+
+    private func applyNoteSuggestion(_ note: String) {
+        if !filterVM.activeFilter.noteNames.contains(note) {
+            filterVM.activeFilter.noteNames.append(note)
+        }
+        viewModel.searchText = ""
+        viewModel.clearSuggestions()
+        dismissSearch()
+    }
+
+    private func openPerfumeSuggestion(_ perfumeId: UUID) {
+        selectedSuggestionPerfumeId = perfumeId
+        viewModel.clearSuggestions()
+        dismissSearch()
     }
 }
 
@@ -416,7 +415,7 @@ struct PerfumeCardView: View {
 
 struct PerfumeRowView: View {
     let perfume: Perfume
-    var ratingStats: ReviewRemoteDataSource.RatingStats? = nil
+    var ratingStats: RatingStats?
     
     var body: some View {
         HStack {
@@ -433,7 +432,7 @@ struct PerfumeRowView: View {
                             .resizable()
                             .scaledToFill()
                     } else {
-                        DesignSystem.Colors.surfaceDark
+                        DesignSystem.Colors.appSurface
                     }
                 }
                 .transition(.opacity)
@@ -450,8 +449,8 @@ struct PerfumeRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(perfume.name)
                     .font(.headline)
-                    .foregroundColor(.white)
-                Text(perfume.brand?.name ?? "Unbekannte Marke")
+                    .foregroundStyle(Color.primary)
+                Text(perfume.brand?.name ?? String(localized: "Unbekannte Marke"))
                     .font(.subheadline)
                     .foregroundColor(Color(hex: "#94A3B8"))
                 HStack(spacing: 4) {
@@ -481,6 +480,9 @@ struct PerfumeRowView: View {
 }
 
 #Preview {
+    let container = DependencyContainer()
+    let filterVM = container.makePerfumeFilterViewModel()
     PerfumeListView()
-        .environmentObject(PerfumeListViewModel())
+        .environment(container.makePerfumeListViewModel(filterVM: filterVM))
+        .environment(filterVM)
 }

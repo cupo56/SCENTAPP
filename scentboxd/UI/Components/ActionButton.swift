@@ -27,7 +27,7 @@ struct ActionButton: View {
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
             .background(
-                isActive ? color : DesignSystem.Colors.surfaceDark
+                isActive ? color : DesignSystem.Colors.appSurface
             )
             .overlay(
                 Capsule().stroke(Color.white.opacity(isActive ? 0 : 0.08), lineWidth: 1)

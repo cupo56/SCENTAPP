@@ -7,20 +7,20 @@
 
 import SwiftUI
 import SwiftData
+import NukeUI
 
 struct UserReviewsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var allPerfumes: [Perfume] // Needed to link reviews to Perfume details locally
-    
+    @Environment(\.dependencies) private var container
+    @Query private var allPerfumes: [Perfume]
+
     @State private var userReviews: [ReviewDTO] = []
     @State private var isLoading = true
-    @State private var errorMessage: String? = nil
-    
-    private let dataSource = ReviewRemoteDataSource()
+    @State private var errorMessage: String?
     
     var body: some View {
         ZStack {
-            DesignSystem.Colors.bgDark.ignoresSafeArea()
+            DesignSystem.Colors.appBackground.ignoresSafeArea()
             
             if isLoading {
                 ProgressView("Bewertungen laden...")
@@ -40,6 +40,7 @@ struct UserReviewsView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(DesignSystem.Colors.primary)
+                    .accessibilityHint("Doppeltippen, um die Bewertungen erneut zu laden")
                 }
                 .padding()
             } else if userReviews.isEmpty {
@@ -49,7 +50,7 @@ struct UserReviewsView: View {
                         .foregroundColor(DesignSystem.Colors.primary.opacity(0.4))
                     Text("Noch keine Bewertungen")
                         .font(DesignSystem.Fonts.serif(size: 20, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                     Text("Du hast bisher keine Parfums bewertet.")
                         .font(.subheadline)
                         .foregroundColor(Color(hex: "#94A3B8"))
@@ -58,11 +59,15 @@ struct UserReviewsView: View {
                 ScrollView {
                     LazyVStack(spacing: 16) {
                         ForEach(userReviews, id: \.id) { reviewDTO in
-                            if let linkedPerfume = allPerfumes.first(where: { $0.id == reviewDTO.perfumeId }) {
+                            if let perfumeId = reviewDTO.perfumeId,
+                               let rating = reviewDTO.rating,
+                               let linkedPerfume = allPerfumes.first(where: { $0.id == perfumeId }) {
                                 NavigationLink(destination: PerfumeDetailView(perfume: linkedPerfume)) {
                                     userReviewCard(reviewDTO: reviewDTO, perfume: linkedPerfume)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Bewertung für \(linkedPerfume.name), \(rating) Sterne")
+                                .accessibilityHint("Öffnet die Detailseite")
                             } else {
                                 // If the perfume is not downloaded locally yet, still show the review but perhaps a simpler layout
                                 userReviewCard(reviewDTO: reviewDTO, perfume: nil)
@@ -75,8 +80,8 @@ struct UserReviewsView: View {
         }
         .navigationTitle("Meine Bewertungen")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .task {
+            guard userReviews.isEmpty && errorMessage == nil else { return }
             await loadReviews()
         }
     }
@@ -89,17 +94,19 @@ struct UserReviewsView: View {
             HStack(spacing: 12) {
                 // Image
                 if let url = perfume?.imageUrl {
-                    AsyncImage(url: url) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        DesignSystem.Colors.surfaceDark
+                    LazyImage(url: url) { state in
+                        if let image = state.image {
+                            image.resizable().scaledToFill()
+                        } else {
+                            DesignSystem.Colors.appSurface
+                        }
                     }
                     .frame(width: 48, height: 48)
                     .cornerRadius(8)
                     .clipped()
                 } else {
                     ZStack {
-                        DesignSystem.Colors.surfaceDark
+                        DesignSystem.Colors.appSurface
                         Image(systemName: "flame.circle.fill")
                             .resizable()
                             .frame(width: 24, height: 24)
@@ -110,11 +117,11 @@ struct UserReviewsView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(perfume?.name ?? "Unbekanntes Parfum")
+                    Text(perfume?.name ?? String(localized: "Unbekanntes Parfum"))
                         .font(DesignSystem.Fonts.serif(size: 15, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(Color.primary)
                         .lineLimit(1)
-                    Text(perfume?.brand?.name ?? "Marke unbekannt")
+                    Text(perfume?.brand?.name ?? String(localized: "Marke unbekannt"))
                         .font(.caption)
                         .foregroundColor(Color(hex: "#94A3B8"))
                         .lineLimit(1)
@@ -124,18 +131,18 @@ struct UserReviewsView: View {
                 
                 Text(reviewDTO.createdAt.formatted(date: .abbreviated, time: .omitted))
                     .font(.caption2)
-                    .foregroundColor(Color(hex: "#64748B"))
+                    .foregroundColor(Color(hex: "#94A3B8"))
             }
             
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(Color.primary.opacity(0.1))
             
             // Rating
             HStack(spacing: 2) {
                 ForEach(1...5, id: \.self) { star in
-                    Image(systemName: star <= reviewDTO.rating ? "star.fill" : "star")
+                    Image(systemName: star <= (reviewDTO.rating ?? 0) ? "star.fill" : "star")
                         .font(.caption)
-                        .foregroundColor(star <= reviewDTO.rating ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
+                        .foregroundColor(star <= (reviewDTO.rating ?? 0) ? DesignSystem.Colors.champagne : Color.primary.opacity(0.2))
                 }
             }
             
@@ -144,14 +151,14 @@ struct UserReviewsView: View {
                 Text(reviewDTO.title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
             }
             
             // Text
             if !reviewDTO.text.isEmpty {
                 Text(reviewDTO.text)
                     .font(.subheadline)
-                    .foregroundColor(Color(hex: "#CBD5E1"))
+                    .foregroundColor(Color.secondary)
                     .lineLimit(4)
             }
             
@@ -163,12 +170,12 @@ struct UserReviewsView: View {
                             Image(systemName: "clock")
                                 .foregroundColor(DesignSystem.Colors.champagne)
                             Text(longevityText(for: lon))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.05))
+                        .background(Color.primary.opacity(0.05))
                         .cornerRadius(6)
                     }
                     
@@ -177,12 +184,12 @@ struct UserReviewsView: View {
                             Image(systemName: "wind")
                                 .foregroundColor(DesignSystem.Colors.champagne)
                             Text(sillageText(for: sil))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.05))
+                        .background(Color.primary.opacity(0.05))
                         .cornerRadius(6)
                     }
                 }
@@ -199,9 +206,9 @@ struct UserReviewsView: View {
         isLoading = true
         errorMessage = nil
         do {
-            userReviews = try await dataSource.fetchUserReviews()
+            userReviews = try await container.reviewDataSource.fetchUserReviews()
         } catch {
-            errorMessage = "Fehler beim Laden der Bewertungen: \(error.localizedDescription)"
+            errorMessage = String(localized: "Fehler beim Laden der Bewertungen: \(error.localizedDescription)")
         }
         isLoading = false
     }
@@ -209,14 +216,22 @@ struct UserReviewsView: View {
     // MARK: - Helpers
     
     private func longevityText(for value: Int) -> String {
-        if value < 33 { return "Flüchtig" }
-        else if value < 66 { return "Moderat" }
-        else { return "Ewig" }
+        if value < 33 {
+            return String(localized: "Flüchtig")
+        } else if value < 66 {
+            return String(localized: "Moderat")
+        } else {
+            return String(localized: "Ewig")
+        }
     }
-    
+
     private func sillageText(for value: Int) -> String {
-        if value < 33 { return "Hautnah" }
-        else if value < 66 { return "Moderat" }
-        else { return "Raumfüllend" }
+        if value < 33 {
+            return String(localized: "Hautnah")
+        } else if value < 66 {
+            return String(localized: "Moderat")
+        } else {
+            return String(localized: "Raumfüllend")
+        }
     }
 }

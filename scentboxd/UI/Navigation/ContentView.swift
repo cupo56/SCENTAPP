@@ -6,28 +6,58 @@
 //
 
 import SwiftUI
+import SwiftData
 import os
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel = PerfumeListViewModel()
-    @State private var authManager = AuthManager()
+    @State private var filterVM: PerfumeFilterViewModel
+    @State private var viewModel: PerfumeListViewModel
+    @State private var authManager: AuthManager
     @State private var isLoading = true
     @State private var showSplash = true
-    @State private var syncErrorMessage: String? = nil
+    @State private var syncErrorMessage: String?
     @State private var showSyncErrorAlert = false
+    @State private var compareManager = CompareSelectionManager()
+
+    private let container: DependencyContainer
+    private let syncService: UserPerfumeSyncService
+    private let reviewSyncService: ReviewSyncService
+
+    @MainActor
+    init() {
+        let container = DependencyContainer()
+        self.container = container
+        let filterVM = container.makePerfumeFilterViewModel()
+        self._filterVM = State(initialValue: filterVM)
+        self._viewModel = State(initialValue: container.makePerfumeListViewModel(filterVM: filterVM))
+        self._authManager = State(initialValue: container.makeAuthManager())
+        self.syncService = container.makeSyncService()
+        self.reviewSyncService = container.makeReviewSyncService()
+    }
+
+    @MainActor
+    init(container: DependencyContainer) {
+        self.container = container
+        let filterVM = container.makePerfumeFilterViewModel()
+        self._filterVM = State(initialValue: filterVM)
+        self._viewModel = State(initialValue: container.makePerfumeListViewModel(filterVM: filterVM))
+        self._authManager = State(initialValue: container.makeAuthManager())
+        self.syncService = container.makeSyncService()
+        self.reviewSyncService = container.makeReviewSyncService()
+    }
     
-    private let syncService = UserPerfumeSyncService()
-    
-    // Minimale Splash-Dauer für bessere UX (auch bei schnellem Laden)
-    private let minimumSplashDuration: Double = 1.5
+    private let minimumSplashDuration = AppConfig.Timing.splashMinDuration
     
     var body: some View {
         ZStack {
             // Hauptinhalt (TabView)
             RootTabView()
-                .environmentObject(viewModel)
+                .environment(viewModel)
+                .environment(filterVM)
                 .environment(authManager)
+                .environment(compareManager)
+                .environment(\.dependencies, container)
                 .opacity(showSplash ? 0 : 1)
             
             // Splash Screen Overlay
@@ -56,53 +86,83 @@ struct ContentView: View {
                 await group.waitForAll()
             }
             
-            // User-Parfums aus Supabase synchronisieren (wenn eingeloggt)
+            // Synchronisierung (wenn eingeloggt)
             if authManager.isAuthenticated {
                 do {
                     try await syncService.syncFromSupabase(
                         modelContext: modelContext,
-                        perfumes: viewModel.perfumes
+                        perfumes: viewModel.dataLoader.perfumes
                     )
                 } catch {
-                    let networkError = NetworkError.from(error)
-                    AppLogger.sync.error("Sync fehlgeschlagen: \(networkError.localizedDescription)")
-                    syncErrorMessage = networkError.localizedDescription
+                    syncErrorMessage = NetworkError.handle(error, logger: AppLogger.sync, context: "Sync")
                     showSyncErrorAlert = true
                 }
+                // Ausstehende Reviews hochladen
+                await reviewSyncService.uploadPendingReviews(modelContext: modelContext)
             }
-            
+
             // Smooth Übergang zum Hauptinhalt
             withAnimation(.easeInOut(duration: 0.5)) {
                 showSplash = false
             }
         }
         .onChange(of: authManager.isAuthenticated) { _, isAuthenticated in
-            // Sync wenn User sich einloggt
             if isAuthenticated {
                 Task {
                     do {
                         try await syncService.syncFromSupabase(
                             modelContext: modelContext,
-                            perfumes: viewModel.perfumes
+                            perfumes: viewModel.dataLoader.perfumes
                         )
                     } catch {
-                        let networkError = NetworkError.from(error)
-                        AppLogger.sync.error("Sync fehlgeschlagen: \(networkError.localizedDescription)")
-                        syncErrorMessage = networkError.localizedDescription
+                        syncErrorMessage = NetworkError.handle(error, logger: AppLogger.sync, context: "Sync")
                         showSyncErrorAlert = true
                     }
+                    await reviewSyncService.uploadPendingReviews(modelContext: modelContext)
                 }
+            } else {
+                clearUserData()
             }
         }
-        .alert("Synchronisierungsfehler", isPresented: $showSyncErrorAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(syncErrorMessage ?? "Ein Fehler ist aufgetreten.")
-        }
+        .errorAlert("Synchronisierungsfehler", isPresented: $showSyncErrorAlert, message: syncErrorMessage)
         .preferredColorScheme(.dark)
+        .scrollDismissesKeyboard(.interactively)
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
+    }
+
+    // MARK: - Logout Cleanup
+
+    /// Entfernt alle User-spezifischen Daten aus SwiftData beim Logout.
+    private func clearUserData() {
+        // UserPersonalData von ALLEN Perfumes entfernen (nicht nur aktuelle Seite)
+        let descriptor = FetchDescriptor<Perfume>(
+            predicate: #Predicate { $0.userMetadata != nil }
+        )
+        if let allWithMetadata = try? modelContext.fetch(descriptor) {
+            for perfume in allWithMetadata {
+                perfume.userMetadata = nil
+            }
+        }
+
+        // Alle lokalen Reviews löschen
+        do {
+            try modelContext.delete(model: Review.self)
+            try modelContext.save()
+        } catch {
+            AppLogger.cache.error("Logout-Cleanup fehlgeschlagen: \(error.localizedDescription)")
+        }
+
+        // In-Memory-Cache leeren und Liste neu laden
+        viewModel.dataLoader.clearSearchCache()
+        Task {
+            await viewModel.loadData(forceRefresh: true)
+        }
     }
 }
 
 #Preview {
     ContentView()
+        .environment(DeepLinkHandler())
 }
