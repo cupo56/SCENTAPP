@@ -1,0 +1,5 @@
+// xcconfig note: "//" is treated as a comment delimiter.
+// URLs must use the _SLASH variable trick to avoid truncation at "//".
+_SLASH = /
+SUPABASE_URL = https:$(_SLASH)/YOUR_PROJECT_REF.supabase.co
+SUPABASE_KEY = YOUR_SUPABASE_ANON_KEY
