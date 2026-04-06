@@ -15,7 +15,10 @@ class PerfumeRemoteDataSource: PerfumeRepository {
         var query = client
             .from("perfumes")
             .select("id", head: true, count: .exact)
-        
+
+        // Brand-ID vorab auflösen
+        let brandId = try await resolveBrandId(from: filter)
+
         // Textsuche (Name + Marke)
         if let search = searchQuery, !search.isEmpty {
             let sanitized = sanitize(search)
@@ -26,9 +29,9 @@ class PerfumeRemoteDataSource: PerfumeRepository {
                 query = query.or("name.ilike.%\(sanitized)%,brand_id.in.(\(matchingBrandIds.map(\.uuidString).joined(separator: ",")))")
             }
         }
-        
+
         // Server-seitige Filter
-        query = applyServerFilters(to: query, filter: filter)
+        query = applyServerFilters(to: query, filter: filter, brandId: brandId)
         
         // Notes-Filter: IDs einschränken falls aktiv
         if !filter.noteNames.isEmpty {
@@ -46,13 +49,15 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     func fetchPerfumes(page: Int, pageSize: Int, filter: PerfumeFilter, sort: PerfumeSortOption) async throws -> [Perfume] {
         let from = page * pageSize
         let end = from + pageSize - 1
-        
+
+        let brandId = try await resolveBrandId(from: filter)
+
         var query = client
             .from("perfumes")
             .select(selectQuery)
-        
-        query = applyServerFilters(to: query, filter: filter)
-        
+
+        query = applyServerFilters(to: query, filter: filter, brandId: brandId)
+
         // Notes-Filter: IDs einschränken falls aktiv
         if !filter.noteNames.isEmpty {
             let matchingIds = try await fetchPerfumeIdsByNotes(filter.noteNames)
@@ -96,8 +101,9 @@ class PerfumeRemoteDataSource: PerfumeRepository {
                 .select(selectQuery)
                 .or("name.ilike.%\(sanitized)%,brand_id.in.(\(matchingBrandIds.map(\.uuidString).joined(separator: ",")))")
         }
-        
-        dbQuery = applyServerFilters(to: dbQuery, filter: filter)
+
+        let brandId = try await resolveBrandId(from: filter)
+        dbQuery = applyServerFilters(to: dbQuery, filter: filter, brandId: brandId)
         
         // Notes-Filter: IDs einschränken falls aktiv
         if !filter.noteNames.isEmpty {
@@ -168,11 +174,11 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     
     // MARK: - Server-Side Filter Builder
     
-    private func applyServerFilters(to query: PostgrestFilterBuilder, filter: PerfumeFilter) -> PostgrestFilterBuilder {
+    private func applyServerFilters(to query: PostgrestFilterBuilder, filter: PerfumeFilter, brandId: UUID? = nil) -> PostgrestFilterBuilder {
         var filtered = query
-        
-        if let brand = filter.brandName, !brand.isEmpty {
-            filtered = filtered.eq("brands.name", value: brand)
+
+        if let id = brandId {
+            filtered = filtered.eq("brand_id", value: id.uuidString)
         }
         if let concentration = filter.concentration, !concentration.isEmpty {
             filtered = filtered.ilike("concentration", pattern: concentration)
@@ -243,6 +249,20 @@ class PerfumeRemoteDataSource: PerfumeRepository {
     
     // MARK: - Helpers
     
+    /// Löst den Brand-Namen aus dem Filter zu einer exakten Brand-ID auf.
+    private func resolveBrandId(from filter: PerfumeFilter) async throws -> UUID? {
+        guard let brand = filter.brandName, !brand.isEmpty else { return nil }
+        struct BrandIdDTO: Codable { let id: UUID }
+        let results: [BrandIdDTO] = try await client
+            .from("brands")
+            .select("id")
+            .eq("name", value: brand)
+            .limit(1)
+            .execute()
+            .value
+        return results.first?.id
+    }
+
     /// Brand-IDs suchen, die zum Suchbegriff passen
     private func fetchBrandIds(matching query: String) async throws -> [UUID] {
         struct BrandIdDTO: Codable {
