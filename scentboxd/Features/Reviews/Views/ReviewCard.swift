@@ -10,23 +10,41 @@ import SwiftUI
 struct ReviewCard: View {
     let review: Review
     let isOwn: Bool
-    var onEdit: (() -> Void)? = nil
-    var onDelete: (() -> Void)? = nil
+    var likeCount: Int = 0
+    var isLiked: Bool = false
+    var onEdit: (() -> Void)?
+    var onDelete: (() -> Void)?
+    var onToggleLike: (() -> Void)?
     
     @State private var showDeleteConfirmation = false
+    @State private var likeAnimating = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header: Autor + Datum
             HStack {
-                HStack(spacing: 6) {
-                    Image(systemName: "person.circle.fill")
-                        .foregroundColor(DesignSystem.Colors.primary)
-                    Text(review.authorName ?? "Anonym")
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
+                if let authorUserId = review.userId, !isOwn {
+                    NavigationLink(destination: PublicProfileView(userId: authorUserId)) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "person.circle.fill")
+                                .foregroundColor(DesignSystem.Colors.primary)
+                            Text(review.authorName ?? String(localized: "Anonym"))
+                                .fontWeight(.medium)
+                                .foregroundStyle(Color.primary)
+                        }
+                        .font(.subheadline)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.circle.fill")
+                            .foregroundColor(DesignSystem.Colors.primary)
+                        Text(review.authorName ?? String(localized: "Anonym"))
+                            .fontWeight(.medium)
+                            .foregroundStyle(Color.primary)
+                    }
+                    .font(.subheadline)
                 }
-                .font(.subheadline)
                 
                 Spacer()
                 
@@ -40,25 +58,25 @@ struct ReviewCard: View {
                 ForEach(1...5, id: \.self) { star in
                     Image(systemName: star <= review.rating ? "star.fill" : "star")
                         .font(.caption)
-                        .foregroundColor(star <= review.rating ? DesignSystem.Colors.champagne : Color.white.opacity(0.2))
+                        .foregroundColor(star <= review.rating ? DesignSystem.Colors.champagne : Color.primary.opacity(0.2))
                 }
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(review.rating) von 5 Sternen")
+            .accessibilityLabel(String(localized: "\(review.rating) von 5 Sternen"))
             
             // Titel
             if !review.title.isEmpty {
                 Text(review.title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color.primary)
             }
             
             // Text
             if !review.text.isEmpty {
                 Text(review.text)
                     .font(.subheadline)
-                    .foregroundColor(Color(hex: "#CBD5E1"))
+                    .foregroundColor(Color.secondary)
                     .lineLimit(4)
             }
             
@@ -70,12 +88,12 @@ struct ReviewCard: View {
                             Image(systemName: "clock")
                                 .foregroundColor(DesignSystem.Colors.champagne)
                             Text(longevityText(for: lon))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.05))
+                        .background(Color.primary.opacity(0.05))
                         .cornerRadius(6)
                     }
                     
@@ -84,21 +102,43 @@ struct ReviewCard: View {
                             Image(systemName: "wind")
                                 .foregroundColor(DesignSystem.Colors.champagne)
                             Text(sillageText(for: sil))
-                                .foregroundColor(.white)
+                                .foregroundStyle(Color.primary)
                         }
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.05))
+                        .background(Color.primary.opacity(0.05))
                         .cornerRadius(6)
                     }
                 }
                 .padding(.top, 2)
             }
             
-            // Bearbeiten / Löschen Buttons
-            if isOwn {
-                HStack(spacing: 12) {
+            // Occasion Badges
+            if !review.occasions.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(review.occasions, id: \.self) { occasion in
+                            Text(occasion)
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundColor(DesignSystem.Colors.primary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(DesignSystem.Colors.primary.opacity(0.1))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(DesignSystem.Colors.primary.opacity(0.25), lineWidth: 1)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                        }
+                    }
+                }
+                .accessibilityLabel("Anlässe: \(review.occasions.joined(separator: ", "))")
+            }
+
+            // Footer: Like-Button + Bearbeiten / Löschen
+            HStack(spacing: 12) {
+                if isOwn {
                     Button {
                         onEdit?()
                     } label: {
@@ -109,7 +149,7 @@ struct ReviewCard: View {
                         .font(.caption)
                         .foregroundColor(DesignSystem.Colors.champagne)
                     }
-                    .accessibilityLabel("Bewertung bearbeiten")
+                    .accessibilityLabel(String(localized: "Bewertung bearbeiten"))
                     
                     Button {
                         showDeleteConfirmation = true
@@ -121,19 +161,55 @@ struct ReviewCard: View {
                         .font(.caption)
                         .foregroundColor(.red.opacity(0.8))
                     }
-                    .accessibilityLabel("Bewertung löschen")
-                    
-                    Spacer()
+                    .accessibilityLabel(String(localized: "Bewertung löschen"))
                 }
-                .padding(.top, 4)
+
+                Spacer()
+
+                // Like Button
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        likeAnimating = true
+                    }
+                    onToggleLike?()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        likeAnimating = false
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isLiked ? "heart.fill" : "heart")
+                            .font(.system(size: 14))
+                            .foregroundColor(isLiked ? DesignSystem.Colors.primary : Color(hex: "#94A3B8"))
+                            .scaleEffect(likeAnimating ? 1.3 : 1.0)
+                        if likeCount > 0 {
+                            Text("\(likeCount)")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(isLiked ? DesignSystem.Colors.primary : Color(hex: "#94A3B8"))
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        isLiked
+                            ? DesignSystem.Colors.primary.opacity(0.1)
+                            : Color.primary.opacity(0.05)
+                    )
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isLiked
+                    ? String(localized: "Hilfreich markiert, \(likeCount) Likes")
+                    : String(localized: "Als hilfreich markieren, \(likeCount) Likes"))
+                .accessibilityHint(String(localized: "Doppeltippen zum Umschalten"))
             }
+            .padding(.top, 4)
         }
         .padding(16)
-        .background(Color(hex: "#341826"))
+        .background(DesignSystem.Colors.appSurface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                .stroke(Color.primary.opacity(0.05), lineWidth: 1)
         )
         .alert("Bewertung löschen", isPresented: $showDeleteConfirmation) {
             Button("Abbrechen", role: .cancel) { }
@@ -146,25 +222,45 @@ struct ReviewCard: View {
     }
     
     private func longevityText(for value: Int) -> String {
-        if value < 33 { return "Flüchtig" }
-        else if value < 66 { return "Moderat" }
-        else { return "Ewig" }
+        if value < 33 {
+            return String(localized: "Flüchtig")
+        } else if value < 66 {
+            return String(localized: "Moderat")
+        } else {
+            return String(localized: "Ewig")
+        }
     }
-    
+
     private func sillageText(for value: Int) -> String {
-        if value < 33 { return "Hautnah" }
-        else if value < 66 { return "Moderat" }
-        else { return "Raumfüllend" }
+        if value < 33 {
+            return String(localized: "Hautnah")
+        } else if value < 66 {
+            return String(localized: "Moderat")
+        } else {
+            return String(localized: "Raumfüllend")
+        }
     }
 }
 
 #Preview {
-    ReviewCard(
-        review: Review(title: "Toller Duft!", text: "Einer meiner absoluten Favoriten. Perfekt für den Sommer.", rating: 5, longevity: 80, sillage: 45),
-        isOwn: true,
-        onEdit: { },
-        onDelete: { }
-    )
+    VStack(spacing: 16) {
+        ReviewCard(
+            review: Review(title: "Toller Duft!", text: "Einer meiner absoluten Favoriten. Perfekt für den Sommer.", rating: 5, longevity: 80, sillage: 45),
+            isOwn: true,
+            likeCount: 12,
+            isLiked: false,
+            onEdit: { },
+            onDelete: { },
+            onToggleLike: { }
+        )
+        ReviewCard(
+            review: Review(title: "Sehr empfehlenswert", text: "Ein wunderbarer Duft für jeden Anlass.", rating: 4),
+            isOwn: false,
+            likeCount: 3,
+            isLiked: true,
+            onToggleLike: { }
+        )
+    }
     .padding()
     .background(Color(hex: "#221019"))
 }

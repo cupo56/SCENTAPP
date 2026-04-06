@@ -7,7 +7,7 @@ import Foundation
 
 // MARK: - Filter
 
-struct PerfumeFilter: Equatable, Hashable {
+struct PerfumeFilter: Equatable, Hashable, Sendable {
     var brandName: String?
     var concentration: String?
     var longevity: String?
@@ -68,6 +68,17 @@ enum PerfumeSortOption: String, CaseIterable, Identifiable {
     case popular = "Beliebteste"
     
     var id: String { rawValue }
+    
+    var localizedName: String {
+        switch self {
+        case .nameAsc: return String(localized: "Name (A–Z)")
+        case .nameDesc: return String(localized: "Name (Z–A)")
+        case .ratingDesc: return String(localized: "Beste Bewertung")
+        case .ratingAsc: return String(localized: "Niedrigste Bewertung")
+        case .newest: return String(localized: "Neueste")
+        case .popular: return String(localized: "Beliebteste")
+        }
+    }
     
     var systemImage: String {
         switch self {
