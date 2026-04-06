@@ -24,102 +24,62 @@ struct RootTabView: View {
     @State private var selectedTab = 0
     @Environment(CompareSelectionManager.self) private var compareManager
     @Environment(DeepLinkHandler.self) private var deepLinkHandler
+    @Environment(\.dependencies) private var dependencies
     @State private var presentedPerfumeLink: PerfumeDeepLinkDestination?
     @State private var presentedCompareLink: CompareDeepLinkDestination?
 
-    // Lokaler Helper, damit .overlay auf @Environment zugreifen kann, ohne Absturz
     private var showCompareBar: Bool {
         !compareManager.selectedPerfumes.isEmpty
     }
 
-    init() {
-        // Adaptive Tab Bar Appearance
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor { traits in
-            traits.userInterfaceStyle == .dark
-                ? UIColor(red: 0x34/255, green: 0x18/255, blue: 0x26/255, alpha: 1) // #341826
-                : UIColor.systemBackground
-        }
-        
-        // Inactive tabs
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color(hex: "#cb90ad"))
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-            .foregroundColor: UIColor(Color(hex: "#cb90ad"))
-        ]
-        
-        // Active tabs
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color(hex: "#C20A66"))
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-            .foregroundColor: UIColor(Color(hex: "#C20A66"))
-        ]
-        
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
-    }
-
-    @Environment(\.dependencies) private var dependencies
-
     var body: some View {
-        TabView(selection: $selectedTab) {
-            DailyPickView(weatherService: dependencies.weatherService)
-                .tag(0)
-                .tabItem {
-                    Label("Heute", systemImage: "sun.horizon.fill")
-                }
+        ZStack(alignment: .bottom) {
+            // Tab Content — alle Views bleiben im Speicher (State bleibt erhalten)
+            ZStack {
+                DailyPickView(weatherService: dependencies.weatherService)
+                    .opacity(selectedTab == 0 ? 1 : 0)
+                    .allowsHitTesting(selectedTab == 0)
 
-            PerfumeListView()
-                .tag(1)
-                .tabItem {
-                    Label("Katalog", systemImage: "book.fill")
-                }
+                PerfumeListView()
+                    .opacity(selectedTab == 1 ? 1 : 0)
+                    .allowsHitTesting(selectedTab == 1)
 
-            FavoritesView()
-                .tag(2)
-                .tabItem {
-                    Label("Favoriten", systemImage: "heart.fill")
-                }
+                FavoritesView()
+                    .opacity(selectedTab == 2 ? 1 : 0)
+                    .allowsHitTesting(selectedTab == 2)
 
-            OwnedPerfumesView()
-                .tag(3)
-                .tabItem {
-                    Label("Meine", systemImage: "star.fill")
-                }
+                OwnedPerfumesView()
+                    .opacity(selectedTab == 3 ? 1 : 0)
+                    .allowsHitTesting(selectedTab == 3)
 
-            NavigationStack {
-                UserSearchView()
+                NavigationStack {
+                    UserSearchView()
+                }
+                .opacity(selectedTab == 4 ? 1 : 0)
+                .allowsHitTesting(selectedTab == 4)
+
+                ProfileView()
+                    .opacity(selectedTab == 5 ? 1 : 0)
+                    .allowsHitTesting(selectedTab == 5)
             }
-                .tag(4)
-                .tabItem {
-                    Label("Community", systemImage: "person.2.fill")
-                }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            ProfileView()
-                .tag(5)
-                .tabItem {
-                    Label("Profil", systemImage: "person.fill")
-                }
+            // Compare Floating Bar
+            if showCompareBar {
+                CompareFloatingBar()
+                    .padding(.bottom, 72)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
+            // Custom Tab Bar
+            CustomTabBar(selectedTab: $selectedTab)
         }
-        .tint(Color(hex: "#C20A66"))
+        .ignoresSafeArea(edges: .bottom)
         .environment(\.selectedTab, $selectedTab)
-        .overlay(alignment: .bottom) {
-            CompareFloatingBar()
-                .padding(.bottom, 60) // Abstand zum TabBar-Rand
-                .opacity(showCompareBar ? 1 : 0)
-                .animation(.easeInOut, value: showCompareBar)
-        }
-        .onAppear {
-            consumePendingDeepLinks()
-        }
-        .onChange(of: deepLinkHandler.pendingTab) { _, _ in
-            consumePendingDeepLinks()
-        }
-        .onChange(of: deepLinkHandler.pendingPerfumeId) { _, _ in
-            consumePendingDeepLinks()
-        }
-        .onChange(of: deepLinkHandler.pendingCompareIds) { _, _ in
-            consumePendingDeepLinks()
-        }
+        .onAppear { consumePendingDeepLinks() }
+        .onChange(of: deepLinkHandler.pendingTab) { _, _ in consumePendingDeepLinks() }
+        .onChange(of: deepLinkHandler.pendingPerfumeId) { _, _ in consumePendingDeepLinks() }
+        .onChange(of: deepLinkHandler.pendingCompareIds) { _, _ in consumePendingDeepLinks() }
         .sheet(item: $presentedPerfumeLink) { destination in
             NavigationStack {
                 PerfumeDetailView(perfumeId: destination.perfumeId)
@@ -130,11 +90,9 @@ struct RootTabView: View {
                 CompareDeepLinkContainer(perfumeIds: destination.perfumeIds)
                     .toolbar {
                         ToolbarItem(placement: .topBarLeading) {
-                            Button("Schließen") {
-                                presentedCompareLink = nil
-                            }
-                            .foregroundColor(DesignSystem.Colors.champagne)
-                            .accessibilityLabel("Vergleich schließen")
+                            Button("Schließen") { presentedCompareLink = nil }
+                                .foregroundColor(DesignSystem.Colors.champagne)
+                                .accessibilityLabel("Vergleich schließen")
                         }
                     }
             }
@@ -146,18 +104,127 @@ struct RootTabView: View {
             selectedTab = pendingTab
             deepLinkHandler.consumePendingTab()
         }
-
         if let pendingPerfumeId = deepLinkHandler.pendingPerfumeId {
             presentedPerfumeLink = PerfumeDeepLinkDestination(perfumeId: pendingPerfumeId)
             deepLinkHandler.consumePendingPerfumeId()
         }
-
         if let pendingCompareIds = deepLinkHandler.pendingCompareIds {
             presentedCompareLink = CompareDeepLinkDestination(perfumeIds: pendingCompareIds)
             deepLinkHandler.consumePendingCompareIds()
         }
     }
 }
+
+// MARK: - Custom Tab Bar
+
+private struct CustomTabBar: View {
+    @Binding var selectedTab: Int
+
+    /// (activeIcon, inactiveIcon, label)
+    private let tabs: [(activeIcon: String, inactiveIcon: String, label: String)] = [
+        ("sun.horizon.fill", "sun.horizon", "Heute"),
+        ("book.fill", "book", "Katalog"),
+        ("heart.fill", "heart", "Favoriten"),
+        ("star.fill", "star", "Meine"),
+        ("person.2.fill", "person.2", "Community"),
+        ("person.fill", "person", "Profil")
+    ]
+
+    private let barBackground = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0x34/255, green: 0x18/255, blue: 0x26/255, alpha: 1)
+            : UIColor.systemBackground
+    })
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Rectangle()
+                .fill(DesignSystem.Colors.primary.opacity(0.25))
+                .frame(height: 0.5)
+
+            HStack(spacing: 0) {
+                ForEach(tabs.indices, id: \.self) { index in
+                    TabItemView(
+                        selectedTab: $selectedTab,
+                        index: index,
+                        activeIcon: tabs[index].activeIcon,
+                        inactiveIcon: tabs[index].inactiveIcon,
+                        label: tabs[index].label
+                    )
+                }
+            }
+            .padding(.top, 10)
+            .padding(.bottom, 4)
+            .background(barBackground)
+
+            barBackground
+                .frame(height: safeAreaBottomInset)
+        }
+    }
+
+    private var safeAreaBottomInset: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.safeAreaInsets.bottom ?? 0
+    }
+}
+
+private struct TabItemView: View {
+    @Binding var selectedTab: Int
+    let index: Int
+    let activeIcon: String
+    let inactiveIcon: String
+    let label: String
+
+    @State private var isBouncing = false
+
+    private var isActive: Bool { selectedTab == index }
+
+    var body: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.18)) {
+                selectedTab = index
+            }
+            bounce()
+        } label: {
+            VStack(spacing: 3) {
+                Image(systemName: isActive ? activeIcon : inactiveIcon)
+                    .font(.system(size: 20, weight: isActive ? .bold : .regular))
+                    .symbolRenderingMode(.monochrome)
+                    .scaleEffect(isBouncing ? 1.5 : (isActive ? 1.12 : 1.0))
+                    .shadow(
+                        color: isActive ? DesignSystem.Colors.primary.opacity(0.55) : .clear,
+                        radius: isActive ? 7 : 0,
+                        x: 0, y: 0
+                    )
+
+                Text(label)
+                    .font(.system(size: 9, weight: isActive ? .semibold : .regular))
+            }
+            .foregroundStyle(
+                isActive
+                    ? DesignSystem.Colors.primary
+                    : DesignSystem.Colors.primary.opacity(0.45)
+            )
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .animation(.spring(response: 0.22, dampingFraction: 0.42), value: isBouncing)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isActive ? [.isSelected] : [])
+    }
+
+    private func bounce() {
+        isBouncing = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(230))
+            isBouncing = false
+        }
+    }
+}
+
+// MARK: - Deep Link Helpers
 
 private struct PerfumeDeepLinkDestination: Identifiable {
     let id = UUID()
@@ -168,6 +235,8 @@ private struct CompareDeepLinkDestination: Identifiable {
     let id = UUID()
     let perfumeIds: [UUID]
 }
+
+// MARK: - Compare Deep Link Container
 
 private struct CompareDeepLinkContainer: View {
     @Environment(\.dependencies) private var dependencies
@@ -209,19 +278,16 @@ private struct CompareDeepLinkContainer: View {
     private func loadComparePerfumes() async {
         isLoading = true
         errorMessage = nil
-
         do {
             let resolvedPerfumes = try await dependencies.makePerfumeResolver().resolvePerfumes(ids: perfumeIds, modelContext: modelContext)
             perfumes = resolvedPerfumes
             compareManager.selectedPerfumes = resolvedPerfumes
-
             if resolvedPerfumes.count < 2 {
                 errorMessage = "Es konnten nicht genug Parfums fuer den Vergleich geladen werden."
             }
         } catch {
             errorMessage = NetworkError.handle(error, logger: AppLogger.perfumes, context: "Compare Deep Link")
         }
-
         isLoading = false
     }
 }
