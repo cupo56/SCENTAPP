@@ -34,11 +34,13 @@ struct RootTabView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Tab Content — alle Views bleiben im Speicher (State bleibt erhalten)
+            // Tab-Inhalte: alle im Speicher halten, per Opacity umschalten
             ZStack {
-                DailyPickView(weatherService: dependencies.weatherService)
-                    .opacity(selectedTab == 0 ? 1 : 0)
-                    .allowsHitTesting(selectedTab == 0)
+                NavigationStack {
+                    DailyPickView(weatherService: dependencies.weatherService)
+                }
+                .opacity(selectedTab == 0 ? 1 : 0)
+                .allowsHitTesting(selectedTab == 0)
 
                 PerfumeListView()
                     .opacity(selectedTab == 1 ? 1 : 0)
@@ -64,17 +66,17 @@ struct RootTabView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Compare Floating Bar
+            // Compare Floating Bar über der Tab-Bar
             if showCompareBar {
                 CompareFloatingBar()
-                    .padding(.bottom, 72)
+                    .padding(.bottom, 60)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            // Custom Tab Bar
-            CustomTabBar(selectedTab: $selectedTab)
+            // Custom native-looking Tab Bar (6 Tabs, kein Mehr-Tab)
+            NativeStyleTabBar(selectedTab: $selectedTab)
         }
-        .ignoresSafeArea(edges: .bottom)
+        .animation(.easeInOut(duration: 0.2), value: showCompareBar)
         .environment(\.selectedTab, $selectedTab)
         .onAppear { consumePendingDeepLinks() }
         .onChange(of: deepLinkHandler.pendingTab) { _, _ in consumePendingDeepLinks() }
@@ -115,112 +117,62 @@ struct RootTabView: View {
     }
 }
 
-// MARK: - Custom Tab Bar
+// MARK: - Native Style Tab Bar
 
-private struct CustomTabBar: View {
+/// Custom Tab Bar, die den nativen iOS-Look nachbildet, aber garantiert alle 6 Tabs
+/// ohne einen "Mehr"-Tab darstellt (nativer SwiftUI `TabView` klappt auf iPhone
+/// bei >5 Items automatisch in einen More-Tab, dessen Navigation unzuverlässig ist).
+private struct NativeStyleTabBar: View {
     @Binding var selectedTab: Int
 
-    /// (activeIcon, inactiveIcon, label)
-    private let tabs: [(activeIcon: String, inactiveIcon: String, label: String)] = [
-        ("sun.horizon.fill", "sun.horizon", "Heute"),
-        ("book.fill", "book", "Katalog"),
-        ("heart.fill", "heart", "Favoriten"),
-        ("star.fill", "star", "Meine"),
-        ("person.2.fill", "person.2", "Community"),
-        ("person.fill", "person", "Profil")
-    ]
+    private struct TabDefinition {
+        let icon: String
+        let filledIcon: String
+        let label: String
+    }
 
-    private let barBackground = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0x34/255, green: 0x18/255, blue: 0x26/255, alpha: 1)
-            : UIColor.systemBackground
-    })
+    private let tabs: [TabDefinition] = [
+        .init(icon: "sun.horizon", filledIcon: "sun.horizon.fill", label: "Heute"),
+        .init(icon: "book", filledIcon: "book.fill", label: "Katalog"),
+        .init(icon: "heart", filledIcon: "heart.fill", label: "Favoriten"),
+        .init(icon: "star", filledIcon: "star.fill", label: "Meine"),
+        .init(icon: "person.2", filledIcon: "person.2.fill", label: "Community"),
+        .init(icon: "person", filledIcon: "person.fill", label: "Profil")
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
-            Rectangle()
-                .fill(DesignSystem.Colors.primary.opacity(0.25))
-                .frame(height: 0.5)
-
+            Divider()
             HStack(spacing: 0) {
                 ForEach(tabs.indices, id: \.self) { index in
-                    TabItemView(
-                        selectedTab: $selectedTab,
-                        index: index,
-                        activeIcon: tabs[index].activeIcon,
-                        inactiveIcon: tabs[index].inactiveIcon,
-                        label: tabs[index].label
-                    )
+                    let tab = tabs[index]
+                    let isActive = selectedTab == index
+                    Button {
+                        selectedTab = index
+                    } label: {
+                        VStack(spacing: 2) {
+                            Image(systemName: isActive ? tab.filledIcon : tab.icon)
+                                .font(.system(size: 22, weight: .regular))
+                                .frame(height: 26)
+                            Text(tab.label)
+                                .font(.system(size: 10, weight: .medium))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                        }
+                        .foregroundStyle(isActive ? DesignSystem.Colors.primary : Color(uiColor: .secondaryLabel))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 6)
+                        .padding(.bottom, 2)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(tab.label)
+                    .accessibilityAddTraits(isActive ? [.isSelected] : [])
                 }
             }
-            .padding(.top, 10)
-            .padding(.bottom, 4)
-            .background(barBackground)
-
-            barBackground
-                .frame(height: safeAreaBottomInset)
+            .padding(.bottom, 2)
         }
-    }
-
-    private var safeAreaBottomInset: CGFloat {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.windows.first?.safeAreaInsets.bottom ?? 0
-    }
-}
-
-private struct TabItemView: View {
-    @Binding var selectedTab: Int
-    let index: Int
-    let activeIcon: String
-    let inactiveIcon: String
-    let label: String
-
-    @State private var isBouncing = false
-
-    private var isActive: Bool { selectedTab == index }
-
-    var body: some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.18)) {
-                selectedTab = index
-            }
-            bounce()
-        } label: {
-            VStack(spacing: 3) {
-                Image(systemName: isActive ? activeIcon : inactiveIcon)
-                    .font(.system(size: 20, weight: isActive ? .bold : .regular))
-                    .symbolRenderingMode(.monochrome)
-                    .scaleEffect(isBouncing ? 1.5 : (isActive ? 1.12 : 1.0))
-                    .shadow(
-                        color: isActive ? DesignSystem.Colors.primary.opacity(0.55) : .clear,
-                        radius: isActive ? 7 : 0,
-                        x: 0, y: 0
-                    )
-
-                Text(label)
-                    .font(.system(size: 9, weight: isActive ? .semibold : .regular))
-            }
-            .foregroundStyle(
-                isActive
-                    ? DesignSystem.Colors.primary
-                    : DesignSystem.Colors.primary.opacity(0.45)
-            )
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .animation(.spring(response: 0.22, dampingFraction: 0.42), value: isBouncing)
-        .accessibilityLabel(label)
-        .accessibilityAddTraits(isActive ? [.isSelected] : [])
-    }
-
-    private func bounce() {
-        isBouncing = true
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(230))
-            isBouncing = false
-        }
+        .background(.bar)
     }
 }
 

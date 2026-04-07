@@ -20,42 +20,40 @@ struct DailyPickView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                DesignSystem.Colors.appBackground
-                    .ignoresSafeArea()
+        ZStack {
+            DesignSystem.Colors.appBackground
+                .ignoresSafeArea()
 
-                if viewModel.isLoading && viewModel.topPick == nil {
-                    loadingView
-                } else if viewModel.isEmpty {
-                    emptyCollectionView
-                } else {
-                    mainContent
-                }
+            if viewModel.isLoading && viewModel.topPick == nil {
+                loadingView
+            } else if viewModel.isEmpty {
+                emptyCollectionView
+            } else {
+                mainContent
             }
-            .navigationTitle("Heute")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        Task {
-                            await viewModel.refreshPick(modelContext: modelContext)
-                        }
-                    } label: {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(DesignSystem.Colors.primary)
-                            .rotationEffect(.degrees(viewModel.isLoading ? 360 : 0))
-                            .animation(
-                                viewModel.isLoading
-                                    ? .linear(duration: 1).repeatForever(autoreverses: false)
-                                    : .default,
-                                value: viewModel.isLoading
-                            )
+        }
+        .navigationTitle("Heute")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task {
+                        await viewModel.refreshPick(modelContext: modelContext)
                     }
-                    .accessibilityLabel("Neuer Vorschlag")
-                    .disabled(viewModel.isLoading)
+                } label: {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(DesignSystem.Colors.primary)
+                        .rotationEffect(.degrees(viewModel.isLoading ? 360 : 0))
+                        .animation(
+                            viewModel.isLoading
+                                ? .linear(duration: 1).repeatForever(autoreverses: false)
+                                : .default,
+                            value: viewModel.isLoading
+                        )
                 }
+                .accessibilityLabel("Neuer Vorschlag")
+                .disabled(viewModel.isLoading)
             }
         }
         .task {

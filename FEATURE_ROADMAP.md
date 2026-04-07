@@ -170,8 +170,8 @@
 **Warum:** Täglicher Use-Case. Bringt User jeden Tag zurück in die App.
 
 #### WeatherKit Integration
-- [ ] Apple Developer Portal: WeatherKit Capability aktivieren
-- [ ] `Data/Services/WeatherService.swift`:
+- [x] Apple Developer Portal: WeatherKit Capability aktivieren
+- [x] `Data/Services/WeatherService.swift`:
   ```swift
   @Observable @MainActor
   class WeatherService {
@@ -184,10 +184,10 @@
       func fetchCurrentWeather() async { ... }
   }
   ```
-- [ ] Location-Permission: `NSLocationWhenInUseUsageDescription`
+- [x] Location-Permission: `NSLocationWhenInUseUsageDescription`
 
 #### Empfehlungs-Logik
-- [ ] `Features/DailyPick/Services/DailyPickService.swift`:
+- [x] `Features/DailyPick/Services/DailyPickService.swift`:
   ```swift
   struct DailyPickCriteria {
       let temperature: Double
@@ -202,7 +202,7 @@
 
   enum TimeOfDay { case morning, afternoon, evening, night }
   ```
-- [ ] Scoring-Algorithmus:
+- [x] Scoring-Algorithmus:
   ```
   Score =
     Noten-Passung (seasonal notes) × 0.3
@@ -211,28 +211,28 @@
     + User-Rating × 0.2
     + Zufalls-Bonus (damit nicht immer dasselbe) × 0.1
   ```
-- [ ] Seasonal Note-Mapping:
-  - [ ] Sommer/Heiß: Citrus, Aquatic, Fresh, Green
-  - [ ] Winter/Kalt: Oriental, Woody, Spicy, Gourmand
-  - [ ] Frühling: Floral, Green, Fresh
-  - [ ] Herbst: Woody, Spicy, Oriental
+- [x] Seasonal Note-Mapping:
+  - [x] Sommer/Heiß: Citrus, Aquatic, Fresh, Green
+  - [x] Winter/Kalt: Oriental, Woody, Spicy, Gourmand
+  - [x] Frühling: Floral, Green, Fresh
+  - [x] Herbst: Woody, Spicy, Oriental
 
 #### Views
-- [ ] `Features/DailyPick/Views/DailyPickView.swift`:
-  - [ ] **Hero-Card**: Empfohlenes Parfum mit großem Bild
-  - [ ] Wetter-Widget: Temperatur + Icon
-  - [ ] Occasion-Selector: Horizontale Chips (Arbeit, Date, Casual...)
-  - [ ] "Warum dieser Duft?" Erklärung
-  - [ ] "Anderer Vorschlag" Button
-  - [ ] 3 Alternative Vorschläge darunter
-- [ ] Widget (optional, Phase 2):
-  - [ ] iOS Widget: Tagesempfehlung auf dem Homescreen
-  - [ ] WidgetKit Integration
+- [x] `Features/DailyPick/Views/DailyPickView.swift`:
+  - [x] **Hero-Card**: Empfohlenes Parfum mit großem Bild
+  - [x] Wetter-Widget: Temperatur + Icon
+  - [x] Occasion-Selector: Horizontale Chips (Arbeit, Date, Casual...)
+  - [x] "Warum dieser Duft?" Erklärung
+  - [x] "Anderer Vorschlag" Button
+  - [x] 3 Alternative Vorschläge darunter
+- [x] Widget (optional, Phase 2):
+  - [x] iOS Widget: Tagesempfehlung auf dem Homescreen
+  - [x] WidgetKit Integration
 
 #### Navigation
-- [ ] `RootTabView.swift`:
-  - [ ] Home-Tab umbenennen oder neuer Tab "Heute" als erste Position
-  - [ ] Alternativ: In Katalog als Top-Banner einbetten
+- [x] `RootTabView.swift`:
+  - [x] Home-Tab umbenennen oder neuer Tab "Heute" als erste Position
+  - [x] Alternativ: In Katalog als Top-Banner einbetten
 
 ---
 

@@ -49,7 +49,9 @@ Clean Architecture + MVVM with four source layers:
 - `Persistence/` — Protocol-based data sources (`PerfumeRepository`, `ReviewDataSourceProtocol`, `UserPerfumeDataSourceProtocol`, `PublicProfileDataSourceProtocol`, `CuratedListDataSourceProtocol`) with remote implementations backed by Supabase. `PerfumeCacheService` provides a SwiftData-backed local cache with a 5-minute TTL. `ReviewSyncService` and `UserPerfumeSyncService` handle deferred writes when offline.
 - `Networking/` — `NetworkError` (typed errors, German user messages), `NetworkMonitor` (NWPathMonitor), `NetworkRetry` (exponential backoff via `withRetry()`), `CertificatePinning`, `AppLogger`.
 
-**`Features/`** — MVVM feature modules. Each has `Views/`, `ViewModels/`, and optionally `Services/` and `Components/`. Current features: `Auth`, `Compare`, `Favorites`, `Lists`, `Owned`, `PerfumeDetail`, `PerfumeList`, `Profile`, `Reviews`, `Social`.
+**`Features/`** — MVVM feature modules. Each has `Views/`, `ViewModels/`, and optionally `Services/` and `Components/`. Current features: `Auth`, `Compare`, `DailyPick`, `Favorites`, `Lists`, `Owned`, `PerfumeDetail`, `PerfumeList`, `Profile`, `Reviews`, `Social`.
+
+`DailyPick` is a weather-aware daily recommendation engine (`DailyPickService`) that scores owned perfumes by weather conditions, occasion, and time of day using note matching. It receives a `WeatherService` from `DependencyContainer` via `RootTabView`.
 
 **`UI/`** — Shared components (`UI/Components/`), navigation entry points (`ContentView`, `RootTabView`), and the design system (`UI/Theme/DesignSystem.swift`).
 
@@ -77,6 +79,9 @@ Tests are in `scentboxd/scentboxdTests/`. Protocols enable mock injection — se
 
 ### Design System
 Use `DesignSystem.Colors` for all colors. Adaptive tokens (`appBackground`, `appSurface`, `appText`, `appTextSecondary`) respond to dark/light mode — prefer these over hardcoded hex values. The primary accent is `DesignSystem.Colors.primary` (`#C20A66` magenta). `ThemeManager` stores the user's scheme preference in `UserDefaults` and is applied via `.preferredColorScheme(themeManager.colorScheme)` at the root.
+
+### Tab Navigation
+`RootTabView` does **not** use SwiftUI's native `TabView`. Instead it stacks all tab views in a `ZStack` and toggles `opacity`/`allowsHitTesting` so tab state (scroll position, navigation stacks) is preserved in memory. Tab index maps: 0 Heute, 1 Katalog, 2 Favoriten, 3 Meine, 4 Community, 5 Profil. Child views can programmatically switch tabs via `@Environment(\.selectedTab)` (a `Binding<Int>` injected by `RootTabView`).
 
 ### Deep Links
 URL scheme: `scentboxd://`. Handled by `DeepLinkHandler`; routes are `perfume/<UUID>`, `tab/<name>`, and `compare/<UUID>,<UUID>`. Deep links from push notification taps are forwarded via `NotificationCenter` with name `.notificationDeepLink`.
