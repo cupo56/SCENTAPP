@@ -105,7 +105,11 @@ struct PerfumeListView: View {
                     await viewModel.refresh()
                 }
             }
-            .searchable(text: $viewModel.searchText, prompt: "Suche Parfum...")
+            .searchable(
+                text: $viewModel.searchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: "Suche Parfum..."
+            )
             .searchSuggestions {
                 if viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 {
                     SearchSuggestionsOverlay(

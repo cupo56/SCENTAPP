@@ -37,7 +37,11 @@ struct UserSearchView: View {
         }
         .navigationTitle("Community")
         .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $searchText, prompt: "Benutzername suchen...")
+        .searchable(
+            text: $searchText,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: "Benutzername suchen..."
+        )
         .onChange(of: searchText) { _, newValue in
             searchSubject.send(newValue)
         }

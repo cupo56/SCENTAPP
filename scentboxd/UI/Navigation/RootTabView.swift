@@ -33,50 +33,49 @@ struct RootTabView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Tab-Inhalte: alle im Speicher halten, per Opacity umschalten
-            ZStack {
-                NavigationStack {
-                    DailyPickView(weatherService: dependencies.weatherService)
-                }
-                .opacity(selectedTab == 0 ? 1 : 0)
-                .allowsHitTesting(selectedTab == 0)
-
-                PerfumeListView()
-                    .opacity(selectedTab == 1 ? 1 : 0)
-                    .allowsHitTesting(selectedTab == 1)
-
-                FavoritesView()
-                    .opacity(selectedTab == 2 ? 1 : 0)
-                    .allowsHitTesting(selectedTab == 2)
-
-                OwnedPerfumesView()
-                    .opacity(selectedTab == 3 ? 1 : 0)
-                    .allowsHitTesting(selectedTab == 3)
-
-                NavigationStack {
-                    UserSearchView()
-                }
-                .opacity(selectedTab == 4 ? 1 : 0)
-                .allowsHitTesting(selectedTab == 4)
-
-                ProfileView()
-                    .opacity(selectedTab == 5 ? 1 : 0)
-                    .allowsHitTesting(selectedTab == 5)
+        ZStack {
+            // Tab-Inhalte: alle im Speicher halten, per Opacity umschalten.
+            // Jeder Tab füllt den verfügbaren Platz; die Tab-Bar wird per
+            // safeAreaInset eingehängt und schiebt die Inhalte automatisch hoch.
+            NavigationStack {
+                DailyPickView(weatherService: dependencies.weatherService)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .opacity(selectedTab == 0 ? 1 : 0)
+            .allowsHitTesting(selectedTab == 0)
 
-            // Compare Floating Bar über der Tab-Bar
-            if showCompareBar {
-                CompareFloatingBar()
-                    .padding(.bottom, 60)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            PerfumeListView()
+                .opacity(selectedTab == 1 ? 1 : 0)
+                .allowsHitTesting(selectedTab == 1)
+
+            FavoritesView()
+                .opacity(selectedTab == 2 ? 1 : 0)
+                .allowsHitTesting(selectedTab == 2)
+
+            OwnedPerfumesView()
+                .opacity(selectedTab == 3 ? 1 : 0)
+                .allowsHitTesting(selectedTab == 3)
+
+            NavigationStack {
+                UserSearchView()
             }
+            .opacity(selectedTab == 4 ? 1 : 0)
+            .allowsHitTesting(selectedTab == 4)
 
-            // Custom native-looking Tab Bar (6 Tabs, kein Mehr-Tab)
-            NativeStyleTabBar(selectedTab: $selectedTab)
+            ProfileView()
+                .opacity(selectedTab == 5 ? 1 : 0)
+                .allowsHitTesting(selectedTab == 5)
         }
-        .animation(.easeInOut(duration: 0.2), value: showCompareBar)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
+                if showCompareBar {
+                    CompareFloatingBar()
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+                NativeStyleTabBar(selectedTab: $selectedTab)
+            }
+            .animation(.easeInOut(duration: 0.2), value: showCompareBar)
+        }
         .environment(\.selectedTab, $selectedTab)
         .onAppear { consumePendingDeepLinks() }
         .onChange(of: deepLinkHandler.pendingTab) { _, _ in consumePendingDeepLinks() }
