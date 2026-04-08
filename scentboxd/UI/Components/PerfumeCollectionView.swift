@@ -60,6 +60,11 @@ struct PerfumeCollectionView<FilterContent: View>: View {
             }
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    ProfileToolbarButton()
+                }
+            }
         }
     }
 

@@ -92,6 +92,7 @@ private struct PerfumeDetailContent: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AuthManager.self) private var authManager
     @Environment(\.selectedTab) private var selectedTab
+    @Environment(\.showProfileSheet) private var showProfileSheet
     @Environment(CompareSelectionManager.self) private var compareManager
 
     @State private var viewModel: PerfumeDetailViewModel
@@ -195,7 +196,7 @@ private struct PerfumeDetailContent: View {
         }
         .alert("Anmeldung erforderlich", isPresented: Bindable(viewModel).showLoginAlert) {
             Button("Abbrechen", role: .cancel) { }
-            Button("Zum Profil") { selectedTab.wrappedValue = 5 }
+            Button("Zum Profil") { showProfileSheet.wrappedValue = true }
         } message: {
             Text("Bitte melde dich an oder registriere dich, um diese Funktion zu nutzen.")
         }

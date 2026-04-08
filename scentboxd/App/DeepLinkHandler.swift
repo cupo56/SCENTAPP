@@ -7,13 +7,13 @@ enum AppTab: Int {
     case favorites = 2
     case owned = 3
     case community = 4
-    case profile = 5
 }
 
 enum DeepLinkRoute: Equatable {
     case perfume(UUID)
     case tab(AppTab)
     case compare([UUID])
+    case profileSheet
 }
 
 @Observable
@@ -22,6 +22,7 @@ final class DeepLinkHandler {
     var pendingPerfumeId: UUID?
     var pendingTab: Int?
     var pendingCompareIds: [UUID]?
+    var pendingProfileSheet: Bool = false
 
     func handle(url: URL) {
         guard let route = parse(url: url) else { return }
@@ -33,6 +34,8 @@ final class DeepLinkHandler {
             pendingTab = tab.rawValue
         case .compare(let perfumeIds):
             pendingCompareIds = perfumeIds
+        case .profileSheet:
+            pendingProfileSheet = true
         }
     }
 
@@ -57,7 +60,7 @@ final class DeepLinkHandler {
             return .tab(.owned)
 
         case "profile":
-            return .tab(.profile)
+            return .profileSheet
 
         case "compare":
             guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
@@ -89,5 +92,9 @@ final class DeepLinkHandler {
 
     func consumePendingCompareIds() {
         pendingCompareIds = nil
+    }
+
+    func consumePendingProfileSheet() {
+        pendingProfileSheet = false
     }
 }

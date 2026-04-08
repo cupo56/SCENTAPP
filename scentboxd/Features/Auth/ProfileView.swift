@@ -24,6 +24,7 @@ enum ProfileEditState {
 struct ProfileView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(\.dependencies) private var dependencies
+    @Environment(\.dismiss) private var dismiss
     
     // MARK: - Data Queries (single query, split via computed properties)
     @Query(filter: #Predicate<Perfume> { perfume in
@@ -114,6 +115,33 @@ struct ProfileView: View {
                     .accessibilityLabel("Mein Duftprofil")
                     .accessibilityHint("Öffnet dein persönliches Duftprofil")
 
+                    // Sammlungs-Statistiken Link
+                    NavigationLink(destination: CollectionAnalyticsView()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "chart.pie.fill")
+                                .font(.system(size: 18))
+                                .foregroundStyle(DesignSystem.Colors.primary)
+                                .frame(width: 36, height: 36)
+                                .background(DesignSystem.Colors.primary.opacity(0.12))
+                                .clipShape(Circle())
+
+                            Text("Sammlungs-Statistiken")
+                                .font(DesignSystem.Fonts.display(size: 16, weight: .medium))
+                                .foregroundStyle(Color.primary)
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(Color(hex: "#94A3B8"))
+                        }
+                        .padding(16)
+                        .glassPanel()
+                    }
+                    .padding(.horizontal)
+                    .accessibilityLabel("Sammlungs-Statistiken")
+                    .accessibilityHint("Öffnet das Analytics-Dashboard deiner Sammlung")
+
                     // Profil-Sichtbarkeit & Bio
                     VStack(spacing: 12) {
                         // Public Toggle
@@ -194,6 +222,22 @@ struct ProfileView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Color.primary.opacity(0.7))
+                            .frame(width: 36, height: 36)
+                            .background(Color.primary.opacity(0.05))
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle().stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                            )
+                    }
+                    .accessibilityLabel("Profil schließen")
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: SettingsView()) {
                         Image(systemName: "gearshape")

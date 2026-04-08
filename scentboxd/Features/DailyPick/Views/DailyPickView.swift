@@ -35,6 +35,9 @@ struct DailyPickView: View {
         .navigationTitle("Heute")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                ProfileToolbarButton()
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Task {

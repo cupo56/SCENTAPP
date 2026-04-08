@@ -37,6 +37,11 @@ struct UserSearchView: View {
         }
         .navigationTitle("Community")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                ProfileToolbarButton()
+            }
+        }
         .searchable(
             text: $searchText,
             placement: .navigationBarDrawer(displayMode: .always),

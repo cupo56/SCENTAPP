@@ -81,10 +81,12 @@ Tests are in `scentboxd/scentboxdTests/`. Protocols enable mock injection — se
 Use `DesignSystem.Colors` for all colors. Adaptive tokens (`appBackground`, `appSurface`, `appText`, `appTextSecondary`) respond to dark/light mode — prefer these over hardcoded hex values. The primary accent is `DesignSystem.Colors.primary` (`#C20A66` magenta). `ThemeManager` stores the user's scheme preference in `UserDefaults` and is applied via `.preferredColorScheme(themeManager.colorScheme)` at the root.
 
 ### Tab Navigation
-`RootTabView` does **not** use SwiftUI's native `TabView`. Instead it stacks all tab views in a `ZStack` and toggles `opacity`/`allowsHitTesting` so tab state (scroll position, navigation stacks) is preserved in memory. Tab index maps: 0 Heute, 1 Katalog, 2 Favoriten, 3 Meine, 4 Community, 5 Profil. Child views can programmatically switch tabs via `@Environment(\.selectedTab)` (a `Binding<Int>` injected by `RootTabView`).
+`RootTabView` uses SwiftUI's native `TabView` with 5 tabs (no custom tab bar). Tab index maps: 0 Heute, 1 Katalog, 2 Favoriten, 3 Meine, 4 Community. Child views can programmatically switch tabs via `@Environment(\.selectedTab)` (a `Binding<Int>` injected by `RootTabView`).
+
+The Profile screen is **not** a tab. It is presented as a sheet from a toolbar button (`ProfileToolbarButton` in `UI/Components/`) that appears in the `topBarLeading` slot of every tab's navigation bar. The sheet is mounted once at `RootTabView` level and triggered via the `\.showProfileSheet` environment binding, so any view in the hierarchy can open it without managing its own sheet state.
 
 ### Deep Links
-URL scheme: `scentboxd://`. Handled by `DeepLinkHandler`; routes are `perfume/<UUID>`, `tab/<name>`, and `compare/<UUID>,<UUID>`. Deep links from push notification taps are forwarded via `NotificationCenter` with name `.notificationDeepLink`.
+URL scheme: `scentboxd://`. Handled by `DeepLinkHandler`; routes are `perfume/<UUID>`, `favorites`, `owned`, `profile` (opens the profile sheet, not a tab), and `compare?ids=<UUID>,<UUID>`. Deep links from push notification taps are forwarded via `NotificationCenter` with name `.notificationDeepLink`.
 
 ### SwiftData Schema Changes
 When the SwiftData schema changes, the existing store is deleted and rebuilt from Supabase on next sync. This is handled automatically in `scentboxdApp.init()` — do not use migration plans unless a lightweight migration is strictly necessary.

@@ -22,6 +22,7 @@ extension EnvironmentValues {
 
 struct RootTabView: View {
     @State private var selectedTab = 0
+    @State private var showProfileSheet = false
     @Environment(CompareSelectionManager.self) private var compareManager
     @Environment(DeepLinkHandler.self) private var deepLinkHandler
     @Environment(\.dependencies) private var dependencies
@@ -33,54 +34,61 @@ struct RootTabView: View {
     }
 
     var body: some View {
-        ZStack {
-            // Tab-Inhalte: alle im Speicher halten, per Opacity umschalten.
-            // Jeder Tab füllt den verfügbaren Platz; die Tab-Bar wird per
-            // safeAreaInset eingehängt und schiebt die Inhalte automatisch hoch.
-            NavigationStack {
-                DailyPickView(weatherService: dependencies.weatherService)
-            }
-            .opacity(selectedTab == 0 ? 1 : 0)
-            .allowsHitTesting(selectedTab == 0)
-
-            PerfumeListView()
-                .opacity(selectedTab == 1 ? 1 : 0)
-                .allowsHitTesting(selectedTab == 1)
-
-            FavoritesView()
-                .opacity(selectedTab == 2 ? 1 : 0)
-                .allowsHitTesting(selectedTab == 2)
-
-            OwnedPerfumesView()
-                .opacity(selectedTab == 3 ? 1 : 0)
-                .allowsHitTesting(selectedTab == 3)
-
-            NavigationStack {
-                UserSearchView()
-            }
-            .opacity(selectedTab == 4 ? 1 : 0)
-            .allowsHitTesting(selectedTab == 4)
-
-            ProfileView()
-                .opacity(selectedTab == 5 ? 1 : 0)
-                .allowsHitTesting(selectedTab == 5)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            VStack(spacing: 0) {
-                if showCompareBar {
-                    CompareFloatingBar()
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+        ZStack(alignment: .bottom) {
+            TabView(selection: $selectedTab) {
+                NavigationStack {
+                    DailyPickView(weatherService: dependencies.weatherService)
                 }
-                NativeStyleTabBar(selectedTab: $selectedTab)
+                .tabItem {
+                    Label("Heute", systemImage: "sun.horizon")
+                }
+                .tag(0)
+
+                PerfumeListView()
+                    .tabItem {
+                        Label("Katalog", systemImage: "book")
+                    }
+                    .tag(1)
+
+                FavoritesView()
+                    .tabItem {
+                        Label("Favoriten", systemImage: "heart")
+                    }
+                    .tag(2)
+
+                OwnedPerfumesView()
+                    .tabItem {
+                        Label("Meine", systemImage: "star")
+                    }
+                    .tag(3)
+
+                NavigationStack {
+                    UserSearchView()
+                }
+                .tabItem {
+                    Label("Community", systemImage: "person.2")
+                }
+                .tag(4)
             }
-            .animation(.easeInOut(duration: 0.2), value: showCompareBar)
+            .tint(DesignSystem.Colors.primary)
+
+            if showCompareBar {
+                CompareFloatingBar()
+                    .padding(.bottom, 56)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: showCompareBar)
         .environment(\.selectedTab, $selectedTab)
+        .environment(\.showProfileSheet, $showProfileSheet)
         .onAppear { consumePendingDeepLinks() }
         .onChange(of: deepLinkHandler.pendingTab) { _, _ in consumePendingDeepLinks() }
         .onChange(of: deepLinkHandler.pendingPerfumeId) { _, _ in consumePendingDeepLinks() }
         .onChange(of: deepLinkHandler.pendingCompareIds) { _, _ in consumePendingDeepLinks() }
+        .onChange(of: deepLinkHandler.pendingProfileSheet) { _, _ in consumePendingDeepLinks() }
+        .sheet(isPresented: $showProfileSheet) {
+            ProfileView()
+        }
         .sheet(item: $presentedPerfumeLink) { destination in
             NavigationStack {
                 PerfumeDetailView(perfumeId: destination.perfumeId)
@@ -113,65 +121,10 @@ struct RootTabView: View {
             presentedCompareLink = CompareDeepLinkDestination(perfumeIds: pendingCompareIds)
             deepLinkHandler.consumePendingCompareIds()
         }
-    }
-}
-
-// MARK: - Native Style Tab Bar
-
-/// Custom Tab Bar, die den nativen iOS-Look nachbildet, aber garantiert alle 6 Tabs
-/// ohne einen "Mehr"-Tab darstellt (nativer SwiftUI `TabView` klappt auf iPhone
-/// bei >5 Items automatisch in einen More-Tab, dessen Navigation unzuverlässig ist).
-private struct NativeStyleTabBar: View {
-    @Binding var selectedTab: Int
-
-    private struct TabDefinition {
-        let icon: String
-        let filledIcon: String
-        let label: String
-    }
-
-    private let tabs: [TabDefinition] = [
-        .init(icon: "sun.horizon", filledIcon: "sun.horizon.fill", label: "Heute"),
-        .init(icon: "book", filledIcon: "book.fill", label: "Katalog"),
-        .init(icon: "heart", filledIcon: "heart.fill", label: "Favoriten"),
-        .init(icon: "star", filledIcon: "star.fill", label: "Meine"),
-        .init(icon: "person.2", filledIcon: "person.2.fill", label: "Community"),
-        .init(icon: "person", filledIcon: "person.fill", label: "Profil")
-    ]
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Divider()
-            HStack(spacing: 0) {
-                ForEach(tabs.indices, id: \.self) { index in
-                    let tab = tabs[index]
-                    let isActive = selectedTab == index
-                    Button {
-                        selectedTab = index
-                    } label: {
-                        VStack(spacing: 2) {
-                            Image(systemName: isActive ? tab.filledIcon : tab.icon)
-                                .font(.system(size: 22, weight: .regular))
-                                .frame(height: 26)
-                            Text(tab.label)
-                                .font(.system(size: 10, weight: .medium))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                        }
-                        .foregroundStyle(isActive ? DesignSystem.Colors.primary : Color(uiColor: .secondaryLabel))
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 6)
-                        .padding(.bottom, 2)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(tab.label)
-                    .accessibilityAddTraits(isActive ? [.isSelected] : [])
-                }
-            }
-            .padding(.bottom, 2)
+        if deepLinkHandler.pendingProfileSheet {
+            showProfileSheet = true
+            deepLinkHandler.consumePendingProfileSheet()
         }
-        .background(.bar)
     }
 }
 

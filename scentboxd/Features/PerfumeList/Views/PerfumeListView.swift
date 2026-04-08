@@ -123,6 +123,11 @@ struct PerfumeListView: View {
             }
             .navigationTitle("ScentBox")
             .toolbar {
+                // MARK: - Profil Button
+                ToolbarItem(placement: .topBarLeading) {
+                    ProfileToolbarButton()
+                }
+
                 // MARK: - Scanner Button
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -135,7 +140,7 @@ struct PerfumeListView: View {
                 }
 
                 // MARK: - Sort Menu
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         ForEach(PerfumeSortOption.allCases) { option in
                             Button {
