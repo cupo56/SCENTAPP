@@ -92,7 +92,7 @@ struct CompareColumnView: View {
     
     // MARK: - Helper Views
     
-    private func compareRow(title: String, value: String) -> some View {
+    private func compareRow(title: LocalizedStringKey, value: String) -> some View {
         VStack(spacing: 4) {
             Text(title)
                 .font(.system(size: 10, weight: .medium))
@@ -109,7 +109,7 @@ struct CompareColumnView: View {
         .padding(.vertical, 8)
     }
     
-    private func notesSection(title: String, notes: [Note]) -> some View {
+    private func notesSection(title: LocalizedStringKey, notes: [Note]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.system(size: 10, weight: .medium))

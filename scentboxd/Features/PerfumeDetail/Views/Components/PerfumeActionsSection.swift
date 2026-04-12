@@ -36,7 +36,7 @@ struct PerfumeActionsSection: View {
                 .glassPanel()
                 .shadow(color: isOwned ? DesignSystem.Colors.primary.opacity(0.25) : Color.clear, radius: 10, x: 0, y: 4)
             }
-            .accessibilityLabel(viewModel.statusService.isOwned(perfume) ? "Aus Sammlung entfernen" : "Zur Sammlung hinzufügen")
+            .accessibilityLabel(viewModel.statusService.isOwned(perfume) ? String(localized: "Aus Sammlung entfernen") : String(localized: "Zur Sammlung hinzufügen"))
 
             // Wunschliste
             Button {
@@ -60,7 +60,7 @@ struct PerfumeActionsSection: View {
                 .glassPanel()
                 .shadow(color: isFavorite ? DesignSystem.Colors.primary.opacity(0.25) : Color.clear, radius: 10, x: 0, y: 4)
             }
-            .accessibilityLabel(viewModel.statusService.isFavorite(perfume) ? "Von Wunschliste entfernen" : "Zur Wunschliste hinzufügen")
+            .accessibilityLabel(viewModel.statusService.isFavorite(perfume) ? String(localized: "Von Wunschliste entfernen") : String(localized: "Zur Wunschliste hinzufügen"))
 
             // Vergleichen
             Button {
@@ -84,7 +84,7 @@ struct PerfumeActionsSection: View {
                         .stroke(compareManager.isSelected(perfume) ? DesignSystem.Colors.champagne.opacity(0.5) : Color.clear, lineWidth: 1)
                 )
             }
-            .accessibilityLabel(compareManager.isSelected(perfume) ? "Aus Vergleich entfernen" : "Zum Vergleich hinzufügen")
+            .accessibilityLabel(compareManager.isSelected(perfume) ? String(localized: "Aus Vergleich entfernen") : String(localized: "Zum Vergleich hinzufügen"))
 
             // Teilen
             Button {

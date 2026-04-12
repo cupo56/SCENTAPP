@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct ErrorAlertModifier: ViewModifier {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var isPresented: Bool
     let message: String?
     var retryAction: (() async -> Void)?
@@ -28,7 +28,7 @@ struct ErrorAlertModifier: ViewModifier {
 
 extension View {
     func errorAlert(
-        _ title: String,
+        _ title: LocalizedStringKey,
         isPresented: Binding<Bool>,
         message: String?,
         retryAction: (() async -> Void)? = nil

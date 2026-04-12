@@ -139,7 +139,7 @@ struct CollectionAnalyticsView: View {
         }
     }
 
-    private func statCard(value: String, label: String, icon: String, tint: Color) -> some View {
+    private func statCard(value: String, label: LocalizedStringKey, icon: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Image(systemName: icon)
@@ -180,7 +180,7 @@ struct CollectionAnalyticsView: View {
         }
     }
 
-    private func histogramRow(title: String, distribution: [Int: Int]) -> some View {
+    private func histogramRow(title: LocalizedStringKey, distribution: [Int: Int]) -> some View {
         let maxCount = distribution.values.max() ?? 1
         return VStack(alignment: .leading, spacing: 8) {
             Text(title)
@@ -214,7 +214,7 @@ struct CollectionAnalyticsView: View {
     // MARK: - Section Wrapper
 
     @ViewBuilder
-    private func section<Content: View>(title: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
+    private func section<Content: View>(title: LocalizedStringKey, icon: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
                 Image(systemName: icon)

@@ -18,6 +18,14 @@ struct PublicProfileView: View {
         case collection = "Sammlung"
         case reviews = "Bewertungen"
         case lists = "Listen"
+
+        var localizedName: String {
+            switch self {
+            case .collection: return String(localized: "Sammlung")
+            case .reviews: return String(localized: "Bewertungen")
+            case .lists: return String(localized: "Listen")
+            }
+        }
     }
 
     var body: some View {
@@ -147,7 +155,7 @@ struct PublicProfileView: View {
         .padding(.horizontal, 16)
     }
 
-    private func statItem(value: String, label: String) -> some View {
+    private func statItem(value: String, label: LocalizedStringKey) -> some View {
         VStack(spacing: 4) {
             Text(value)
                 .font(DesignSystem.Fonts.serif(size: 20, weight: .bold))
@@ -169,7 +177,7 @@ struct PublicProfileView: View {
                         selectedTab = tab
                     }
                 } label: {
-                    Text(tab.rawValue)
+                    Text(tab.localizedName)
                         .font(.subheadline)
                         .fontWeight(selectedTab == tab ? .semibold : .regular)
                         .foregroundColor(selectedTab == tab ? .white : Color(hex: "#94A3B8"))

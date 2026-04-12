@@ -123,8 +123,8 @@ struct ReviewsSection: View {
                 )
                 .cornerRadius(12)
             }
-            .accessibilityLabel(viewModel.hasExistingReview ? "Bewertung bearbeiten" : "Bewertung schreiben")
-            .accessibilityHint(authManager.isAuthenticated ? "Öffnet das Bewertungsformular" : "Anmeldung erforderlich")
+            .accessibilityLabel(viewModel.hasExistingReview ? String(localized: "Bewertung bearbeiten") : String(localized: "Bewertung schreiben"))
+            .accessibilityHint(authManager.isAuthenticated ? String(localized: "Öffnet das Bewertungsformular") : String(localized: "Anmeldung erforderlich"))
         }
         .padding(.top, 4)
     }

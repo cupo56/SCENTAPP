@@ -72,7 +72,7 @@ struct PerfumeCardView: View {
                         .background(Circle().fill(Color.black.opacity(0.3)).padding(2))
                         .padding(8)
                 }
-                .accessibilityLabel(compareManager.isSelected(perfume) ? "Aus Vergleich entfernen" : "Zum Vergleich hinzufügen")
+                .accessibilityLabel(compareManager.isSelected(perfume) ? String(localized: "Aus Vergleich entfernen") : String(localized: "Zum Vergleich hinzufügen"))
                 
                 // Favorite heart (top trailing)
                 if isFavorite {

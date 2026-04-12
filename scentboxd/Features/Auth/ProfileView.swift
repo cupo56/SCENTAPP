@@ -292,28 +292,28 @@ struct ProfileView: View {
             GridItem(.flexible(), spacing: 12)
         ], spacing: 12) {
             NavigationLink(destination: OwnedPerfumesView()) {
-                ProfileStatsCard(icon: "archivebox", value: "\(ownedPerfumes.count)", label: "Sammlung")
+                ProfileStatsCard(icon: "archivebox", value: "\(ownedPerfumes.count)", label: String(localized: "Sammlung"))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Sammlung, \(ownedPerfumes.count) Parfums")
             .accessibilityHint("Öffnet deine Parfum-Sammlung")
 
             NavigationLink(destination: UserReviewsView()) {
-                ProfileStatsCard(icon: "text.quote", value: reviewCountError != nil ? "–" : "\(reviewCount)", label: "Bewertungen")
+                ProfileStatsCard(icon: "text.quote", value: reviewCountError != nil ? "–" : "\(reviewCount)", label: String(localized: "Bewertungen"))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Bewertungen, \(reviewCount)")
             .accessibilityHint("Öffnet deine Bewertungen")
 
             NavigationLink(destination: FavoritesView()) {
-                ProfileStatsCard(icon: "heart", value: "\(favoritePerfumes.count)", label: "Wunschliste")
+                ProfileStatsCard(icon: "heart", value: "\(favoritePerfumes.count)", label: String(localized: "Wunschliste"))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Wunschliste, \(favoritePerfumes.count) Parfums")
             .accessibilityHint("Öffnet deine Wunschliste")
 
             NavigationLink(destination: ListsView()) {
-                ProfileStatsCard(icon: "bookmark", value: "\(listCount)", label: "Listen")
+                ProfileStatsCard(icon: "bookmark", value: "\(listCount)", label: String(localized: "Listen"))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Listen, \(listCount) Listen")
@@ -576,7 +576,7 @@ struct ProfileView: View {
         do {
             reviewCount = try await dependencies.reviewDataSource.fetchReviewCount(for: currentUserIdString)
         } catch {
-            reviewCountError = "Bewertungen konnten nicht geladen werden."
+            reviewCountError = String(localized: "Bewertungen konnten nicht geladen werden.")
             AppLogger.reviews.error("Failed to load review count: \(error.localizedDescription)")
         }
     }

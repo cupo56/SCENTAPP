@@ -281,9 +281,10 @@
 				};
 			};
 			buildConfigurationList = BB248BC22F1071060092FCDD /* Build configuration list for PBXProject "scentboxd" */;
-			developmentRegion = en;
+			developmentRegion = de;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				de,
 				en,
 				Base,
 			);

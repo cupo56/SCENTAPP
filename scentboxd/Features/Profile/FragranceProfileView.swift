@@ -91,10 +91,10 @@ struct FragranceProfileView: View {
 
             // Summary Stats
             HStack(spacing: 32) {
-                summaryItem(value: "\(profile.totalCollectionCount)", label: "Düfte")
-                summaryItem(value: "\(profile.totalReviewCount)", label: "Reviews")
+                summaryItem(value: "\(profile.totalCollectionCount)", label: String(localized: "Düfte"))
+                summaryItem(value: "\(profile.totalReviewCount)", label: String(localized: "Reviews"))
                 if profile.avgRating > 0 {
-                    summaryItem(value: String(format: "%.1f", profile.avgRating), label: "Ø Rating")
+                    summaryItem(value: String(format: "%.1f", profile.avgRating), label: String(localized: "Ø Rating"))
                 }
             }
             .padding(.top, 8)
@@ -267,7 +267,7 @@ struct FragranceProfileView: View {
 
     // MARK: - Section Header
 
-    private func sectionHeader(icon: String, title: String) -> some View {
+    private func sectionHeader(icon: String, title: LocalizedStringKey) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 12))

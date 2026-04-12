@@ -1,0 +1,3641 @@
+{
+  "sourceLanguage" : "de",
+  "strings" : {
+    "" : {
+
+    },
+    "–" : {
+
+    },
+    "·" : {
+
+    },
+    "\"%@\" aus dieser Liste entfernen?" : {
+
+    },
+    "(%lld)" : {
+
+    },
+    "(OPTIONAL)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(OPTIONAL)"
+          }
+        }
+      }
+    },
+    "@%@" : {
+
+    },
+    "@%@ • scentboxd" : {
+
+    },
+    "@%@ hat sein Profil auf privat gestellt." : {
+
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ von %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ von %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, %lld Prozent Match" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$lld Prozent Match"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld Änderung(en) nicht synchronisiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld change(s) not synced"
+          }
+        }
+      }
+    },
+    "%lld Änderungen noch nicht synchronisiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld changes not yet synced"
+          }
+        }
+      }
+    },
+    "%lld Ergebnis%@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld Ergebnis%2$@"
+          }
+        }
+      }
+    },
+    "%lld Parfums" : {
+
+    },
+    "%lld Parfums ausgewählt" : {
+
+    },
+    "%lld Parfums im Katalog" : {
+
+    },
+    "%lld von 5 Sternen" : {
+
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "%lld/200" : {
+
+    },
+    "%lld/500" : {
+
+    },
+    "%lld%%" : {
+
+    },
+    "%lld°C" : {
+
+    },
+    "3 bis 20 Zeichen, nur Buchstaben, Zahlen und Unterstriche" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 to 20 characters, only letters, numbers and underscores"
+          }
+        }
+      }
+    },
+    "Abbrechen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "Abend" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evening"
+          }
+        }
+      }
+    },
+    "Abmelden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign Out"
+          }
+        }
+      }
+    },
+    "Abmeldung fehlgeschlagen: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign out failed: %@"
+          }
+        }
+      }
+    },
+    "ACCOUNT" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ACCOUNT"
+          }
+        }
+      }
+    },
+    "Ähnliche Düfte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Similar Fragrances"
+          }
+        }
+      }
+    },
+    "ÄHNLICHE DÜFTE" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SIMILAR FRAGRANCES"
+          }
+        }
+      }
+    },
+    "Alle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "ALLE ANSEHEN" : {
+
+    },
+    "Alle Filter löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear all filters"
+          }
+        }
+      }
+    },
+    "Alle löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear all"
+          }
+        }
+      }
+    },
+    "Alle Marken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Brands"
+          }
+        }
+      }
+    },
+    "Alle Parfums ansehen" : {
+
+    },
+    "Alle zurücksetzen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset All"
+          }
+        }
+      }
+    },
+    "Als Favorit markiert" : {
+
+    },
+    "Als hilfreich markieren, %lld Likes" : {
+
+    },
+    "Analysiere deine Sammlung…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyzing your collection…"
+          }
+        }
+      }
+    },
+    "Andere Benutzer können dein Profil und deine Sammlung sehen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other users can see your profile and collection"
+          }
+        }
+      }
+    },
+    "Andere Nutzer können diese Liste sehen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other users can see this list"
+          }
+        }
+      }
+    },
+    "Anderer Vorschlag" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different Suggestion"
+          }
+        }
+      }
+    },
+    "Anfragefehler (%lld). Bitte prüfe deine Anmeldung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request error (%lld). Please check your login."
+          }
+        }
+      }
+    },
+    "ANLASS" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OCCASION"
+          }
+        }
+      }
+    },
+    "Anlässe: %@" : {
+
+    },
+    "Anmelden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign In"
+          }
+        }
+      }
+    },
+    "Anmeldung erforderlich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Login Required"
+          }
+        }
+      }
+    },
+    "Anonym" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anonymous"
+          }
+        }
+      }
+    },
+    "Anteil" : {
+
+    },
+    "Anwenden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply"
+          }
+        }
+      }
+    },
+    "Anzahl" : {
+
+    },
+    "Arbeit" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work"
+          }
+        }
+      }
+    },
+    "Aus Liste entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from List"
+          }
+        }
+      }
+    },
+    "Aus Sammlung entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Collection"
+          }
+        }
+      }
+    },
+    "Aus Vergleich entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Comparison"
+          }
+        }
+      }
+    },
+    "ausgewählt" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "selected"
+          }
+        }
+      }
+    },
+    "ausgewählt — Vergleichen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "selected — Compare"
+          }
+        }
+      }
+    },
+    "Auswahl löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Selection"
+          }
+        }
+      }
+    },
+    "Authentifizierungsfehler: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentication error: %@"
+          }
+        }
+      }
+    },
+    "Barcode scannen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan barcode"
+          }
+        }
+      }
+    },
+    "Basierend auf deinen %lld Düften" : {
+
+    },
+    "Basierend auf deinen Favoriten und deiner Sammlung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Based on your favorites and collection"
+          }
+        }
+      }
+    },
+    "Basisnoten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base Notes"
+          }
+        }
+      }
+    },
+    "Bearbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
+    "Beliebteste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Most Popular"
+          }
+        }
+      }
+    },
+    "Benachrichtigungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        }
+      }
+    },
+    "BENACHRICHTIGUNGEN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NOTIFICATIONS"
+          }
+        }
+      }
+    },
+    "Benachrichtigungen aktivieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Notifications"
+          }
+        }
+      }
+    },
+    "Benachrichtigungen aktiviert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications enabled"
+          }
+        }
+      }
+    },
+    "Benachrichtigungen deaktiviert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications disabled"
+          }
+        }
+      }
+    },
+    "Benachrichtigungen erlauben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Notifications"
+          }
+        }
+      }
+    },
+    "Benutzername" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Username"
+          }
+        }
+      }
+    },
+    "BENUTZERNAME" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USERNAME"
+          }
+        }
+      }
+    },
+    "Benutzername gespeichert" : {
+
+    },
+    "Benutzername suchen..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search username..."
+          }
+        }
+      }
+    },
+    "BERECHTIGUNG" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PERMISSION"
+          }
+        }
+      }
+    },
+    "BESCHREIBUNG (OPTIONAL)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DESCRIPTION (OPTIONAL)"
+          }
+        }
+      }
+    },
+    "Beste Bewertung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best Rating"
+          }
+        }
+      }
+    },
+    "Bewertung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rating"
+          }
+        }
+      }
+    },
+    "Bewertung bearbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Review"
+          }
+        }
+      }
+    },
+    "Bewertung für %@" : {
+
+    },
+    "Bewertung für %@, %lld Sterne" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bewertung für %1$@, %2$lld Sterne"
+          }
+        }
+      }
+    },
+    "Bewertung löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Review"
+          }
+        }
+      }
+    },
+    "Bewertung schreiben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write Review"
+          }
+        }
+      }
+    },
+    "BEWERTUNG SCHREIBEN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WRITE REVIEW"
+          }
+        }
+      }
+    },
+    "Bewertungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reviews"
+          }
+        }
+      }
+    },
+    "Bewertungen konnten nicht geladen werden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reviews could not be loaded."
+          }
+        }
+      }
+    },
+    "Bewertungen laden..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading reviews..."
+          }
+        }
+      }
+    },
+    "Bewertungen, %lld" : {
+
+    },
+    "Bewertungsfehler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rating Error"
+          }
+        }
+      }
+    },
+    "BIO" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BIO"
+          }
+        }
+      }
+    },
+    "Bio bearbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Bio"
+          }
+        }
+      }
+    },
+    "Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure? This action cannot be undone."
+          }
+        }
+      }
+    },
+    "Bitte bestätige deine E-Mail-Adresse." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please confirm your email address."
+          }
+        }
+      }
+    },
+    "Bitte bestätige deine E-Mail-Adresse. Nach der Bestätigung kannst du dich einloggen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please confirm your email address. After confirmation you can sign in."
+          }
+        }
+      }
+    },
+    "Bitte gib eine gültige E-Mail-Adresse ein." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please enter a valid email address."
+          }
+        }
+      }
+    },
+    "Bitte melde dich an oder registriere dich, um diese Funktion zu nutzen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please sign in or register to use this feature."
+          }
+        }
+      }
+    },
+    "Bitte vergib eine Bewertung (1-5 Sterne) und schreibe mindestens %lld Zeichen." : {
+
+    },
+    "Build" : {
+
+    },
+    "CACHE" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CACHE"
+          }
+        }
+      }
+    },
+    "Cache leeren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Cache"
+          }
+        }
+      }
+    },
+    "Community" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community"
+          }
+        }
+      }
+    },
+    "Community Reviews" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community Reviews"
+          }
+        }
+      }
+    },
+    "Community-Updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community Updates"
+          }
+        }
+      }
+    },
+    "Das Passwort ist zu schwach. Mindestens 6 Zeichen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password is too weak. At least 6 characters."
+          }
+        }
+      }
+    },
+    "Dein Duftprofil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Fragrance Profile"
+          }
+        }
+      }
+    },
+    "DEINE BEWERTUNGEN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YOUR REVIEWS"
+          }
+        }
+      }
+    },
+    "DEINE EMPFEHLUNG" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YOUR RECOMMENDATION"
+          }
+        }
+      }
+    },
+    "Deine Parfüm-Sammlung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Perfume Collection"
+          }
+        }
+      }
+    },
+    "Deine Sammlung in Zahlen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Collection in Numbers"
+          }
+        }
+      }
+    },
+    "Deine Überschrift" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your title"
+          }
+        }
+      }
+    },
+    "Details ansehen" : {
+
+    },
+    "Die Anfrage hat zu lange gedauert. Bitte versuche es erneut." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The request took too long. Please try again."
+          }
+        }
+      }
+    },
+    "Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This email is already registered. Please sign in."
+          }
+        }
+      }
+    },
+    "Dieses Parfum existiert nicht oder konnte nicht geladen werden." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This perfume does not exist or could not be loaded."
+          }
+        }
+      }
+    },
+    "Dieses Parfum konnte nicht geladen werden." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This perfume could not be loaded."
+          }
+        }
+      }
+    },
+    "Doppeltippen für Details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap for details"
+          }
+        }
+      }
+    },
+    "Doppeltippen zum Umschalten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to toggle"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um das Duftprofil erneut zu laden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to reload fragrance profile"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um den Passwort-Reset-Link zu senden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to send the password reset link"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um den Vergleich zu öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to open comparison"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um dich abzumelden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to sign out"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um dich mit E-Mail und Passwort anzumelden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to sign in with email and password"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um die Bewertung zu speichern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to save the review"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um die Bewertungen erneut zu laden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to reload reviews"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um die Daten erneut zu laden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to reload data"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um diesen Filter zu entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to remove this filter"
+          }
+        }
+      }
+    },
+    "Doppeltippen, um ein neues Konto zu erstellen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double tap to create a new account"
+          }
+        }
+      }
+    },
+    "Du erhältst Push-Nachrichten von Scentboxd" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You receive push notifications from Scentboxd"
+          }
+        }
+      }
+    },
+    "Du hast bisher keine Parfums bewertet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You haven't reviewed any perfumes yet."
+          }
+        }
+      }
+    },
+    "Duft-Vergleich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fragrance Comparison"
+          }
+        }
+      }
+    },
+    "Düfte" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fragrances"
+          }
+        }
+      }
+    },
+    "DUFTFAMILIEN" : {
+
+    },
+    "Duftprofil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fragrance Profile"
+          }
+        }
+      }
+    },
+    "Duftprofil laden..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading fragrance profile..."
+          }
+        }
+      }
+    },
+    "Duftpyramide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fragrance Pyramid"
+          }
+        }
+      }
+    },
+    "Dunkelmodus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark Mode"
+          }
+        }
+      }
+    },
+    "Dunkles Design ist aktiv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark theme is active"
+          }
+        }
+      }
+    },
+    "Durchschnitt aus %lld Bewertungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average from %lld reviews"
+          }
+        }
+      }
+    },
+    "E-Mail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        }
+      }
+    },
+    "E-Mail für den Passwort-Reset-Link" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email for password reset link"
+          }
+        }
+      }
+    },
+    "E-Mail gesendet!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email Sent!"
+          }
+        }
+      }
+    },
+    "E-Mail-Adresse" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email address"
+          }
+        }
+      }
+    },
+    "Ein Fehler ist aufgetreten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An error occurred."
+          }
+        }
+      }
+    },
+    "Ein Fehler ist aufgetreten. Bitte versuche es erneut." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An error occurred. Please try again."
+          }
+        }
+      }
+    },
+    "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An unknown error occurred. Please try again."
+          }
+        }
+      }
+    },
+    "Eine kleine Reise durch deine Duftwelt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A little journey through your fragrance world."
+          }
+        }
+      }
+    },
+    "Einstellungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "Eintrag veröffentlichen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publish Entry"
+          }
+        }
+      }
+    },
+    "EINTRAG VERÖFFENTLICHEN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PUBLISH ENTRY"
+          }
+        }
+      }
+    },
+    "Empfehlungen neu berechnen" : {
+
+    },
+    "Empfehlungen werden berechnet…" : {
+
+    },
+    "Empfohlen. %@" : {
+
+    },
+    "Enorm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enormous"
+          }
+        }
+      }
+    },
+    "Entdecke andere Duftliebhaber" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discover other fragrance lovers"
+          }
+        }
+      }
+    },
+    "Entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
+    "Entfernt alle Parfums aus dem Vergleich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removes all perfumes from comparison"
+          }
+        }
+      }
+    },
+    "Erfasse die Essenz des Moments" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture the essence of the moment"
+          }
+        }
+      }
+    },
+    "Erhalte Updates zu Reviews, Likes und mehr" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get updates on reviews, likes and more"
+          }
+        }
+      }
+    },
+    "Erlaube Benachrichtigungen in den Systemeinstellungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow notifications in system settings"
+          }
+        }
+      }
+    },
+    "Erneut scannen" : {
+
+    },
+    "Erneut versuchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        }
+      }
+    },
+    "ERSCHEINUNGSBILD" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "APPEARANCE"
+          }
+        }
+      }
+    },
+    "Erstelle deine erste kuratierte Parfum-Liste." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your first curated perfume list."
+          }
+        }
+      }
+    },
+    "Erstellt ein Bild deiner Sammlung zum Teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creates an image of your collection to share"
+          }
+        }
+      }
+    },
+    "Erstellt ein Bild dieses Parfums zum Teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creates an image of this perfume to share"
+          }
+        }
+      }
+    },
+    "Es konnten nicht genug Parfums fuer den Vergleich geladen werden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not enough perfumes could be loaded for comparison."
+          }
+        }
+      }
+    },
+    "Ewig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eternal"
+          }
+        }
+      }
+    },
+    "Falls ein Konto mit dieser E-Mail existiert, erhältst du in Kürze einen Link zum Zurücksetzen deines Passworts." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If an account with this email exists, you will receive a link to reset your password shortly."
+          }
+        }
+      }
+    },
+    "Favoriten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favorites"
+          }
+        }
+      }
+    },
+    "Favoriten gesamt: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total favorites: %lld"
+          }
+        }
+      }
+    },
+    "Fehler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        }
+      }
+    },
+    "Fehler beim Laden der Bewertungen: %@" : {
+
+    },
+    "Fehler beim Speichern des Benutzernamens: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error saving username: %@"
+          }
+        }
+      }
+    },
+    "Fehler: Bitte vergib eine Bewertung von 1 bis 5 Sternen und schreibe mindestens %lld Zeichen." : {
+
+    },
+    "Fehlermeldung schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close error message"
+          }
+        }
+      }
+    },
+    "Fertig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "Filter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        }
+      }
+    },
+    "Filter & Sortierung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter & Sort"
+          }
+        }
+      }
+    },
+    "Filter entfernen: %@" : {
+
+    },
+    "Flüchtig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fleeting"
+          }
+        }
+      }
+    },
+    "Fuege Parfums zu deiner Sammlung hinzu, um Statistiken zu sehen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add perfumes to your collection to see statistics."
+          }
+        }
+      }
+    },
+    "Füge Düfte zu deiner Sammlung oder deinen Favoriten hinzu, um dein persönliches Duftprofil zu sehen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add fragrances to your collection or favorites to see your personal fragrance profile."
+          }
+        }
+      }
+    },
+    "Füge Parfums hinzu, die du bereits besitzt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add perfumes that you already own."
+          }
+        }
+      }
+    },
+    "Füge Parfums über den \"Liste\"-Button auf der Parfum-Detailseite hinzu." : {
+
+    },
+    "Füge Parfums zu deiner Sammlung hinzu, um tägliche Empfehlungen zu erhalten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add perfumes to your collection to get daily recommendations."
+          }
+        }
+      }
+    },
+    "Füge Parfums zu deiner Sammlung oder Favoriten hinzu, damit wir passende Düfte für dich finden können." : {
+
+    },
+    "Für dich" : {
+
+    },
+    "Für dich empfohlen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended for You"
+          }
+        }
+      }
+    },
+    "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your email address and we'll send you a link to reset your password."
+          }
+        }
+      }
+    },
+    "Haltbarkeit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longevity"
+          }
+        }
+      }
+    },
+    "Halte den Barcode in den Rahmen" : {
+
+    },
+    "Hautnah" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intimate"
+          }
+        }
+      }
+    },
+    "Helles Design ist aktiv" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light theme is active"
+          }
+        }
+      }
+    },
+    "Herznoten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heart Notes"
+          }
+        }
+      }
+    },
+    "Heute" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        }
+      }
+    },
+    "Hilfreich markiert, %lld Likes" : {
+
+    },
+    "Kamera nicht verfügbar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera not available"
+          }
+        }
+      }
+    },
+    "Katalog" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Catalog"
+          }
+        }
+      }
+    },
+    "Katalog entdecken" : {
+
+    },
+    "Kein Bild" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Image"
+          }
+        }
+      }
+    },
+    "Kein Parfum für diesen Barcode gefunden." : {
+
+    },
+    "Keine Benutzer gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No users found"
+          }
+        }
+      }
+    },
+    "Keine Duftfamilien gefunden" : {
+
+    },
+    "Keine Favoriten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Favorites"
+          }
+        }
+      }
+    },
+    "Keine Internetverbindung. Bitte überprüfe deine Netzwerkeinstellungen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection. Please check your network settings."
+          }
+        }
+      }
+    },
+    "Keine öffentlichen Listen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No public lists"
+          }
+        }
+      }
+    },
+    "Keine Parfums in deiner Sammlung." : {
+
+    },
+    "Keine Parfums in der Sammlung" : {
+
+    },
+    "Keine Parfums in dieser Liste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No perfumes in this list"
+          }
+        }
+      }
+    },
+    "Konto erstellen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Account"
+          }
+        }
+      }
+    },
+    "Konzentration" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concentration"
+          }
+        }
+      }
+    },
+    "Konzentrationen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concentrations"
+          }
+        }
+      }
+    },
+    "KONZENTRATIONEN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONCENTRATIONS"
+          }
+        }
+      }
+    },
+    "Kopfnoten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top Notes"
+          }
+        }
+      }
+    },
+    "Lade Konzentrationen…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading concentrations…"
+          }
+        }
+      }
+    },
+    "Lade Marken…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading brands…"
+          }
+        }
+      }
+    },
+    "Lade weitere…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading more…"
+          }
+        }
+      }
+    },
+    "Langhaltend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-lasting"
+          }
+        }
+      }
+    },
+    "Likes auf Bewertungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review Likes"
+          }
+        }
+      }
+    },
+    "Link senden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Link"
+          }
+        }
+      }
+    },
+    "Liste bearbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit List"
+          }
+        }
+      }
+    },
+    "Liste erstellen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create List"
+          }
+        }
+      }
+    },
+    "Liste löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete List"
+          }
+        }
+      }
+    },
+    "Listen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lists"
+          }
+        }
+      }
+    },
+    "Listen, %lld Listen" : {
+
+    },
+    "Lokale Daten und Bilder löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete local data and images"
+          }
+        }
+      }
+    },
+    "Longevity" : {
+
+    },
+    "Löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "Löscht lokale Daten und zwischengespeicherte Bilder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deletes local data and cached images"
+          }
+        }
+      }
+    },
+    "Marke" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brand"
+          }
+        }
+      }
+    },
+    "Marke unbekannt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brand unknown"
+          }
+        }
+      }
+    },
+    "Marken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brands"
+          }
+        }
+      }
+    },
+    "Markiere Parfums mit dem Herz-Symbol, um sie hier zu sehen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark perfumes with the heart icon to see them here."
+          }
+        }
+      }
+    },
+    "Match" : {
+
+    },
+    "Match %lld%%" : {
+
+    },
+    "Max: %@" : {
+
+    },
+    "Maximal 20 Zeichen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum 20 characters"
+          }
+        }
+      }
+    },
+    "Mein Duftprofil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Fragrance Profile"
+          }
+        }
+      }
+    },
+    "Meine" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Collection"
+          }
+        }
+      }
+    },
+    "Meine Bewertungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Reviews"
+          }
+        }
+      }
+    },
+    "Meine Listen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Lists"
+          }
+        }
+      }
+    },
+    "Meine Sammlung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Collection"
+          }
+        }
+      }
+    },
+    "Melde dich an, um deine Sammlung zu verwalten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in to manage your collection"
+          }
+        }
+      }
+    },
+    "Min: %@" : {
+
+    },
+    "Mindestens %lld Zeichen" : {
+
+    },
+    "Mindestens 3 Zeichen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At least 3 characters"
+          }
+        }
+      }
+    },
+    "Mindestens 6 Zeichen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At least 6 characters"
+          }
+        }
+      }
+    },
+    "Mindestens 6 Zeichen erforderlich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At least 6 characters required"
+          }
+        }
+      }
+    },
+    "Mindestens zwei gueltige Parfums werden fuer einen Vergleich benoetigt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At least two valid perfumes are required for a comparison."
+          }
+        }
+      }
+    },
+    "Mitglied seit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Member since"
+          }
+        }
+      }
+    },
+    "Mitglied seit %@" : {
+
+    },
+    "Möchtest du \"%@\" wirklich löschen? Alle Einträge gehen verloren." : {
+
+    },
+    "Möchtest du dich wirklich abmelden?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you really want to sign out?"
+          }
+        }
+      }
+    },
+    "Moderat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moderate"
+          }
+        }
+      }
+    },
+    "Monat" : {
+
+    },
+    "Nah" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "NAME" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NAME"
+          }
+        }
+      }
+    },
+    "Name (A–Z)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name (A–Z)"
+          }
+        }
+      }
+    },
+    "Name (Z–A)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name (Z–A)"
+          }
+        }
+      }
+    },
+    "Neue Liste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New List"
+          }
+        }
+      }
+    },
+    "Neue Liste erstellen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create New List"
+          }
+        }
+      }
+    },
+    "Neue Reviews" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Reviews"
+          }
+        }
+      }
+    },
+    "Neuer Vorschlag" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Suggestion"
+          }
+        }
+      }
+    },
+    "Neues Konto erstellen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create new account"
+          }
+        }
+      }
+    },
+    "Neueste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Newest"
+          }
+        }
+      }
+    },
+    "Neuigkeiten aus der Scentboxd-Community" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "News from the Scentboxd community"
+          }
+        }
+      }
+    },
+    "Neuzugaenge (12 Monate)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Additions (12 Months)"
+          }
+        }
+      }
+    },
+    "nicht ausgewählt" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "not selected"
+          }
+        }
+      }
+    },
+    "Nicht interessiert" : {
+
+    },
+    "Niedrigste Bewertung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lowest Rating"
+          }
+        }
+      }
+    },
+    "Noch kein Duftprofil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No fragrance profile yet"
+          }
+        }
+      }
+    },
+    "Noch keine Bewertungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reviews yet"
+          }
+        }
+      }
+    },
+    "Noch keine Bewertungen vorhanden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reviews yet."
+          }
+        }
+      }
+    },
+    "Noch keine Empfehlungen" : {
+
+    },
+    "Noch keine Listen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Lists"
+          }
+        }
+      }
+    },
+    "Noch keine Listen vorhanden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No lists available"
+          }
+        }
+      }
+    },
+    "Noch keine Parfums in der Sammlung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No perfumes in collection yet"
+          }
+        }
+      }
+    },
+    "Note hinzufügen…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add note…"
+          }
+        }
+      }
+    },
+    "Noten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes"
+          }
+        }
+      }
+    },
+    "Nur Buchstaben, Zahlen und _ erlaubt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only letters, numbers and _ allowed"
+          }
+        }
+      }
+    },
+    "Ø Rating" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avg Rating"
+          }
+        }
+      }
+    },
+    "Occasion hinzufügen…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add occasion…"
+          }
+        }
+      }
+    },
+    "Occasions" : {
+
+    },
+    "oder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "or"
+          }
+        }
+      }
+    },
+    "Öffentlich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Public"
+          }
+        }
+      }
+    },
+    "Offline-Modus — Daten eventuell nicht aktuell" : {
+
+    },
+    "Öffnet das Analytics-Dashboard deiner Sammlung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens your collection analytics dashboard"
+          }
+        }
+      }
+    },
+    "Öffnet das Bewertungsformular" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the review form"
+          }
+        }
+      }
+    },
+    "Öffnet das öffentliche Profil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the public profile"
+          }
+        }
+      }
+    },
+    "Öffnet das Registrierungsformular" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the registration form"
+          }
+        }
+      }
+    },
+    "Öffnet dein persönliches Duftprofil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens your personal fragrance profile"
+          }
+        }
+      }
+    },
+    "Öffnet deine Bewertungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens your reviews"
+          }
+        }
+      }
+    },
+    "Öffnet deine kuratierten Parfum-Listen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens your curated perfume lists"
+          }
+        }
+      }
+    },
+    "Öffnet deine Parfum-Sammlung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens your perfume collection"
+          }
+        }
+      }
+    },
+    "Öffnet deine Wunschliste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens your wishlist"
+          }
+        }
+      }
+    },
+    "Öffnet die Bearbeitung des Benutzernamens" : {
+
+    },
+    "Öffnet die Benachrichtigungseinstellungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens notification settings"
+          }
+        }
+      }
+    },
+    "Öffnet die Detailseite" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens detail page"
+          }
+        }
+      }
+    },
+    "Öffnet die Filteroptionen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens filter options"
+          }
+        }
+      }
+    },
+    "Öffnet die Listenauswahl für dieses Parfum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens list selection for this perfume"
+          }
+        }
+      }
+    },
+    "Öffnet die Seite zum Zurücksetzen des Passworts" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the password reset page"
+          }
+        }
+      }
+    },
+    "Öffnet die vollständige Sammlung" : {
+
+    },
+    "Öffnet personalisierte Parfum-Empfehlungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens personalized perfume recommendations"
+          }
+        }
+      }
+    },
+    "Ohne Überschrift wird automatisch „Bewertung für %@“ verwendet." : {
+
+    },
+    "OK" : {
+
+    },
+    "Parfum entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Perfume"
+          }
+        }
+      }
+    },
+    "Parfum nicht gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfume not found"
+          }
+        }
+      }
+    },
+    "Parfum wird geladen..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading perfume..."
+          }
+        }
+      }
+    },
+    "Parfum-Bild von %@" : {
+
+    },
+    "Parfums" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfumes"
+          }
+        }
+      }
+    },
+    "Parfums gesamt: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total perfumes: %lld"
+          }
+        }
+      }
+    },
+    "Passende Düfte basierend auf deiner Sammlung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matching fragrances based on your collection"
+          }
+        }
+      }
+    },
+    "Passwort" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password"
+          }
+        }
+      }
+    },
+    "Passwort bestätigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm Password"
+          }
+        }
+      }
+    },
+    "Passwort vergessen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forgot password?"
+          }
+        }
+      }
+    },
+    "Passwort zurücksetzen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Password"
+          }
+        }
+      }
+    },
+    "Passwörter stimmen nicht überein" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwords don't match"
+          }
+        }
+      }
+    },
+    "Performance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance"
+          }
+        }
+      }
+    },
+    "Personalisierte Empfehlungen" : {
+
+    },
+    "Persönliche Notizen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personal Notes"
+          }
+        }
+      }
+    },
+    "PERSÖNLICHE NOTIZEN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PERSONAL NOTES"
+          }
+        }
+      }
+    },
+    "Privates Profil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private Profile"
+          }
+        }
+      }
+    },
+    "Profil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile"
+          }
+        }
+      }
+    },
+    "Profil bearbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Profile"
+          }
+        }
+      }
+    },
+    "Profil laden..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading profile..."
+          }
+        }
+      }
+    },
+    "Profil öffentlich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Public Profile"
+          }
+        }
+      }
+    },
+    "Profil öffentlich sichtbar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile publicly visible"
+          }
+        }
+      }
+    },
+    "Profil öffnen" : {
+
+    },
+    "Profil schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Profile"
+          }
+        }
+      }
+    },
+    "Profil von %@" : {
+
+    },
+    "Push-Nachrichten verwalten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage push notifications"
+          }
+        }
+      }
+    },
+    "Raumfüllend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room-filling"
+          }
+        }
+      }
+    },
+    "Registriere dich, um deine Düfte zu speichern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Register to save your fragrances"
+          }
+        }
+      }
+    },
+    "Registrieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Register"
+          }
+        }
+      }
+    },
+    "Registrierung erfolgreich!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration successful!"
+          }
+        }
+      }
+    },
+    "Reviews" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reviews"
+          }
+        }
+      }
+    },
+    "Sammlung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collection"
+          }
+        }
+      }
+    },
+    "Sammlung in Zahlen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collection in Numbers"
+          }
+        }
+      }
+    },
+    "Sammlung ist leer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collection is empty"
+          }
+        }
+      }
+    },
+    "Sammlung leer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collection Empty"
+          }
+        }
+      }
+    },
+    "Sammlung teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Collection"
+          }
+        }
+      }
+    },
+    "Sammlung, %lld Parfums" : {
+
+    },
+    "Sammlungs-Statistiken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collection Statistics"
+          }
+        }
+      }
+    },
+    "SCENT CONNOISSEUR" : {
+
+    },
+    "ScentBox" : {
+
+    },
+    "ScentBox Logo" : {
+
+    },
+    "Scentboxd Benutzer" : {
+
+    },
+    "scentboxd.app" : {
+
+    },
+    "Schaltet zwischen hellem und dunklem Erscheinungsbild" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle between light and dark appearance"
+          }
+        }
+      }
+    },
+    "Schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "Schließt diese Ansicht und kehrt zur Anmeldung zurück" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closes this view and returns to sign in"
+          }
+        }
+      }
+    },
+    "Schwach" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weak"
+          }
+        }
+      }
+    },
+    "Sehr langhaltend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Very long-lasting"
+          }
+        }
+      }
+    },
+    "Serverfehler (%lld). Bitte versuche es später erneut." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server error (%lld). Please try again later."
+          }
+        }
+      }
+    },
+    "Sillage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sillage"
+          }
+        }
+      }
+    },
+    "Sortieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort"
+          }
+        }
+      }
+    },
+    "Sortierung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort"
+          }
+        }
+      }
+    },
+    "Sortierung: %@" : {
+
+    },
+    "Speichern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        }
+      }
+    },
+    "Sprache" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        }
+      }
+    },
+    "SPRACHE" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LANGUAGE"
+          }
+        }
+      }
+    },
+    "Stark" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strong"
+          }
+        }
+      }
+    },
+    "Sterne" : {
+
+    },
+    "Suche nach Benutzernamen, um Profile und Sammlungen zu entdecken." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search for usernames to discover profiles and collections."
+          }
+        }
+      }
+    },
+    "Suche Parfum..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search perfume..."
+          }
+        }
+      }
+    },
+    "Suche Parfum…" : {
+
+    },
+    "Suche Vorschläge..." : {
+
+    },
+    "Suche..." : {
+
+    },
+    "Synchronisiere..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Syncing..."
+          }
+        }
+      }
+    },
+    "Synchronisierungsfehler" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync Error"
+          }
+        }
+      }
+    },
+    "Tagesempfehlung: %@ von %@, %lld Prozent Übereinstimmung" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tagesempfehlung: %1$@ von %2$@, %3$lld Prozent Übereinstimmung"
+          }
+        }
+      }
+    },
+    "Teile dein Erlebnis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share your experience"
+          }
+        }
+      }
+    },
+    "Teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        }
+      }
+    },
+    "Top 5 Marken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top 5 Brands"
+          }
+        }
+      }
+    },
+    "Top 10 Noten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top 10 Notes"
+          }
+        }
+      }
+    },
+    "TOP-NOTEN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TOP NOTES"
+          }
+        }
+      }
+    },
+    "ÜBER" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ABOUT"
+          }
+        }
+      }
+    },
+    "Über den Duft" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About the Fragrance"
+          }
+        }
+      }
+    },
+    "ÜBERSCHRIFT" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TITLE"
+          }
+        }
+      }
+    },
+    "Überschrift der Bewertung, optional" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review title, optional"
+          }
+        }
+      }
+    },
+    "Unbekannt" : {
+
+    },
+    "Unbekannte Marke" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown Brand"
+          }
+        }
+      }
+    },
+    "Unbekanntes Parfum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown Perfume"
+          }
+        }
+      }
+    },
+    "Ungültige E-Mail oder Passwort." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email or password."
+          }
+        }
+      }
+    },
+    "Ungültige E-Mail-Adresse" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid email address"
+          }
+        }
+      }
+    },
+    "Vergleich nicht verfuegbar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparison unavailable"
+          }
+        }
+      }
+    },
+    "Vergleich schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Comparison"
+          }
+        }
+      }
+    },
+    "Vergleich wird geladen..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading comparison..."
+          }
+        }
+      }
+    },
+    "Vergleiche Noten, Performance und Konzentration Seite an Seite." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare notes, performance and concentration side by side."
+          }
+        }
+      }
+    },
+    "Vergleichen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare"
+          }
+        }
+      }
+    },
+    "Version" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version"
+          }
+        }
+      }
+    },
+    "Von Wunschliste entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Wishlist"
+          }
+        }
+      }
+    },
+    "Wähle mindestens 2 Parfums zum Vergleichen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select at least 2 perfumes to compare"
+          }
+        }
+      }
+    },
+    "Warum dieser Duft?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why this fragrance?"
+          }
+        }
+      }
+    },
+    "WEITERE VORSCHLÄGE" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MORE SUGGESTIONS"
+          }
+        }
+      }
+    },
+    "Wenn ein Parfum ähnlich zu deiner Sammlung hinzugefügt wird" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When a perfume similar to your collection is added"
+          }
+        }
+      }
+    },
+    "Wenn jemand ein Parfum aus deiner Sammlung bewertet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When someone reviews a perfume from your collection"
+          }
+        }
+      }
+    },
+    "Wenn jemand eine deiner Bewertungen liked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When someone likes one of your reviews"
+          }
+        }
+      }
+    },
+    "Wird beim nächsten Online-Start hochgeladen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Will be uploaded on next online start"
+          }
+        }
+      }
+    },
+    "Wird gespeichert…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saving…"
+          }
+        }
+      }
+    },
+    "Wunschliste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wishlist"
+          }
+        }
+      }
+    },
+    "Wunschliste, %lld Parfums" : {
+
+    },
+    "z. B. Sommersprays" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. Summer Sprays"
+          }
+        }
+      }
+    },
+    "Zu den Einstellungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Settings"
+          }
+        }
+      }
+    },
+    "Zu Liste hinzufügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to List"
+          }
+        }
+      }
+    },
+    "Zu viele Anmeldeversuche. Bitte warte %lld Sekunden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too many login attempts. Please wait %lld seconds."
+          }
+        }
+      }
+    },
+    "Zu viele Versuche. Bitte warte %lld Sekunden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Too many attempts. Please wait %lld seconds."
+          }
+        }
+      }
+    },
+    "Zuhause" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home"
+          }
+        }
+      }
+    },
+    "Zuletzt hinzugefügt" : {
+
+    },
+    "Zuletzt synchronisiert: " : {
+
+    },
+    "Zum Katalog" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Catalog"
+          }
+        }
+      }
+    },
+    "Zum Profil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Profile"
+          }
+        }
+      }
+    },
+    "Zum Vergleich hinzufügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Comparison"
+          }
+        }
+      }
+    },
+    "Zur Sammlung hinzufügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Collection"
+          }
+        }
+      }
+    },
+    "Zur Wunschliste hinzufügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Wishlist"
+          }
+        }
+      }
+    },
+    "Zurück zur Anmeldung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Sign In"
+          }
+        }
+      }
+    },
+    "Zurücksetzen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

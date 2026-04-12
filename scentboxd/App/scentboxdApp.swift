@@ -15,6 +15,7 @@ struct ScentBoxApp: App {
     @State private var deepLinkHandler = DeepLinkHandler()
     @State private var notificationManager = NotificationManager.shared
     @State private var themeManager = ThemeManager()
+    @State private var languageManager = LanguageManager()
 
     init() {
         ImagePipelineConfig.configure()
@@ -52,6 +53,8 @@ struct ScentBoxApp: App {
                 .environment(deepLinkHandler)
                 .environment(notificationManager)
                 .environment(themeManager)
+                .environment(languageManager)
+                .environment(\.locale, languageManager.locale)
                 .preferredColorScheme(themeManager.colorScheme)
                 .onOpenURL { url in
                     deepLinkHandler.handle(url: url)

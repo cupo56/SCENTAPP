@@ -315,7 +315,7 @@ struct ListEditSheet: View {
                             if isSaving {
                                 ProgressView().tint(.white).frame(maxWidth: .infinity)
                             } else {
-                                Text(isEdit ? "Speichern" : "Liste erstellen")
+                                Text(isEdit ? String(localized: "Speichern") : String(localized: "Liste erstellen"))
                                     .frame(maxWidth: .infinity)
                             }
                         }
@@ -325,7 +325,7 @@ struct ListEditSheet: View {
                     .padding(20)
                 }
             }
-            .navigationTitle(isEdit ? "Liste bearbeiten" : "Neue Liste")
+            .navigationTitle(isEdit ? String(localized: "Liste bearbeiten") : String(localized: "Neue Liste"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

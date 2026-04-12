@@ -9,20 +9,20 @@ import SwiftUI
 
 struct PerfumeCollectionView<FilterContent: View>: View {
     let perfumes: [Perfume]
-    let emptyTitle: String
+    let emptyTitle: LocalizedStringKey
     let emptyIcon: String
     let emptyDescription: Text
-    let navigationTitle: String
+    let navigationTitle: LocalizedStringKey
     let refreshAction: (() async -> Void)?
     let isRefreshing: Bool
     @ViewBuilder let headerContent: FilterContent
     
     init(
         perfumes: [Perfume],
-        emptyTitle: String,
+        emptyTitle: LocalizedStringKey,
         emptyIcon: String,
         emptyDescription: Text,
-        navigationTitle: String,
+        navigationTitle: LocalizedStringKey,
         refreshAction: (() async -> Void)? = nil,
         isRefreshing: Bool = false,
         @ViewBuilder headerContent: () -> FilterContent

@@ -14,21 +14,21 @@ struct FragrancePyramidSection: View {
                     if !perfume.topNotes.isEmpty {
                         pyramidRow(
                             icon: "wind",
-                            label: "Kopfnoten",
+                            label: String(localized: "Kopfnoten"),
                             notes: perfume.topNotes.map(\.name).joined(separator: ", ")
                         )
                     }
                     if !perfume.midNotes.isEmpty {
                         pyramidRow(
                             icon: "leaf",
-                            label: "Herznoten",
+                            label: String(localized: "Herznoten"),
                             notes: perfume.midNotes.map(\.name).joined(separator: ", ")
                         )
                     }
                     if !perfume.baseNotes.isEmpty {
                         pyramidRow(
                             icon: "drop.fill",
-                            label: "Basisnoten",
+                            label: String(localized: "Basisnoten"),
                             notes: perfume.baseNotes.map(\.name).joined(separator: ", ")
                         )
                     }

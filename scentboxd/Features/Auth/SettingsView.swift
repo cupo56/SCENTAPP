@@ -12,6 +12,7 @@ import os
 struct SettingsView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(ThemeManager.self) private var themeManager
+    @Environment(LanguageManager.self) private var languageManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -27,6 +28,7 @@ struct SettingsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     appearanceSection
+                    languageSection
                     cacheSection
                     notificationSection
                     accountSection
@@ -74,8 +76,8 @@ struct SettingsView: View {
                     .foregroundStyle(Color.primary)
 
                 Text(themeManager.prefersDarkAppearance
-                     ? "Dunkles Design ist aktiv"
-                     : "Helles Design ist aktiv")
+                     ? String(localized: "Dunkles Design ist aktiv")
+                     : String(localized: "Helles Design ist aktiv"))
                     .font(.system(size: 12))
                     .foregroundStyle(Color.secondary)
             }
@@ -89,6 +91,39 @@ struct SettingsView: View {
                 .accessibilityHint(String(localized: "Schaltet zwischen hellem und dunklem Erscheinungsbild"))
         }
         .padding(.vertical, 4)
+    }
+
+    // MARK: - Language Section
+
+    private var languageSection: some View {
+        settingsSection(title: "SPRACHE") {
+            HStack(alignment: .center, spacing: 14) {
+                settingsIcon("globe", color: Color(hex: "#60A5FA"))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Sprache")
+                        .font(DesignSystem.Fonts.display(size: 15, weight: .semibold))
+                        .foregroundStyle(Color.primary)
+
+                    Text(languageManager.currentLanguage.displayName)
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.secondary)
+                }
+
+                Spacer(minLength: 8)
+
+                Picker("", selection: Bindable(languageManager).currentLanguage) {
+                    ForEach(LanguageManager.AppLanguage.allCases, id: \.self) { language in
+                        Text("\(language.icon) \(language.displayName)")
+                            .tag(language)
+                    }
+                }
+                .pickerStyle(.menu)
+                .tint(DesignSystem.Colors.primary)
+            }
+            .padding(.vertical, 4)
+            .accessibilityLabel("Sprache")
+        }
     }
 
     // MARK: - Cache Section
@@ -237,7 +272,7 @@ struct SettingsView: View {
 
     // MARK: - Helpers
 
-    private func settingsSection(title: String, @ViewBuilder content: () -> some View) -> some View {
+    private func settingsSection(title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
                 .font(.system(size: 11, weight: .bold))
@@ -263,7 +298,7 @@ struct SettingsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    private func aboutRow(label: String, value: String) -> some View {
+    private func aboutRow(label: LocalizedStringKey, value: String) -> some View {
         HStack {
             Text(label)
                 .font(DesignSystem.Fonts.display(size: 15, weight: .medium))

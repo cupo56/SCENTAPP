@@ -188,7 +188,7 @@ struct NotificationSettingsView: View {
 
     // MARK: - Helpers
 
-    private func settingsSection(title: String, @ViewBuilder content: () -> some View) -> some View {
+    private func settingsSection(title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title)
                 .font(.system(size: 11, weight: .bold))
@@ -217,8 +217,8 @@ struct NotificationSettingsView: View {
     private func preferenceToggle(
         icon: String,
         iconColor: Color,
-        title: String,
-        subtitle: String,
+        title: LocalizedStringKey,
+        subtitle: LocalizedStringKey,
         isOn: Binding<Bool>
     ) -> some View {
         HStack(spacing: 12) {

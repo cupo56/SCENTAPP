@@ -29,7 +29,7 @@ struct PerfumePerformanceSection: View {
         .glassPanel()
     }
 
-    private func performanceBar(label: String, value: String, percentage: Double) -> some View {
+    private func performanceBar(label: LocalizedStringKey, value: String, percentage: Double) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(label)

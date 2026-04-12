@@ -48,7 +48,7 @@ struct CompareFloatingBar: View {
         .padding(.horizontal, 24)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(compareManager.selectedPerfumes.count) Parfums ausgewählt")
-        .accessibilityHint(compareManager.canCompare ? "Doppeltippen, um den Vergleich zu öffnen" : "Wähle mindestens 2 Parfums zum Vergleichen")
+        .accessibilityHint(compareManager.canCompare ? String(localized: "Doppeltippen, um den Vergleich zu öffnen") : String(localized: "Wähle mindestens 2 Parfums zum Vergleichen"))
         .accessibilityAddTraits(.isButton)
         .onTapGesture {
             if compareManager.canCompare {

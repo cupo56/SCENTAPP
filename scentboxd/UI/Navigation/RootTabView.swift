@@ -167,7 +167,7 @@ private struct CompareDeepLinkContainer: View {
                 ContentUnavailableView(
                     "Vergleich nicht verfuegbar",
                     systemImage: "square.3.layers.3d.slash",
-                    description: Text(errorMessage ?? "Mindestens zwei gueltige Parfums werden fuer einen Vergleich benoetigt.")
+                    description: Text(errorMessage ?? String(localized: "Mindestens zwei gueltige Parfums werden fuer einen Vergleich benoetigt."))
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(DesignSystem.Colors.appBackground)
@@ -187,7 +187,7 @@ private struct CompareDeepLinkContainer: View {
             perfumes = resolvedPerfumes
             compareManager.selectedPerfumes = resolvedPerfumes
             if resolvedPerfumes.count < 2 {
-                errorMessage = "Es konnten nicht genug Parfums fuer den Vergleich geladen werden."
+                errorMessage = String(localized: "Es konnten nicht genug Parfums fuer den Vergleich geladen werden.")
             }
         } catch {
             errorMessage = NetworkError.handle(error, logger: AppLogger.perfumes, context: "Compare Deep Link")
